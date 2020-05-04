@@ -1,7 +1,5 @@
 <template>
   <div class="home">
-    <div class="img">
-        <div class="content"> 
     <b-navbar toggleable="lg" type="light" variant="light">
     <b-navbar-brand href="#">
     Collector In Room</b-navbar-brand>
@@ -20,7 +18,7 @@
       <b-navbar-nav class="ml-auto">
         <b-nav-form>
           <b-form-input size="sm" class="mr-sm-2" placeholder="Search"></b-form-input>
-          <b-icon icon="search" scale="1.5" shift-v="1.25" type = "submit" aria-hidden="true"></b-icon>
+          <b-icon id ="searchIcon" icon="search" scale="1.5" shift-v="1.25" type = "submit" aria-hidden="true"></b-icon>
         </b-nav-form>
         </b-nav-item-dropdown>
 
@@ -29,59 +27,83 @@
             <em>User</em>
           </template>
           <b-dropdown-item href="#" v-if="loginStatus">Profile</b-dropdown-item>
-          <b-dropdown-item href="#" v-if="loginStatus">Sign Out</b-dropdown-item>
+          <b-dropdown-item-button v-on:click = "logout" v-if="loginStatus">Sign Out</b-dropdown-item-button>
           <b-dropdown-item href="login" v-if="!loginStatus">Sign In</b-dropdown-item>
           <b-dropdown-item href="#" v-if="!loginStatus">Sign Up</b-dropdown-item>
         </b-nav-item-dropdown>
       </b-navbar-nav>
     </b-collapse>
   </b-navbar>
-  </div>
-    <Login id = "login" v-if="!loginStatus"/>
-    <router-view v-if="!loginStatus"></router-view>  
+  <div class ="carousel-fade">
+    <b-carousel
+    style="text-shadow: 0px 0px 2px #000"
+    fade
+    indicators
+    img-width="1024"
+    img-height="480"
+  >
+    <b-carousel-slide
+      caption="First slide"
+      img-src="https://picsum.photos/1024/480/?image=10"
+    ></b-carousel-slide>
+    <b-carousel-slide
+      caption="Second Slide"
+      img-src="https://picsum.photos/1024/480/?image=12"
+    ></b-carousel-slide>
+    <b-carousel-slide
+      caption="Third Slide"
+      img-src="https://picsum.photos/1024/480/?image=22"
+    ></b-carousel-slide>
+  </b-carousel><router-view></router-view>
 </div>
+<div class = "ranking">
+  <Ranking></Ranking>
 </div>
+
+
+ 
     
+    <!--<Login id = "login" v-if="!loginStatus" @login-event="loginMethod"/> <!-- emit해서 login에서 로그인 상태 던지고 home에서 이거 받아서 할 수 있도록> -->
+ 
+    
+
 </div>
 </template>
 
 <script>
 // @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
 import Login from '@/components/Login.vue'
+import Ranking from '@/components/Ranking.vue'
 export default {
   name: 'Home',
   components: {
-    Login,
+    Ranking
   },
   data() {
     return {
-      loginStatus: false,
+      loginStatus: '',
   }
-  }
+  },
+  async beforeCreate() {
+      this.loginStatus = await localStorage.getItem('loginState');
+      //console.log("ggggg"+this.loginStatus);
+      //alert(this.loginStatus);
+  },
+   methods : {
+     logout: function() {
+        this.$store.dispatch('LOGOUT');
+        alert("로그아웃 완료");
+        setTimeout(()=> {
+                location.reload();
+                           //alert("hello");
+                },2000);   
+          }
+     //alert(this.$store.getters.getLoginStatus);
+  },
+
 }
 </script>
 <style>
-.img { 
-  position: fixed; 
-  top: -50%; 
-  left: 0; 
-  bottom : 100px;
-  background-image: url('../assets/background.jpg');
-  background-size: cover;
-  /* Preserve aspet ratio */
-  min-width: 100%;
-  min-height: 100%;
-}
-.content{
-  position: relative;
-  top: 50%;
-  left:50%;
-  transform: translate(-50%, -50%);                                                                   
-  font-size: 10px;
-  color: #404040;
-  z-index: 2;
-}
 b-navber-nav {
   color: #21a2b7;
   font-size : 30px;
@@ -94,6 +116,28 @@ b-navber-nav {
 .bar-font {
   color : red;
 }
+.overflow-hidden {
+  margin-left: 300px;
+
+}
+.carousel-fade {
+  width: 800px;
+  margin-top: 30px;
+  margin-left: 150px;
+  float:left;
+}
+.ranking{
+  width : 100%;
+  vertical-align: middle;
+  margin-top: 30px;
+  margin-left: 100px;
+  float:left;
+}
+#searchIcon{
+  margin:4px;
+}
+
+
 
 
 

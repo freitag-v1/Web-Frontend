@@ -1,7 +1,5 @@
 <template>
-  <div class="login"> 
-  <div class="img">
-    <div class="content"> 
+  <div class="login">
     <div class ="wrapper">
         <b-navbar toggleable="lg" type="light" variant="light">
     <b-navbar-brand href="#">
@@ -46,14 +44,14 @@
     </form>
   </div>
   </div>
-  </div>
-  </div>
+
 </template>
 
 <script>
 import axios from 'axios';
+import VueCookies from 'vue-cookies';
 var loginStatus = false;
-var userName = '';
+var userToken = '';
 export default {
   name: 'login',
   data() {
@@ -63,7 +61,7 @@ export default {
     }
   },
   methods: {
-    async login() {
+    async login() { //비밀번호 hidden 으로 가능한지 
        if(this.userId == "" || this.password == "")
         {
           alert("Please enter your ID or Password!");
@@ -71,18 +69,20 @@ export default {
         //else해서 axios.post("/api/login", {id:userId, pwd: this.password}) 이렇게 보내기
         else {
           console.log("/api/login?userId="+this.userId+"&userPassword="+this.password);
-          const res = await axios.get("/api/login?userId="+this.userId+"&userPassword="+this.password);
-          if(res.data == "redirect:/success") {
-              return this.$router.push(
-                  path:'/',
-                  params: {
-                    loginStatus : true;
-                  }
-              );
+          var userId = this.userId;
+          var password = this.password;
+          this.$store.dispatch('LOGIN',{userId,password});
+          console.log(this.$store.getters.getLoginState);
+          if(this.$store.getters.getLoginState != null) {
+              setTimeout(()=> {
+                            this.$router.push("/");
+                           //alert("hello");
+                        },2000);   
           }
+          
          
         }
-    }
+    },
   }
 }
 
@@ -124,9 +124,7 @@ button:hover {
   border-radius: 8px;
 
 }
-.wrapper {	
-	margin-top: 170px;
-}
+
 
 .form-signin {
   max-width: 380px;
