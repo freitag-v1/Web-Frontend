@@ -1,0 +1,132 @@
+<template>
+
+    <div class = "signUpForm" style ="overflow:auto">
+     <b-card no-body class="overflow-hidden" >
+         <b-row no-gutters>
+      <b-col md="6">
+        <b-card-img src="https://picsum.photos/400/400/?image=20" alt="Image" class="rounded-0"></b-card-img>
+      </b-col>
+       <b-col md="6">
+        <b-card-body title="Sign Up">
+    <b-form v-if="show">
+      <b-form-group
+        id="input-group-1"
+        label-for="input-1"
+        description="We'll never share your email with anyone else."
+      >
+        
+        <b-form @submit.stop.prevent>
+        <label for="text-password">Your Password: </label> <!--password validation 여기서 해줌  -->
+        <b-input v-model= "userPassword" type="password" id="text-password"></b-input>
+        <b-form-invalid-feedback :state="userPasswordValidation">
+          Your password must be 8-20 characters long, contain letters and numbers, special characters and must not
+          contain spaces, or emoji.
+        </b-form-invalid-feedback>
+        <b-form-valid-feedback :state="userPasswordValidation">
+        Looks Good.
+        </b-form-valid-feedback>
+        </b-form>
+
+      </b-form-group>
+      <b-form-group id="input-group-2" label="Your Name:" label-for="input-2">
+        <b-form-input
+          id="input-2"
+          v-model="userName"
+          required
+          placeholder="Enter name"
+        ></b-form-input>
+      </b-form-group>
+
+     <b-form-group id="input-group-3" label="Your Email:" label-for="input-3">
+      <b-form-input
+          id="input-3"
+          v-model="userEmail"
+          type="email"
+          required
+          placeholder="Enter email"
+        ></b-form-input>
+      <b-form-invalid-feedback :state="userEmailValidation">
+        Email format must be xxxx@xx.com
+      </b-form-invalid-feedback>
+      <b-form-valid-feedback :state="userEmailValidation">
+        Looks Good.
+      </b-form-valid-feedback>
+      </b-form-group>
+
+      <b-form-group id="input-group-4" label="Your Affiliation:" label-for="input-4">
+        <b-form-input
+          id="input-4"
+          v-model="userAffiliation"
+          required
+          placeholder="Enter Affiliation"
+        ></b-form-input>
+      </b-form-group>
+      </b-form-group>
+      <p>Your PhoneNumber</p>
+      <VuePhoneNumberInput v-model="userPhonenumber" />
+      <br/>
+      <b-button class="button" v-on:click = "modify" variant="outline-primary">Save</b-button>
+      <br/>
+      
+    </b-form>
+     </b-card-body>
+    </b-col>
+    </b-row>
+    
+  </b-card>
+   
+  </div>
+</template>
+<script>
+import VuePhoneNumberInput from 'vue-phone-number-input';
+import axios from 'axios';
+
+
+
+
+  export default {
+    name: 'MypageModify',
+    components: {
+      VuePhoneNumberInput,
+    },
+    data() {
+      return {
+        show: true,
+        userPassword:'',
+        userEmail: '',
+        userAffiliation: '',
+        userName: '',
+        userPhonenumber: '',
+      }
+    },
+    async beforeCreate() {
+      var loginStatus = await localStorage.getItem('loginState');
+      axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
+      if(!loginStatus) {
+          alert("로그인이 필요한 페이지입니다.")
+          this.$router.push("/login"); 
+      }
+    },
+    computed: {
+      userEmailValidation() { // email에는 @이 필수 요소니까 @ 여부로 validation
+        return this.userEmail.includes('@');
+      },
+      userPasswordValidation() {
+        var pattern1 = /[0-9]/;
+        var pattern2 = /[a-zA-Z]/;
+        var pattern3 = /[~!@\#$%<>^&*]/;     // 원하는 특수문자 추가 제거
+       if(!pattern1.test(this.userPassword)||!pattern2.test(this.userPassword)||!pattern3.test(this.userPassword)){
+          return false; //숫자, 영문, 특수문자가 포함되었는지 
+       }
+        return this.userPassword.length > 7 && this.userPassword.length < 21; // 8~ 20자인지 길이 검증 
+      }
+    },
+    methods: {
+        modify() {
+            // 수정된 데이터를 put하던가해서 수정하고
+            alert("hello");
+
+        },
+    },
+  }
+</script>

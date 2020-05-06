@@ -23,6 +23,7 @@ export default new Vuex.Store({
     mutations: {
         LOGIN(state, {token, isAuth}) {
             state.token = token,
+            alert(token);
             state.isAuth = isAuth,
             state.loginState = true,
             localStorage.token = token,
@@ -37,20 +38,26 @@ export default new Vuex.Store({
             delete localStorage.isAuth,
             delete localStorage.loginState
         }
-
     },
     actions: {
         LOGIN({commit},{userId, password}){
             try
             { 
                 axios.get("/api/login?userId="+userId+"&userPassword="+password)
-                .then(res => {
+                .then((res,err) => {
                 
-                if(res.data != null) {
-                    alert(res.data.token);
-                    commit('LOGIN',res.data.token, res.data.authorities) //로그인 성공시 session id랑 authorities이거 넘겨주는
-                    //alert(this.state.loginState);
-                } 
+                if(err == null) {
+                    //console.log(res.data);
+                    console.log(res.headers.authorization);
+                    var token = res.headers.authorization;
+                    var authorities = res.data.authorities;
+                    commit('LOGIN',{token, authorities}) //로그인 성공시 session id랑 authorities이거 넘겨주는
+                    alert("로그인 완료");
+                }
+                else {
+                    alert("아이디 혹은 패스워드가 잘못되었습니다.");
+                }
+
             });
             } catch(err) {
                 console.error(err);
@@ -58,11 +65,7 @@ export default new Vuex.Store({
             }
         },
         async LOGOUT({commit}) {
-            const result = await axios.get("/api/logout");
-            //alert(result.data);
-            if(result.data == "success"){
-                commit('LOGOUT')
-            }
+            commit('LOGOUT');
         },
                 
     }

@@ -20,6 +20,7 @@ Vue.config.productionTip = false
 Vue.prototype.$Axios = axios;
 Vue.component('vue-phone-number-input', VuePhoneNumberInput);
 
+ // for all requests
 new Vue({
   router,
   store,

@@ -4,7 +4,9 @@ import Home from '../views/Home.vue'
 import Login from '../components/Login.vue'
 import SignUp from '../views/SignUp.vue'
 import Account from '../views/AccountAuthentication.vue'
-
+import Project from '../views/Project.vue'
+import Mypage from '../views/Mypage.vue'
+import MypageModify from '../views/MypageModify.vue'
 
 Vue.use(VueRouter)
 
@@ -13,16 +15,6 @@ Vue.use(VueRouter)
     path: '/',
     name: 'Home',
     component: Home
-  },
-  {
-    path: '/about',
-    name: 'About',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: function () {
-      return import(/* webpackChunkName: "about" */ '../views/About.vue')
-    }
   },
   {
     path:'/login',
@@ -38,7 +30,23 @@ Vue.use(VueRouter)
     path:'/signup/account',
     name: 'Account',
     component: Account
-  },s
+  },
+  {
+    path:'/project',
+    name: 'Project',
+    component: Project
+  },
+  {
+    path:'/mypage',
+    name: 'Mypage',
+    component: Mypage
+  },
+  {
+    path:'/mypage/modify',
+    name: 'MypageModify',
+    component: MypageModify
+  },
+
 
 ]
 
