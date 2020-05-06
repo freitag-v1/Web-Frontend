@@ -37,9 +37,9 @@
             <br>
             <br>
     <div class = "signButton">
-      <b-button pill v-on:click = "login" id="login" variant="outline-info">Login</b-button>
+      <b-button pill v-on:click = "login" id="login" variant="outline-primary">Login</b-button>
 
-      <b-button pill id ="signupbutton" variant="outline-info">Register</b-button>
+      <b-button pill id ="signupbutton" href="signup" variant="outline-primary">Register</b-button>
       </div>
     </form>
   </div>
@@ -127,7 +127,7 @@ button:hover {
 
 
 .form-signin {
-  max-width: 380px;
+  max-width: 500px;
   padding: 15px 35px 45px;
   margin: 0 auto;
   margin-top: 50px;
@@ -146,7 +146,7 @@ button:hover {
 	.form-con0trol {
 	  position: relative;
 	  font-size: 16px;
-	  height: auto;
+	  height: 300px;
 	  padding: 10px;
 		@include box-sizing(border-box);
 
@@ -166,7 +166,8 @@ button:hover {
 	border-top-right-radius: 0;
 }
 #signupbutton {
-  font-size: 14px;
+  font-size: 18px;
 }
+
 
 </style>

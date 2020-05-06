@@ -29,7 +29,7 @@
           <b-dropdown-item href="#" v-if="loginStatus">Profile</b-dropdown-item>
           <b-dropdown-item-button v-on:click = "logout" v-if="loginStatus">Sign Out</b-dropdown-item-button>
           <b-dropdown-item href="login" v-if="!loginStatus">Sign In</b-dropdown-item>
-          <b-dropdown-item href="#" v-if="!loginStatus">Sign Up</b-dropdown-item>
+          <b-dropdown-item href="signup" v-if="!loginStatus">Sign Up</b-dropdown-item>
         </b-nav-item-dropdown>
       </b-navbar-nav>
     </b-collapse>
@@ -74,6 +74,7 @@
 // @ is an alias to /src
 import Login from '@/components/Login.vue'
 import Ranking from '@/components/Ranking.vue'
+import SignUp from '@/views/SignUp.vue'
 export default {
   name: 'Home',
   components: {

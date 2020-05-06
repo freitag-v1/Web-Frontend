@@ -1,10 +1,19 @@
 <template>
   <div id="app"> 
-      <img id="logo" src = "./assets/collectorLogo.jpg"/>
+      <img id="logo" v-on:click="goHome" src = "./assets/collectorLogo.jpg"/>
       <router-view/>
   </div>
 </template>
-
+<script>
+  export default {
+  name: 'App',
+  methods : {
+    goHome() {
+      this.$router.push("/");
+    }
+  }
+}
+</script>
 <style>
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;

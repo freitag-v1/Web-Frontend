@@ -8,6 +8,8 @@ import 'bootstrap-vue/dist/bootstrap-vue.css'
 import VueSession from 'vue-session'
 import VueCookies from 'vue-cookies'
 import store from './store/login_module'
+import VuePhoneNumberInput from 'vue-phone-number-input';
+import 'vue-phone-number-input/dist/vue-phone-number-input.css';
 
 
 Vue.use(BootstrapVue)
@@ -16,6 +18,7 @@ Vue.use(VueSession)
 Vue.use(VueCookies);
 Vue.config.productionTip = false
 Vue.prototype.$Axios = axios;
+Vue.component('vue-phone-number-input', VuePhoneNumberInput);
 
 new Vue({
   router,
