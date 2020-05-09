@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex'
 import axios from 'axios'
+import router from '../router'
 
 Vue.use(Vuex)
 
@@ -21,14 +22,15 @@ export default new Vuex.Store({
         }
     },
     mutations: {
-        LOGIN(state, {token, isAuth}) {
+        LOGIN(state, {token, isAuth, userId}) {
             state.token = token,
-            alert(token);
             state.isAuth = isAuth,
             state.loginState = true,
+            state.userId = userId,
             localStorage.token = token,
             localStorage.isAuth = isAuth,
-            localStorage.loginState = true
+            localStorage.loginState = true,
+            localStorage.userId = userId
         },
         LOGOUT(state) {
             state.token = null,
@@ -36,33 +38,30 @@ export default new Vuex.Store({
             state.isAuth = null,
             delete localStorage.token,
             delete localStorage.isAuth,
-            delete localStorage.loginState
+            delete localStorage.loginState,
+            delete localStorage.userId
         }
     },
     actions: {
-        LOGIN({commit},{userId, password}){
-            try
-            { 
+        async LOGIN({commit},{userId, password}){
                 axios.get("/api/login?userId="+userId+"&userPassword="+password)
-                .then((res,err) => {
-                
-                if(err == null) {
-                    //console.log(res.data);
+                .then(res => {
                     console.log(res.headers.authorization);
                     var token = res.headers.authorization;
                     var authorities = res.data.authorities;
-                    commit('LOGIN',{token, authorities}) //로그인 성공시 session id랑 authorities이거 넘겨주는
-                    alert("로그인 완료");
-                }
-                else {
-                    alert("아이디 혹은 패스워드가 잘못되었습니다.");
-                }
-
-            });
-            } catch(err) {
-                console.error(err);
-                alert("아이디 혹은 패스워드가 잘못되었습니다.");
-            }
+                    commit('LOGIN',{token, authorities,userId}) //로그인 성공시 session id랑 authorities이거 넘겨주는
+                    alert("로그인 완료!");
+                    setTimeout(()=> {
+                        router.push("/");
+                    },2000);  
+                })
+                .catch(function(error) {
+                    if(error.response){
+                        alert("로그인이 실패하였습니다!");
+                        location.reload();
+                    }
+                });
+                
         },
         async LOGOUT({commit}) {
             commit('LOGOUT');

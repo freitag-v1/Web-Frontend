@@ -75,6 +75,10 @@
       <p>Your PhoneNumber</p>
       <VuePhoneNumberInput v-model="userPhonenumber" />
       <br/>
+       <!--<div>
+        <label for="datepicker-placeholder">Date picker with placeholder</label>
+        <b-form-datepicker id="datepicker-placeholder" placeholder="Choose a date" local="en"></b-form-datepicker>
+      </div>-->
       <b-button class="button" v-on:click = "userData" variant="outline-primary">Next</b-button>
       <br/>
       
@@ -89,7 +93,7 @@
 </template>
 <script>
   import VuePhoneNumberInput from 'vue-phone-number-input';
-
+  import axios from 'axios';
   export default {
     name: 'SignUp',
     components: {
@@ -141,27 +145,31 @@
             alert("정보를 모두 입력해주세요!");
           }
           else {
-        /*const userDataRes = await axios.post("/api/signup",  
-        { body: {
+            console.log(typeof(this.userId),typeof(this.userPassword), typeof(this.userEmail),typeof(this.userName), typeof(this.userAffiliation),typeof(this.userPhonenumber));
+        const userDataRes = await axios.get("/api/signup",  
+        { params: {
             userId : this.userId,
             userPassword: this.userPassword,
             userEmail : this.userEmail,
             userName: this.userName,
             userAffiliation : this.userAffiliation,
-            userPhonenumber : this.userPhonenumber,
-        }});*/ 
-        // if (userDataRes.data == "false") {
-        //   alert("중복된 아이디가 존재합니다!");
-        // }
-        // else {is
-        setTimeout(()=> {
-          this.$router.push("/signup/account");
-                           //alert("hello");
-        },500);   
-        //}
-          }
+            userPhone : this.userPhonenumber,
+            userBank: "123",
+            userAccount: "229301",
+        }}).then(res => {
+            setTimeout(()=> {
+            this.$router.push("/signup/account");
+                            //alert("hello");
+            },500);
+        })
+        .catch(function(error) {
+            if(error.response){
+                alert("아이디가 중복됩니다. 다시 입력해주세요!");
+            location.reload();
+        }
+        });
+        }
       },
-      
 
     }
   }

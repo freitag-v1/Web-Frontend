@@ -72,13 +72,6 @@ export default {
           var userId = this.userId;
           var password = this.password;
           this.$store.dispatch('LOGIN',{userId,password});
-          //console.log(this.$store.getters.getLoginState);
-          if(this.$store.getters.getLoginState != null) {
-              setTimeout(()=> {
-                            this.$router.push("/");
-              //alert("hello");
-                        },2000);   
-          }
           
          
         }

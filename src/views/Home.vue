@@ -156,9 +156,11 @@ export default {
           this.$router.push("/login");
         }
         else {
-          alert(this.selected);
+          if (this.selected == null) {
+            alert("원하는 검색 종류를 선택해주세요!");
+          }
+          else {
           var workType = this.selected.split("-");
-          alert(workType[0]+workType[1]);
           if(workType[0] == 'Labelling '){ //라벨링 작업인 경우 
              if(workType[1] == " Image Bounding Box")
              {
@@ -201,6 +203,7 @@ export default {
                   dataType: 'text',
                 }});
              }
+          }
           }
         }
       }

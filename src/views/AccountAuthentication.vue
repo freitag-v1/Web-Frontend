@@ -9,6 +9,7 @@
         <br/>
         <b-button href='/signup' class="button" variant="outline-primary" style="font-size: 18px;">Prev</b-button>
         <b-button class="button" v-on:click ="signUpComplete" variant="outline-primary" style="font-size: 18px;">complete</b-button>
+        <!--signup complete 이 부분 계좌인증 안받으면 보이지 않도록 v-if해서 설정해야-->
     </div>
     <div class = "afterAuthentication" v-if="Authentication">
         <SignUpComplete></SignUpComplete>

@@ -7,7 +7,7 @@
         <b-card-img src="https://picsum.photos/400/400/?image=20" alt="Image" class="rounded-0"></b-card-img>
       </b-col>
        <b-col md="6">
-        <b-card-body title="Sign Up">
+        <b-card-body title="Modify Information">
     <b-form v-if="show">
       <b-form-group
         id="input-group-1"
