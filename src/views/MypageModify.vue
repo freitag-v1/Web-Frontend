@@ -14,18 +14,6 @@
         label-for="input-1"
         description="We'll never share your email with anyone else."
       >
-        
-        <b-form @submit.stop.prevent>
-        <label for="text-password">Your Password: </label> <!--password validation 여기서 해줌  -->
-        <b-input v-model= "userPassword" type="password" id="text-password"></b-input>
-        <b-form-invalid-feedback :state="userPasswordValidation">
-          Your password must be 8-20 characters long, contain letters and numbers, special characters and must not
-          contain spaces, or emoji.
-        </b-form-invalid-feedback>
-        <b-form-valid-feedback :state="userPasswordValidation">
-        Looks Good.
-        </b-form-valid-feedback>
-        </b-form>
 
       </b-form-group>
       <b-form-group id="input-group-2" label="Your Name:" label-for="input-2">
@@ -65,6 +53,7 @@
       <p>Your PhoneNumber</p>
       <VuePhoneNumberInput v-model="userPhonenumber" />
       <br/>
+      <b-button class="button" v-on:click = "modify" variant="outline-primary">계좌 변경</b-button>
       <b-button class="button" v-on:click = "modify" variant="outline-primary">Save</b-button>
       <br/>
       
