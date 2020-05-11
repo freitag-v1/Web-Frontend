@@ -57,9 +57,10 @@
                 placeholder="Choose a file or drop it here..."
                 drop-placeholder="Drop file here..."
                 hidden @change="onChangeImages"
+                accept="audio/*,image/*,text/*"
                 ></b-form-file>
                 <div class="mt-3">Selected file: {{ exampleContent ? exampleContent.name : '' }}</div>
-                <img id ="examplePreview" v-if="imageUrl" :src = "imageUrl"></img>
+                <img id ="examplePreview" v-if="imageUrl && this.selectedData == 'image'" :src = "imageUrl"></img>
                 <br>
                 <br>
                 <p>라벨링 데이터 업로드</p>
@@ -68,6 +69,7 @@
                     :state="Boolean(labellingContent)"
                     placeholder="Choose a file or drop it here..."
                     drop-placeholder="Drop file here..."
+                    accept="audio/*,image/*,text/*"
                     ></b-form-file>
                     <div class="mt-3" v-for="file in labellingContent">Selected file: {{ file ? file.name : '' }}</div>
                 </b-card-text>
@@ -108,6 +110,9 @@ export default {
         async createProject() {
             console.log(this.exampleContent);
             var userId = await localStorage.getItem('userId');
+            const config = {
+                            headers: { 'Content-type': 'multipart/form-data'}
+                };
             // if(this.name == null || this.selectedData == null || this.subject == null || this.wayContent == null || this.inputCondition == null
             // || this.description == null || this.conditionContent == null || this.selectedWork  == null || this.labellingContent == null){
             //     alert("프로젝트 생성을 위해 내용을 빠짐없이 작성해주세요.");
@@ -133,13 +138,13 @@ export default {
                 //         })
                 //         .then(response => new Buffer(response.data, 'binary').toString('base64'))
                 //   }
-                //이미지는 base64로 encoding해서 그냥 보내는거 그래서 작업이 image인 경우 이렇게 보낸다. 
+                //이미지는 base64로 encoding해서 그냥 보내는거 그래서 작업이 image인 경우 이렇게 보낸다. formdata로 보내거나 base64로 보내거나
                 if(this.selectedData == 'image'){
                     if(this.exampleContent != null){
                         const exampleUrl = URL.createObjectURL(this.exampleContent); //업로드 한 파일에 대해서 url을 만듦 
                         console.log(exampleUrl);
                         let buffer = new Buffer(exampleUrl);
-                        const base64ExampleUrl = buffer.toString('base64'); // url을 이용해서 http 통신을 위해 base64로 변형 
+                        var base64ExampleUrl = buffer.toString('base64'); // url을 이용해서 http 통신을 위해 base64로 변형 
                         console.log(base64ExampleUrl);
                         base64ExampleUrl = base64ExampleUrl.replace(/\r?\n?/g, ''); // 개행이 있으면 오류가 나서 없애서 보내야
                         base64ExampleUrl = base64ExampleUrl.trim();
@@ -161,7 +166,7 @@ export default {
                         base64LabellingUrl[i] = base64LabellingUrl[i].trim();
                         console.log(base64LabellingUrl[i]);
                     }
-                    const labellingData = new Array();
+                    var labellingData = new Array();
                     for(let i = 0; i < base64LabellingUrl.length; i++){
                         labellingData[i] = await axios.post("/api/project/labelling/data", {
                         headers: {'Content-type': 'application/x-www-form-urlencoded',},
@@ -169,14 +174,47 @@ export default {
                         })
                     }
                 }
+                else if (this.selectedData == 'audio'){
+                    //음성 파일인 예시 데이터 업로드 얘는 따로 base64 인코딩을 안하는 것 같은데...
+                    if(this.exampleContent != null){
+                        let exampleAudioData = new FormData();
+                        exampleAudioData.append('audiofile',this.exampleContent, this.exampleContent.name);
+                        const imageRes = axios.post("/api/project/example", exampleAudioData, config);
+
+                    }
+                    //음성 파일인 라벨링 데이터 업로드 
+                    let labelAudioData = new FormData();
+                    for(let i = 0; i < this.labellingContent.length; i++){
+                        labelAudioData.append('audiofile'+i, this.labellingContent[i], this.labellingContent[i].name);
+                        const audioRes = axios.post("/api/project/example", labelAudioData, config);
+                    }
+                }
+                else {
+                    //텍스트 파일인 예시 데이터 업로드 
+                    if(this.examplContent != null){
+                        let exampleTextData = new FormData();
+                        exampleTextData.append('textfile',this.exampleContent, this.exampleContent.name);
+                        const textRes = axios.post("/api/project/example", exampleTextData, config);
+                    }
+                    //텍스트 파일인 라벨링 데이터 업로드
+                    let labelTextData = new FormData();
+                    for(let i = 0; i < this.labellingContent.length; i++){
+                        labelTextData.append('textfile'+i, this.labellingContent[i], this.labellingContent[i].name);
+                        const textRes = axios.post("/api/project/example", labelTextData, config);
+                    }
+                }
+                alert("라벨링 프로젝트 생성 완료!");
+                this.$router.push("/project");//결제하는 페이지를 만들어서 이동하도록  
 
                 
             //}
         },
-        onChangeImages(e) {
-            console.log(e.target.files);
-            const file = e.target.files[0];
-            this.imageUrl = URL.createObjectURL(file);
+        onChangeImages(e) { 
+            if(this.selectedData == 'image'){
+                console.log(e.target.files);
+                const file = e.target.files[0];
+                this.imageUrl = URL.createObjectURL(file);
+            }
         }
     }
 }
