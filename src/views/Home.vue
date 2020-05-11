@@ -10,7 +10,7 @@
       <b-navbar-nav>
         <b-nav-item-dropdown text="Project" style="font-size: 18px;" right>
           <b-dropdown-item href="project" style="font-size: 18px;" >Project List</b-dropdown-item>
-          <b-dropdown-item href="#" style="font-size: 18px;">Project Create</b-dropdown-item>
+          <b-dropdown-item href="newProject" style="font-size: 18px;">Project Create</b-dropdown-item>
         </b-nav-item-dropdown>
         <b-nav-item href="#" link-classes="bar-font" style="font-size: 18px;">Colletion</b-nav-item>
         <b-nav-item-dropdown text="Labelling" style="font-size: 18px;" right>
@@ -29,26 +29,57 @@
             shadow
           >
           <div>
-            <b-form-select v-model="selected" class="mb-3">
-              <b-form-select-option-group label="라벨링 데이터 종류">
-                <b-form-select-option :value="'Labelling - Image Bounding Box'">이미지 바운딩 박스</b-form-select-option>
-                <b-form-select-option :value="'Labelling - Classification'">분류</b-form-select-option>
+            <b-form-select v-model="selectedProject" class="mb-3">
+              <b-form-select-option-group label="프로젝트 종류">
+                <b-form-select-option :value="'Labelling'">라벨링 프로젝트</b-form-select-option>
+                <b-form-select-option :value="'Collection'">수집 프로젝트</b-form-select-option>
                 </b-form-select-option-group>
-              <b-form-select-option-group label="수집 데이터 종류">
-                <b-form-select-option :value="'Collection - Image'">이미지</b-form-select-option>
-                <b-form-select-option :value="'Collection - Audio'">음성</b-form-select-option>
-                <b-form-select-option :value="'Collection - Text'">텍스트</b-form-select-option>
               </b-form-select-option-group>
             </b-form-select>
-
-          <div class="mt-2">Selected: <strong>{{ selected }}</strong></div>
-
+            <b-form-select v-if="selectedProject == 'Labelling'" v-model="searchType" class="mb-3">
+            <b-form-select-option-group label="검색 타입">
+                <b-form-select-option :value="'dataType'">데이터 종류</b-form-select-option>
+                <b-form-select-option :value="'levelType'">난이도</b-form-select-option>
+                <b-form-select-option :value="'workType'">작업 종류</b-form-select-option>
+              </b-form-select-option-group>
+            </b-form-select>
+            <b-form-select v-if="selectedProject == 'Collection'" v-model="searchType" class="mb-3">
+            <b-form-select-option-group label="검색 타입">
+                <b-form-select-option :value="'dataType'">데이터 종류</b-form-select-option>
+                <b-form-select-option :value="'levelType'">난이도</b-form-select-option>
+                <b-form-select-option :value="'subjectType'">주제</b-form-select-option>
+              </b-form-select-option-group>
+            </b-form-select>
+            <b-form-group label="난이도 별 검색" v-if="searchType == 'levelType'">
+            <b-form-checkbox-group id="checkbox-group-2" v-model="selectedLevel" name="flavour-2">
+              <b-form-checkbox value="상">상</b-form-checkbox>
+              <b-form-checkbox value="중">중</b-form-checkbox>
+              <b-form-checkbox value="하">하</b-form-checkbox>
+              <b-form-checkbox value="미정">미정</b-form-checkbox>
+            </b-form-checkbox-group>
+          </b-form-group>
+          <b-form-select v-if="searchType == 'dataType'" v-model="selectedData" class="mb-3">
+            <b-form-select-option-group label="데이터 타입">
+                <b-form-select-option :value="'image'">이미지</b-form-select-option>
+                <b-form-select-option :value="'audio'">음성</b-form-select-option>
+                <b-form-select-option :value="'text'">텍스트</b-form-select-option>
+              </b-form-select-option-group>
+            </b-form-select>
+            <b-form-select v-if="searchType == 'workType' && selectedProject == 'Labelling'" v-model="selectedWork" class="mb-3">
+            <b-form-select-option-group label="작업 종류">
+                <b-form-select-option :value="'Bounding'">이미지 바운딩 박스</b-form-select-option>
+                <b-form-select-option :value="'Classification'">분류</b-form-select-option>
+              </b-form-select-option-group>
+            </b-form-select>
+            <b-form-input size="sm" class="mr-sm-2" placeholder="Search" v-model="selectedSubject" v-if="searchType == 'subjectType' && selectedProject == 'Collection'"></b-form-input>
+          <br>
+          <br>
           <b-button class="searchButton" v-on:click = "search" variant="outline-primary">Search</b-button>
         </div>
+        
         </b-sidebar>
         </b-nav-form>
         </b-nav-item-dropdown>
-
         <b-nav-item-dropdown right>
           <template v-slot:button-content>
             <em>User</em>
@@ -133,7 +164,13 @@ export default {
   data() {
     return {
       loginStatus: '',
-      selected: null
+      selected: null,
+      selectedLevel: null,
+      searchType: null,
+      selectedProject: null,
+      selectedData : null,
+      selectedWork: null,
+      selectedSubject: null,
   }
   },
   async beforeCreate() {
@@ -156,60 +193,25 @@ export default {
           this.$router.push("/login");
         }
         else {
-          if (this.selected == null) {
+          if (this.selectedProject == null) {
             alert("원하는 검색 종류를 선택해주세요!");
           }
           else {
-          var workType = this.selected.split("-");
-          if(workType[0] == 'Labelling '){ //라벨링 작업인 경우 
-             if(workType[1] == " Image Bounding Box")
-             {
-                this.$router.push({name:"Project", //프로젝트 목록으로 이동 
-                params: {
-                  workType: "image bounding box",
-                  dataType: null,
-                }});
-             }
-             else if(workType[1] == " Classification")
-             {
-                this.$router.push({name: "Project",
-                params: {
-                  workType: "classification",
-                  dataType: null,
-                }});
-             }
+            this.$router.push({name: "Project",
+              params: {
+                projectType : this.selectedProject,
+                workType : this.selectedWork,
+                dataType: this.selectedData,
+                difficulty : this.selectedLevel,
+                subject : this.selectedSubject,
+              }
+            })
           }
-          else {
-             if(workType[1] == " Image")
-             {
-                this.$router.push({name:"Project", //프로젝트 목록으로 이동 
-                params: {
-                  workType: "collection",
-                  dataType: 'image',
-                }});
-             }
-              else if(workType[1] == " Audio")
-             {
-                this.$router.push({name:"Project", //프로젝트 목록으로 이동 
-                params: {
-                  workType: "collection",
-                  dataType: 'audio',
-                }});
-             }
-             else {
-                this.$router.push({name:"Project", //프로젝트 목록으로 이동 
-                params: {
-                  workType: "collection",
-                  dataType: 'text',
-                }});
-             }
-          }
+          
           }
         }
-      }
-     //alert(this.$store.getters.getLoginStatus);
-  },
-
+      },
+     
 }
 </script>
 <style>

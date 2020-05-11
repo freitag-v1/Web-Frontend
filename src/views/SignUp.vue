@@ -115,7 +115,7 @@
         return this.userId.length > 4 && this.userId.length < 13
       },
       userEmailValidation() { // email에는 @이 필수 요소니까 @ 여부로 validation
-        return this.userEmail.includes('@');
+        return this.userEmail.includes('@') && this.userEmail.includes('.com') && this.userEmail.includes('.kr');
       },
       userPasswordValidation() {
         var pattern1 = /[0-9]/;
@@ -145,7 +145,7 @@
             alert("정보를 모두 입력해주세요!");
           }
           else {
-            console.log(typeof(this.userId),typeof(this.userPassword), typeof(this.userEmail),typeof(this.userName), typeof(this.userAffiliation),typeof(this.userPhonenumber));
+            //console.log(typeof(this.userId),typeof(this.userPassword), typeof(this.userEmail),typeof(this.userName), typeof(this.userAffiliation),typeof(this.userPhonenumber));
         const userDataRes = await axios.get("/api/signup",  
         { params: {
             userId : this.userId,

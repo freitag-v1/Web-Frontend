@@ -14,18 +14,6 @@
         label-for="input-1"
         description="We'll never share your email with anyone else."
       >
-        
-        <b-form @submit.stop.prevent>
-        <label for="text-password">Your Password: </label> <!--password validation 여기서 해줌  -->
-        <b-input v-model= "userPassword" type="password" id="text-password"></b-input>
-        <b-form-invalid-feedback :state="userPasswordValidation">
-          Your password must be 8-20 characters long, contain letters and numbers, special characters and must not
-          contain spaces, or emoji.
-        </b-form-invalid-feedback>
-        <b-form-valid-feedback :state="userPasswordValidation">
-        Looks Good.
-        </b-form-valid-feedback>
-        </b-form>
 
       </b-form-group>
       <b-form-group id="input-group-2" label="Your Name:" label-for="input-2">
@@ -65,6 +53,7 @@
       <p>Your PhoneNumber</p>
       <VuePhoneNumberInput v-model="userPhonenumber" />
       <br/>
+      <b-button class="button" v-on:click = "modify" variant="outline-primary">계좌 변경</b-button>
       <b-button class="button" v-on:click = "modify" variant="outline-primary">Save</b-button>
       <br/>
       
@@ -92,11 +81,11 @@ import axios from 'axios';
     data() {
       return {
         show: true,
-        userPassword:'',
         userEmail: '',
         userAffiliation: '',
         userName: '',
         userPhonenumber: '',
+
       }
     },
     async beforeCreate() {
@@ -108,23 +97,34 @@ import axios from 'axios';
       }
     },
     computed: {
-      userEmailValidation() { // email에는 @이 필수 요소니까 @ 여부로 validation
-        return this.userEmail.includes('@');
+      userEmailValidation() { // email에는 @이 필수 요소니까 @ 여부로 validation, 그리고 .com 과 .kr 로 끝나는지를 확인
+        return this.userEmail.includes('@') && this.userEmail.includes('.com') && this.userEmail.includes('.kr');
       },
-      userPasswordValidation() {
-        var pattern1 = /[0-9]/;
-        var pattern2 = /[a-zA-Z]/;
-        var pattern3 = /[~!@\#$%<>^&*]/;     // 원하는 특수문자 추가 제거
-       if(!pattern1.test(this.userPassword)||!pattern2.test(this.userPassword)||!pattern3.test(this.userPassword)){
-          return false; //숫자, 영문, 특수문자가 포함되었는지 
-       }
-        return this.userPassword.length > 7 && this.userPassword.length < 21; // 8~ 20자인지 길이 검증 
-      }
     },
     methods: {
-        modify() {
-            // 수정된 데이터를 put하던가해서 수정하고
-            alert("hello");
+        async modify() {
+            const modifyRes = await axios.put("/api/mypage/update", {
+              param : {
+                userName : this.userName,
+                userEmail : this.userEmail,
+                userAffiliation : this.userAffiliation,
+                userPhone : this.userPhonenumber
+              }
+            })
+            .then(res => {
+              console.log(res.data);
+              if(res.data == "수정 완료"){
+                
+                  alert("수정이 완료되었습니다.");
+                  setTimeout(()=> {
+                    this.$router.push("/");
+                    },2000);  
+              }
+              else {
+                alert("수정을 실패하였습니다.");
+              }
+            })
+
 
         },
     },

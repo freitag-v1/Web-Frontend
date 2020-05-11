@@ -7,6 +7,9 @@ import Account from '../views/AccountAuthentication.vue'
 import Project from '../views/Project.vue'
 import Mypage from '../views/Mypage.vue'
 import MypageModify from '../views/MypageModify.vue'
+import CreateProject from '../views/CreateProject.vue'
+import CreateCollection from '../views/CreateCollection.vue'
+import CreateLabelling from '../views/CreateLabelling.vue'
 
 Vue.use(VueRouter)
 
@@ -45,6 +48,21 @@ Vue.use(VueRouter)
     path:'/mypage/modify',
     name: 'MypageModify',
     component: MypageModify
+  }, 
+  {
+    path:'/newProject',
+    name: 'NewProject',
+    component: CreateProject, 
+  },
+  {
+    path:'/project/collection',
+    name: 'CreateCollection',
+    component: CreateCollection, 
+  },
+  {
+    path:'/project/labelling',
+    name: 'CreateLabelling',
+    component: CreateLabelling, 
   },
 
 
