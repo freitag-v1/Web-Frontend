@@ -9,7 +9,7 @@
     class = "userInfo"
   >
     <b-card-body id="userInfoBody">
-      <b-card-title id="userName">{{user.username + "'s Profile"}}</b-card-title>
+      <b-card-title id="userName">{{user.userName + "'s Profile"}}</b-card-title>
       <b-avatar id ="profilePicture" src="https://placekitten.com/300/300" size="6rem" style="margin-top: 20px;"></b-avatar>
       <div class = "userDetail">
       <br>
@@ -110,6 +110,14 @@ export default {
     });
     this.user = userInfo.data;
     console.log(userInfo.data);
+    // v-for해서 프로젝트 리스트 변수 생성하고 여기서 받아온 리스트 넣기  
+    // const projectList = await axios.get("/api/projectList", {
+    //   params: {
+    //     userId : userId,
+    //   }
+    // });
+    // 이런식으로 나중에는 workList도 가져와야한다!
+
     //this.userName = userInfo.data.userName; 이런식으로 가져와서 넣으면 된다. 포인트도 포함
   },
   computed: {

@@ -81,11 +81,11 @@ import axios from 'axios';
     data() {
       return {
         show: true,
-        userPassword:'',
         userEmail: '',
         userAffiliation: '',
         userName: '',
         userPhonenumber: '',
+
       }
     },
     async beforeCreate() {
@@ -97,23 +97,34 @@ import axios from 'axios';
       }
     },
     computed: {
-      userEmailValidation() { // email에는 @이 필수 요소니까 @ 여부로 validation
-        return this.userEmail.includes('@');
+      userEmailValidation() { // email에는 @이 필수 요소니까 @ 여부로 validation, 그리고 .com 과 .kr 로 끝나는지를 확인
+        return this.userEmail.includes('@') && this.userEmail.includes('.com') && this.userEmail.includes('.kr');
       },
-      userPasswordValidation() {
-        var pattern1 = /[0-9]/;
-        var pattern2 = /[a-zA-Z]/;
-        var pattern3 = /[~!@\#$%<>^&*]/;     // 원하는 특수문자 추가 제거
-       if(!pattern1.test(this.userPassword)||!pattern2.test(this.userPassword)||!pattern3.test(this.userPassword)){
-          return false; //숫자, 영문, 특수문자가 포함되었는지 
-       }
-        return this.userPassword.length > 7 && this.userPassword.length < 21; // 8~ 20자인지 길이 검증 
-      }
     },
     methods: {
-        modify() {
-            // 수정된 데이터를 put하던가해서 수정하고
-            alert("hello");
+        async modify() {
+            const modifyRes = await axios.put("/api/mypage/update", {
+              param : {
+                userName : this.userName,
+                userEmail : this.userEmail,
+                userAffiliation : this.userAffiliation,
+                userPhone : this.userPhonenumber
+              }
+            })
+            .then(res => {
+              console.log(res.data);
+              if(res.data == "수정 완료"){
+                
+                  alert("수정이 완료되었습니다.");
+                  setTimeout(()=> {
+                    this.$router.push("/");
+                    },2000);  
+              }
+              else {
+                alert("수정을 실패하였습니다.");
+              }
+            })
+
 
         },
     },
