@@ -44,7 +44,7 @@ export default new Vuex.Store({
     },
     actions: {
         async LOGIN({commit},{userId, password}){
-                axios.get("/api/login?userId="+userId+"&userPassword="+password)
+                axios.get("/api/user/login?userId="+userId+"&userPassword="+password)
                 .then(res => {
                     console.log(res.headers.authorization);
                     var token = res.headers.authorization;

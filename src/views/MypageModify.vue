@@ -71,7 +71,7 @@ import VuePhoneNumberInput from 'vue-phone-number-input';
 import axios from 'axios';
 
 
-
+var user = null;
 
   export default {
     name: 'MypageModify',
@@ -95,6 +95,7 @@ import axios from 'axios';
           alert("로그인이 필요한 페이지입니다.")
           this.$router.push("/login"); 
       }
+      user = this.$route.params
     },
     computed: {
       userEmailValidation() { // email에는 @이 필수 요소니까 @ 여부로 validation, 그리고 .com 과 .kr 로 끝나는지를 확인
@@ -103,7 +104,7 @@ import axios from 'axios';
     },
     methods: {
         async modify() {
-            const modifyRes = await axios.put("/api/mypage/update", {
+            const modifyRes = await axios.put("/api/user/mypage/update", {
               param : {
                 userName : this.userName,
                 userEmail : this.userEmail,

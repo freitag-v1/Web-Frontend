@@ -68,7 +68,7 @@ export default {
         }
         //else해서 axios.post("/api/login", {id:userId, pwd: this.password}) 이렇게 보내기
         else {
-          console.log("/api/login?userId="+this.userId+"&userPassword="+this.password);
+          console.log("/api/user/login?userId="+this.userId+"&userPassword="+this.password);
           var userId = this.userId;
           var password = this.password;
           this.$store.dispatch('LOGIN',{userId,password});
