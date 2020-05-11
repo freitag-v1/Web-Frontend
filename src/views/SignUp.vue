@@ -146,7 +146,7 @@
           }
           else {
             //console.log(typeof(this.userId),typeof(this.userPassword), typeof(this.userEmail),typeof(this.userName), typeof(this.userAffiliation),typeof(this.userPhonenumber));
-        const userDataRes = await axios.get("/api/user/signup",  
+        const userDataRes = await axios.get("/api/signup",  
         { params: {
             userId : this.userId,
             userPassword: this.userPassword,

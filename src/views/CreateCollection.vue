@@ -97,13 +97,14 @@ export default {
             var userId = await localStorage.getItem('userId');
             alert(userId);
             if(this.name == null || this.selectedData == null || this.subject == null || this.wayContent == null 
-            || this.description == null || this.conditionContent == null){
+            || this.description == null || this.conditionContent == null || this.totalData == null){
                 alert("프로젝트 생성을 위해 내용을 빠짐없이 작성해주세요.");
             }
             else {
-                const projectRes = await axios.post("/api/project/collection", {
+                console.log(this.name, this.selectedData, this.subject, this.wayContent, this.description, this.conditionContent, this.totalData);
+                const projectRes = await axios.post("/api/project/collection","", {
                     params : {
-                        name : this.name,
+                        projectName : this.name,
                         dataType : this.selectedData,
                         subject : this.subject,
                         wayContent : this.wayContent,
@@ -111,7 +112,7 @@ export default {
                         description : this.description,
                         userId : userId,
                         workType : 'collection',
-                        totalData: Number(this.totalData),
+                        totalData: this.totalData,
                     }
                 });
                 //이미지 예시데이터 업로드 
@@ -132,7 +133,7 @@ export default {
                         if(this.exampleContent != null){
                             //alert("hello");
                             let exampleImageData = new FormData();
-                            exampleImageData.append('file',this.exampleContent[i]);
+                            exampleImageData.append('file',this.exampleContent);
                             const imageRes = await axios.post("/api/project/upload/example", exampleImageData, config); 
                             
                         }
@@ -154,7 +155,7 @@ export default {
                         }
                     }
                     alert("수집 프로젝트 생성 완료!");
-                    //this.$router.push("/project");//결제하는 페이지를 만들어서 이동하도록 
+                    this.$router.push("/project");//결제하는 페이지를 만들어서 이동하도록 
                 }
                 else {
                     alert("수집 프로젝트 생성 실패");

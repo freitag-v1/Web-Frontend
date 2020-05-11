@@ -155,6 +155,7 @@ export default {
                         // });
                         let exampleImageData = new FormData();
                         exampleImageData.append('file',this.examplContent, this.examplContent.name);
+                        exampleImageData.append('bucketName', )
                         const imageRes = await axios.post("/api/project/upload/example", exampleImageData, config);
 
                     }

@@ -21,6 +21,7 @@
 import SignUpComplete from '../components/SignUpComplete';
 import axios from 'axios';
   var state = null;
+  var userId = null;
   export default {
     name: 'SignUp',
     components: {
@@ -34,34 +35,23 @@ import axios from 'axios';
     async beforeCreate () {
       state = await localStorage.bankState;
       alert(state);
+      //axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
+      //userId = await localStorage.getItem('userId');
     },
     methods: {
-        signUpComplete() {
-            var count = 3;
+        async signUpComplete() {
             this.Authentication = true;
-            alert("3초 뒤에 로그인 페이지로 이동합니다.");
-            setTimeout(()=> {
-                this.$router.push("/login");
-                },3000);   
+                alert("3초 뒤에 로그인 페이지로 이동합니다.");
+              setTimeout(()=> {
+                  this.$router.push("/login");
+                  },3000);   
+
         },
         async accountAuthenticate() {
-          const accountRes = await axios.get("https://testapi.openbanking.or.kr/oauth/2.0/authorize?auth_type=0&scope=login+transfer+inquiry&response_type=code&redirect_uri=http%3a%2f%2fwodnd999999.iptime.org%3a8080%2fexternalapi%2fopenbanking%2foauth%2ftoken&lang=kor&state="+state+"&client_id=XXyvh2Ij7l9rss0HAVObS880qY3penX57JXkib9q",
-          headers: {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type, Authorization",
-            "Access-Control-Allow-Credentials": "true"
-          });
-//           return fetch('https://dev.jazz.com/api/stuff_goes_here', {
-//   method: 'post',
-//   body: JSON.stringify(<request object goes here>)
-// }).then((res) => res.json())
-// .then((data) => {
-//   return data;
-// }).catch((err)=>console.log(err))
+            window.open("https://testapi.openbanking.or.kr/oauth/2.0/authorize?auth_type=0&scope=login+transfer+inquiry&response_type=code&redirect_uri=http%3a%2f%2fwodnd999999.iptime.org%3a8080%2fexternalapi%2fopenbanking%2foauth%2ftoken&lang=kor&state="+state+"&client_id=XXyvh2Ij7l9rss0HAVObS880qY3penX57JXkib9q");
+            
         },
-    }
+    },
 
   }
 </script>

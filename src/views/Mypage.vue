@@ -17,12 +17,6 @@
         {{"Email: " + user.userEmail}}
         <br>
         <br>
-        {{"Account: " + user.userAccount}}
-        <br>
-        <br>
-        {{    "Bank: " + user.userBank}}
-        <br>
-        <br>
         {{"Phone Number: " + user.userPhone}}
         <br>
         <br>
@@ -98,17 +92,13 @@ export default {
   },
   async beforeCreate() {
     var loginStatus = await localStorage.getItem('loginState');
-    var userId = await localStorage.getItem('userId');
+    //var userId = await localStorage.getItem('userId');
     axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
       if(!loginStatus) {
           alert("로그인이 필요한 페이지입니다.")
           this.$router.push("/"); 
       }
-    const userInfo = await axios.get("/api/user/mypage", {
-        params: {
-            userId : userId,
-        }
-    });
+    const userInfo = await axios.get("/api/mypage");
     this.user = userInfo.data;
     this.userPoint = userInfo.headers.point;
     console.log(userInfo.data);
