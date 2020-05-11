@@ -17,12 +17,6 @@
         {{"Email: " + user.userEmail}}
         <br>
         <br>
-        {{"Account: " + user.userAccount}}
-        <br>
-        <br>
-        {{    "Bank: " + user.userBank}}
-        <br>
-        <br>
         {{"Phone Number: " + user.userPhone}}
         <br>
         <br>
@@ -37,7 +31,7 @@
       </b-list-group-item>
       <b-list-group-item id="userPoint">
       <img id = "pointLogo" src ="../assets/point.jpg">
-      {{"포인트"}}</b-list-group-item>
+      {{"포인트 :"+ userPoint}}</b-list-group-item>
     </b-list-group>
     <b-card-body>
       <a href="#" class="card-link" id ="pointExchange">포인트 환전</a>
@@ -93,22 +87,20 @@ export default {
       return {
         user: '',
         userPassword: '',
+        userPoint: '',
       }
   },
   async beforeCreate() {
     var loginStatus = await localStorage.getItem('loginState');
-    var userId = await localStorage.getItem('userId');
+    //var userId = await localStorage.getItem('userId');
     axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
       if(!loginStatus) {
           alert("로그인이 필요한 페이지입니다.")
           this.$router.push("/"); 
       }
-    const userInfo = await axios.get("/api/mypage", {
-        params: {
-            userId : userId,
-        }
-    });
+    const userInfo = await axios.get("/api/mypage");
     this.user = userInfo.data;
+    this.userPoint = userInfo.headers.point;
     console.log(userInfo.data);
     // v-for해서 프로젝트 리스트 변수 생성하고 여기서 받아온 리스트 넣기  
     // const projectList = await axios.get("/api/projectList", {
@@ -131,7 +123,10 @@ export default {
   },
   methods : {
       modifyInfo() {
-          this.$router.push("/mypage/modify");
+          this.$router.push({name: "MypageModify", 
+          params : {
+            user: this.user,
+          }});
       },
 
   }

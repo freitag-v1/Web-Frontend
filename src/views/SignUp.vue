@@ -154,12 +154,12 @@
             userName: this.userName,
             userAffiliation : this.userAffiliation,
             userPhone : this.userPhonenumber,
-            userBank: "123",
-            userAccount: "229301",
-        }}).then(res => {
+        }}).then(res => { //여기서 response header 가져와서 
             setTimeout(()=> {
+            localStorage.bankState = res.headers.state;
             this.$router.push("/signup/account");
-                            //alert("hello");
+                console.log(res.headers.state); //state 저장
+                
             },500);
         })
         .catch(function(error) {

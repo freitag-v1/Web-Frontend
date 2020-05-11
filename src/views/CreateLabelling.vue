@@ -28,8 +28,8 @@
                 <p>프로젝트 라벨링 작업 종류 선택</p>
                 <b-form-select v-model="selectedWork" class="workTypeForm">
                 <b-form-select-option-group label="작업 종류">
-                    <b-form-select-option :value="'Bounding'">이미지 바운딩 박스</b-form-select-option>
-                    <b-form-select-option :value="'Classification'">분류</b-form-select-option>
+                    <b-form-select-option :value="'boundingBox'">이미지 바운딩 박스</b-form-select-option>
+                    <b-form-select-option :value="'classification'">분류</b-form-select-option>
                 </b-form-select-option-group>
                 </b-form-select>
             <br>
@@ -118,7 +118,7 @@ export default {
             //     alert("프로젝트 생성을 위해 내용을 빠짐없이 작성해주세요.");
             // }
             // else {
-                // const projectRes = await axios.post("/api/project/collection", {
+                // const projectRes = awai= await axios.post("/api/project/collection", {
                 //     params : {
                 //         name : this.name,
                 //         dataType : this.selectedData,
@@ -132,7 +132,7 @@ export default {
                 // });
                 // 이미지 가져오면 디코딩해서 보여주는 역할 
                 // function getBase64(url) {
-                //     return axios
+                //     retur= await axios
                 //         .get(url, {
                 //         responseType: 'arraybuffer'
                 //         })
@@ -141,66 +141,77 @@ export default {
                 //이미지는 base64로 encoding해서 그냥 보내는거 그래서 작업이 image인 경우 이렇게 보낸다. formdata로 보내거나 base64로 보내거나
                 if(this.selectedData == 'image'){
                     if(this.exampleContent != null){
-                        const exampleUrl = URL.createObjectURL(this.exampleContent); //업로드 한 파일에 대해서 url을 만듦 
-                        console.log(exampleUrl);
-                        let buffer = new Buffer(exampleUrl);
-                        var base64ExampleUrl = buffer.toString('base64'); // url을 이용해서 http 통신을 위해 base64로 변형 
-                        console.log(base64ExampleUrl);
-                        base64ExampleUrl = base64ExampleUrl.replace(/\r?\n?/g, ''); // 개행이 있으면 오류가 나서 없애서 보내야
-                        base64ExampleUrl = base64ExampleUrl.trim();
-                        //이미지 파일 전송 
-                        const exampleData = await axios.post("/api/project/example", {
-                                headers: {'Content-type': 'application/x-www-form-urlencoded',},
-                                imageName: this.exampleContent.name, imageData: base64ExampleUrl
-                        });
+                        // const exampleUrl = URL.createObjectURL(this.exampleContent); //업로드 한 파일에 대해서 url을 만듦 
+                        // console.log(exampleUrl);
+                        // let buffer = new Buffer(exampleUrl);
+                        // var base64ExampleUrl = buffer.toString('base64'); // url을 이용해서 http 통신을 위해 base64로 변형 
+                        // console.log(base64ExampleUrl);
+                        // base64ExampleUrl = base64ExampleUrl.replace(/\r?\n?/g, ''); // 개행이 있으면 오류가 나서 없애서 보내야
+                        // base64ExampleUrl = base64ExampleUrl.trim();
+                        // //이미지 파일 전송 
+                        // const exampleData = awai= await axios.post("/api/project/upload/example", {
+                        //         headers: {'Content-type': 'application/x-www-form-urlencoded',},
+                        //         imageName: this.exampleContent.name, imageData: base64ExampleUrl
+                        // });
+                        let exampleImageData = new FormData();
+                        exampleImageData.append('file',this.examplContent, this.examplContent.name);
+                        exampleImageData.append('bucketName', )
+                        const imageRes = await axios.post("/api/project/upload/example", exampleImageData, config);
+
                     }
-                    //라벨링 데이터 파일 => url
-                    var labellingUrl = new Array();
-                    var base64LabellingUrl = new Array();
-                    //const labellingUrl = URL.createObjectURL(this.labellingContent);
-                    for(let i = 0; i < this.labellingContent.length; i++){ //여러개니까 반복문을 이용해서 하나하나
-                        labellingUrl[i] = URL.createObjectURL(this.labellingContent[i]);
-                        let buffer = new Buffer(labellingUrl[i]);
-                        base64LabellingUrl[i] = buffer.toString('base64');
-                        base64LabellingUrl[i] = base64LabellingUrl[i].replace(/\r?\n?/g, '');
-                        base64LabellingUrl[i] = base64LabellingUrl[i].trim();
-                        console.log(base64LabellingUrl[i]);
+                    // //라벨링 데이터 파일 => url
+                    // var labellingUrl = new Array();
+                    // var base64LabellingUrl = new Array();
+                    // //const labellingUrl = URL.createObjectURL(this.labellingContent);
+                    // for(let i = 0; i < this.labellingContent.length; i++){ //여러개니까 반복문을 이용해서 하나하나
+                    //     labellingUrl[i] = URL.createObjectURL(this.labellingContent[i]);
+                    //     let buffer = new Buffer(labellingUrl[i]);
+                    //     base64LabellingUrl[i] = buffer.toString('base64');
+                    //     base64LabellingUrl[i] = base64LabellingUrl[i].replace(/\r?\n?/g, '');
+                    //     base64LabellingUrl[i] = base64LabellingUrl[i].trim();
+                    //     console.log(base64LabellingUrl[i]);
+                    // }
+                    // var labellingData = new Array();
+                    // for(let i = 0; i < base64LabellingUrl.length; i++){
+                    //     labellingData[i] = await axios.post("/api/project/labelling/data", {
+                    //     headers: {'Content-type': 'application/x-www-form-urlencoded',},
+                    //     imageName: this.labellingContent[i].name, imageData
+                    //     })
+                    // }
+                    let labelImageData = new FormData();
+                    for(let i = 0; i < this.labellingContent.length; i++){
+                        labelImageData.append('imagefile'+i, this.labellingContent[i], this.labellingContent[i].name);
+                        const imageRes = await axios.post("/api/project/labelling/data", labelImageData,config);
                     }
-                    var labellingData = new Array();
-                    for(let i = 0; i < base64LabellingUrl.length; i++){
-                        labellingData[i] = await axios.post("/api/project/labelling/data", {
-                        headers: {'Content-type': 'application/x-www-form-urlencoded',},
-                        imageName: this.labellingContent[i].name, imageData
-                        })
-                    }
+
                 }
                 else if (this.selectedData == 'audio'){
                     //음성 파일인 예시 데이터 업로드 얘는 따로 base64 인코딩을 안하는 것 같은데...
                     if(this.exampleContent != null){
                         let exampleAudioData = new FormData();
-                        exampleAudioData.append('audiofile',this.exampleContent, this.exampleContent.name);
-                        const imageRes = axios.post("/api/project/example", exampleAudioData, config);
+                        exampleAudioData.append('file',this.exampleContent, this.exampleContent.name);
+                        const imageRes = await axios.post("/api/project/upload/example",exampleAudioData,config);
 
                     }
                     //음성 파일인 라벨링 데이터 업로드 
                     let labelAudioData = new FormData();
                     for(let i = 0; i < this.labellingContent.length; i++){
                         labelAudioData.append('audiofile'+i, this.labellingContent[i], this.labellingContent[i].name);
-                        const audioRes = axios.post("/api/project/example", labelAudioData, config);
+                        const audioRes = await axios.post("/api/project/labelling/data", labelAudioData, config);
                     }
                 }
                 else {
                     //텍스트 파일인 예시 데이터 업로드 
                     if(this.examplContent != null){
                         let exampleTextData = new FormData();
-                        exampleTextData.append('textfile',this.exampleContent, this.exampleContent.name);
-                        const textRes = axios.post("/api/project/example", exampleTextData, config);
+                        exampleTextData.append('file',this.exampleContent, this.exampleContent.name);
+                        const textRes = await axios.post("/api/project/upload/example", exampleTextData, config);
                     }
                     //텍스트 파일인 라벨링 데이터 업로드
                     let labelTextData = new FormData();
                     for(let i = 0; i < this.labellingContent.length; i++){
                         labelTextData.append('textfile'+i, this.labellingContent[i], this.labellingContent[i].name);
-                        const textRes = axios.post("/api/project/example", labelTextData, config);
+                        const textRes = await axios.post("/api/project/labelling/data", labelTextData, config);
                     }
                 }
                 alert("라벨링 프로젝트 생성 완료!");

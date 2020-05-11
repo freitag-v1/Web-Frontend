@@ -4,7 +4,7 @@
         <br/>
         <img id="accountLogo" src="../assets/accountLogo.png"/>
         <br/>
-        <b-button class="button" variant="outline-primary" style="font-size: 18px; font-weight: bold">계좌 인증</b-button>
+        <b-button class="button" v-on:click="accountAuthenticate"variant="outline-primary" style="font-size: 18px; font-weight: bold">계좌 인증</b-button>
         <br/>
         <br/>
         <b-button href='/signup' class="button" variant="outline-primary" style="font-size: 18px;">Prev</b-button>
@@ -19,7 +19,9 @@
 </template>
 <script>
 import SignUpComplete from '../components/SignUpComplete';
-
+import axios from 'axios';
+  var state = null;
+  var userId = null;
   export default {
     name: 'SignUp',
     components: {
@@ -30,17 +32,26 @@ import SignUpComplete from '../components/SignUpComplete';
             Authentication: false,
         }
     },
+    async beforeCreate () {
+      state = await localStorage.bankState;
+      alert(state);
+      //axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
+      //userId = await localStorage.getItem('userId');
+    },
     methods: {
-        signUpComplete() {
-            var count = 3;
+        async signUpComplete() {
             this.Authentication = true;
-            alert("3초 뒤에 로그인 페이지로 이동합니다.");
-            setTimeout(()=> {
-                this.$router.push("/login");
-                },3000);   
-          
-        }
-    }
+                alert("3초 뒤에 로그인 페이지로 이동합니다.");
+              setTimeout(()=> {
+                  this.$router.push("/login");
+                  },3000);   
+
+        },
+        async accountAuthenticate() {
+            window.open("https://testapi.openbanking.or.kr/oauth/2.0/authorize?auth_type=0&scope=login+transfer+inquiry&response_type=code&redirect_uri=http%3a%2f%2fwodnd999999.iptime.org%3a8080%2fexternalapi%2fopenbanking%2foauth%2ftoken&lang=kor&state="+state+"&client_id=XXyvh2Ij7l9rss0HAVObS880qY3penX57JXkib9q");
+            
+        },
+    },
 
   }
 </script>

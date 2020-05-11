@@ -53,7 +53,7 @@
       <p>Your PhoneNumber</p>
       <VuePhoneNumberInput v-model="userPhonenumber" />
       <br/>
-      <b-button class="button" v-on:click = "modify" variant="outline-primary">계좌 변경</b-button>
+      <b-button class="button" v-on:click = "accountAuthentication" variant="outline-primary">계좌 변경</b-button>
       <b-button class="button" v-on:click = "modify" variant="outline-primary">Save</b-button>
       <br/>
       
@@ -71,7 +71,7 @@ import VuePhoneNumberInput from 'vue-phone-number-input';
 import axios from 'axios';
 
 
-
+var user = null;
 
   export default {
     name: 'MypageModify',
@@ -95,6 +95,7 @@ import axios from 'axios';
           alert("로그인이 필요한 페이지입니다.")
           this.$router.push("/login"); 
       }
+      user = this.$route.params.user;
     },
     computed: {
       userEmailValidation() { // email에는 @이 필수 요소니까 @ 여부로 validation, 그리고 .com 과 .kr 로 끝나는지를 확인
@@ -103,14 +104,21 @@ import axios from 'axios';
     },
     methods: {
         async modify() {
-            const modifyRes = await axios.put("/api/mypage/update", {
-              param : {
-                userName : this.userName,
-                userEmail : this.userEmail,
-                userAffiliation : this.userAffiliation,
-                userPhone : this.userPhonenumber
-              }
-            })
+            console.log(user.userName, user.userEmail, user.userAffiliation, user.userPhone);
+            var userNamedata = this.userName != '' ? this.userName : user.userName;
+            var userEmaildata = this.userEmail != '' ? this.userEmail : user.userEmail;
+            var userAffiliationdata = this.userAffiliation != '' ? this.userAffiliation : user.userAffiliation;
+            var userPhonedata = this.userPhonenumber != null ? this.userPhonenumber : user.userPhone;
+            console.log(userNamedata,userEmaildata,userAffiliationdata,userPhonedata);
+            const modifyRes = await axios.put("/api/mypage/update?userName="+userNamedata+"&userEmail="+userEmaildata+"&userAffiliation="+userAffiliationdata+"&userPhone="+userPhonedata
+              // params : {
+              //   userId: userId,
+              //   userName : userNamedata,
+              //   userEmail : userEmaildata,
+              //   userAffiliation : userAffiliationdata,
+              //   userPhone : userPhonedata,
+              // }
+            )
             .then(res => {
               console.log(res.data);
               if(res.data == "수정 완료"){
@@ -127,6 +135,11 @@ import axios from 'axios';
 
 
         },
+        async accountAuthentication() {
+            var state = await localStorage.getItem('bankState');
+            window.open("https://testapi.openbanking.or.kr/oauth/2.0/authorize?auth_type=0&scope=login+transfer+inquiry&response_type=code&redirect_uri=http%3a%2f%2fwodnd999999.iptime.org%3a8080%2fexternalapi%2fopenbanking%2foauth%2ftoken&lang=kor&state="+state+"&client_id=XXyvh2Ij7l9rss0HAVObS880qY3penX57JXkib9q");
+
+        }
     },
   }
 </script>

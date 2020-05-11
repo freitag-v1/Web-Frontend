@@ -29,6 +29,10 @@
             <b-form-input size="sm" class="inputSubject" placeholder="Subject" v-model="subject" ></b-form-input>
             <br>
             <br>
+            <p>희망하는 수집 데이터 갯수</p>
+            <b-form-input size="sm" class="inputSubject" placeholder="수집 데이터 갯수" v-model="totalData" ></b-form-input>
+            <br>
+            <br>
             <p>프로젝트 설명</p>
             <b-form-input  id="description" placeholder="description" v-model="description" ></b-form-input>
             <br>
@@ -42,7 +46,7 @@
             <br>
             <br>
             <p>예시 데이터 업로드</p>
-            <b-form-file
+            <b-form-file 
                 v-model="exampleContent"
                 :state="Boolean(exampleContent)"
                 placeholder="Choose a file or drop it here..."
@@ -70,11 +74,11 @@ export default {
             selectedData: null,
             subject: null,
             wayContent: null,
-            inputCondition: null,
             description: null,
             conditionContent: null,
             exampleContent: null,
             imageUrl: null,
+            totalData: 0,
         }
     },
     async beforeCreate() {
@@ -87,63 +91,77 @@ export default {
     methods : {
         async createProject() {
             console.log(this.exampleContent);
+            const config = {
+                    headers: { 'Content-type': 'multipart/form-data'}
+            };
             var userId = await localStorage.getItem('userId');
-            // const projectRes = await axios.post("/api/project/collection", {
-            //     params : {
-            //         name : this.name,
-            //         dataType : this.selectedData,
-            //         subject : this.subject,
-            //         wayContent : this.wayContent,
-            //         conditionContent : this.conditionContent,
-            //         description : this.description,
-            //         userId : userId,
-            //     }
-            // });
-            // 이미지 가져오면 디코딩해서 보여주는 역할 
-            // function getBase64(url) {
-            //     return axios
-            //         .get(url, {
-            //         responseType: 'arraybuffer'
-            //         })
-            //         .then(response => new Buffer(response.data, 'binary').toString('base64'))
-            //   }
-            //이미지 예시데이터 업로드 
-            if(this.selectedData == 'image'){
-                const exampleUrl = URL.createObjectURL(this.exampleContent); //업로드 한 파일에 대해서 url을 만듦 
-                console.log(exampleUrl);
-                let buffer = new Buffer(exampleUrl);
-                var base64ExampleUrl = buffer.toString('base64'); // url을 이용해서 http 통신을 위해 base64로 변형 
-                console.log(base64ExampleUrl);
-                base64ExampleUrl = base64ExampleUrl.replace(/\r?\n?/g, ''); // 개행이 있으면 오류가 나서 없애서 보내야
-                base64ExampleUrl = base64ExampleUrl.trim();
-                //이미지 파일 전송 
-                const exampleData = await axios.post("/api/project/example", {
-                        headers: {'Content-type': 'application/x-www-form-urlencoded',},
-                        imageName: this.exampleContent.name, imageData: base64ExampleUrl
-                });
+            alert(userId);
+            if(this.name == null || this.selectedData == null || this.subject == null || this.wayContent == null 
+            || this.description == null || this.conditionContent == null || this.totalData == null){
+                alert("프로젝트 생성을 위해 내용을 빠짐없이 작성해주세요.");
             }
-            else if (this.selectedData == 'audio'){
-                    //음성 파일인 예시 데이터 업로드 얘는 따로 base64 인코딩을 안하는 것 같은데...
-                    if(this.exampleContent != null){
-                        let data = new FormData();
-                        data.append('audiofile',this.exampleContent, this.exampleContent.name);
-
-                        const audioConfig = {
-                            headers: { 'Content-type': 'multipart/form-data'}
-                        };
-                        axios.post("/api/project/example", data, audioConfig);
-
+            else {
+                console.log(this.name, this.selectedData, this.subject, this.wayContent, this.description, this.conditionContent, this.totalData);
+                const projectRes = await axios.post("/api/project/collection","", {
+                    params : {
+                        projectName : this.name,
+                        dataType : this.selectedData,
+                        subject : this.subject,
+                        wayContent : this.wayContent,
+                        conditionContent : this.conditionContent,
+                        description : this.description,
+                        userId : userId,
+                        workType : 'collection',
+                        totalData: this.totalData,
                     }
-            }
-            else { //텍스트 파일인 예시 데이터 업로드 
-                if(this.examplContent != null){
-                        let exampleTextData = new FormData();
-                        exampleTextData.append('textfile',this.exampleContent, this.exampleContent.name);
-                        const textRes = axios.post("/api/project/example", exampleTextData, config);
+                });
+                //이미지 예시데이터 업로드 
+                if (projectRes.data == "성공"){
+                    if(this.selectedData == 'image'){
+                        // const exampleUrl = URL.createObjectURL(this.exampleContent); //업로드 한 파일에 대해서 url을 만듦 
+                        // console.log(exampleUrl);
+                        // let buffer = new Buffer(exampleUrl);
+                        // var base64ExampleUrl = buffer.toString('base64'); // url을 이용해서 http 통신을 위해 base64로 변형 
+                        // console.log(base64ExampleUrl);
+                        // base64ExampleUrl = base64ExampleUrl.replace(/\r?\n?/g, ''); // 개행이 있으면 오류가 나서 없애서 보내야
+                        // base64ExampleUrl = base64ExampleUrl.trim();
+                        // //이미지 파일 전송 
+                        // const exampleData = await axios.post("/api/project/upload/example", {
+                        //         headers: {'Content-type': 'application/x-www-form-urlencoded',},
+                        //         imageName, imageData: base64ExampleUrl
+                        // });
+                        if(this.exampleContent != null){
+                            //alert("hello");
+                            let exampleImageData = new FormData();
+                            exampleImageData.append('file',this.exampleContent);
+                            const imageRes = await axios.post("/api/project/upload/example", exampleImageData, config); 
+                            
+                        }
+                    }
+                    else if (this.selectedData == 'audio'){
+                            //음성 파일인 예시 데이터 업로드 얘는 따로 base64 인코딩을 안하는 것 같은데...
+                            if(this.exampleContent != null){
+                                let exampleAudioData = new FormData();
+                                exampleAudioData.append('file',this.exampleContent);
+
+                                const audioRes = await axios.post("/api/project/upload/example", exampleAudioData, config);
+                            }
+                    }
+                    else { //텍스트 파일인 예시 데이터 업로드 
+                        if(this.exampleContent != null){
+                                let exampleTextData = new FormData();
+                                exampleTextData.append('file',this.exampleContent);
+                                const textRes = await axios.post("/api/project/upload/example", exampleTextData, config);
+                        }
+                    }
+                    alert("수집 프로젝트 생성 완료!");
+                    this.$router.push("/project");//결제하는 페이지를 만들어서 이동하도록 
+                }
+                else {
+                    alert("수집 프로젝트 생성 실패");
                 }
             }
-            alert("수집 프로젝트 생성 완료!");
-            this.$router.push("/project");//결제하는 페이지를 만들어서 이동하도록 
+            
         },
         onChangeImages(e) {
                 console.log(e.target.files);
