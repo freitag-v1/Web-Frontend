@@ -34,7 +34,7 @@
       {{"포인트 :"+ userPoint}}</b-list-group-item>
     </b-list-group>
     <b-card-body>
-      <a href="#" class="card-link" id ="pointExchange">포인트 환전</a>
+      <button class="card-link" id ="pointExchange" v-on:click ="moveExchangePage">포인트 환전</button>
     </b-card-body>
   </b-card>
   </div>
@@ -102,6 +102,12 @@ export default {
     this.user = userInfo.data;
     this.userPoint = userInfo.headers.point;
     console.log(userInfo.data);
+    //출석 보상 기능을 할 때 userInfo.headers.uservisit에 접근해서 30 이하인 경우 출석 보상 받을 수 있다고 알려주기(iteration 5)
+    //if() // 계좌인증을 했는지 안했는지 여부를 state 랑 openbanking token 이거 여부를 알아야 가능한디 이거를 마이페이지
+      // 가져올 때 서버에서 넘겨줄지를 알려줘야 
+      // if(state != user.user_openbanking_access_token) 
+      // 참이면 다르면 계좌인증한 사람
+      // 거짓이면 계좌인증 안한 사람이니까 계좌 인증하라는 알림창 
     // v-for해서 프로젝트 리스트 변수 생성하고 여기서 받아온 리스트 넣기  
     // const projectList = await axios.get("/api/projectList", {
     //   params: {
@@ -128,6 +134,14 @@ export default {
             user: this.user,
           }});
       },
+      moveExchangePage() {
+        this.$router.push({name: "PointExchange", 
+          params : {
+            point : this.userPoint,
+            userName : this.user.userName,
+            userPassword : this.user.password,
+          }});
+      }
 
   }
   
@@ -186,6 +200,8 @@ export default {
 .passwordCheck{
   width : 350px;
 }
-
+#pointExchange {
+  width : 150px;
+}
 
 </style>

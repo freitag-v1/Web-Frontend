@@ -90,6 +90,7 @@ var user = null;
     },
     async beforeCreate() {
       var loginStatus = await localStorage.getItem('loginState');
+      var state = await localStorage.getItem('bankState');
       axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
       if(!loginStatus) {
           alert("로그인이 필요한 페이지입니다.")
@@ -120,8 +121,8 @@ var user = null;
               // }
             )
             .then(res => {
-              console.log(res.data);
-              if(res.data == "수정 완료"){
+              console.log(res.headers.update);
+              if(res.headers.update == "success"){
                 
                   alert("수정이 완료되었습니다.");
                   setTimeout(()=> {

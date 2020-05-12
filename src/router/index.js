@@ -10,6 +10,8 @@ import MypageModify from '../views/MypageModify.vue'
 import CreateProject from '../views/CreateProject.vue'
 import CreateCollection from '../views/CreateCollection.vue'
 import CreateLabelling from '../views/CreateLabelling.vue'
+import PointExchange from '../views/PointExchange.vue'
+import ProjectPayment from '../views/ProjectPayment.vue'
 
 Vue.use(VueRouter)
 
@@ -63,6 +65,16 @@ Vue.use(VueRouter)
     path:'/project/labelling',
     name: 'CreateLabelling',
     component: CreateLabelling, 
+  },
+  {
+    path:'/mypage/exchange',
+    name: 'PointExchange',
+    component: PointExchange, 
+  },
+  {
+    path:'/project/payment',
+    name: 'ProjectPayment',
+    component: ProjectPayment, 
   },
 
 

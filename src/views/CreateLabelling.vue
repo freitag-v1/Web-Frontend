@@ -38,6 +38,16 @@
             <b-form-input size="sm" class="inputSubject" placeholder="Subject" v-model="subject" ></b-form-input>
             <br>
             <br>
+            <p>원하는 라벨링 클래스</p>
+            <b-button variant="light" class="addClassButton" v-on:click="addClass">
+                    Add <b-icon icon="plus" aria-hidden="true"></b-icon>
+            </b-button>
+                <div v-for="data in dataClass">
+                    <b-form-input size="sm" id="inputClass" placeholder="라벨링 클래스" v-model="data.name" ></b-form-input>
+                    <br>
+                </div>
+            <br>
+            <br>
             <p>프로젝트 설명</p>
             <b-form-input  id="description" placeholder="description" v-model="description" ></b-form-input>
             <br>
@@ -97,6 +107,7 @@ export default {
             imageUrl: null,
             selectedWork: null,
             labellingContent: null,
+            dataClass: [{name : '라벨링 데이터'}],
         }
     },
     async beforeCreate() {
@@ -226,6 +237,15 @@ export default {
                 const file = e.target.files[0];
                 this.imageUrl = URL.createObjectURL(file);
             }
+        },
+        addClass() {
+            
+                this.dataClass.push({name:''});
+                console.log(this.dataClass);
+            
+            // else {
+            //     alert("원하는 수집 데이터를 입력해주세요!");
+            // }
         }
     }
 }
@@ -291,12 +311,26 @@ p {
 }
 #createLogo {
     width: 400px;
-    height: 70px;
+    height: 80px;
     margin : auto;
 }
 .workTypeForm {
     max-width: 200px;
     margin: auto;
+}
+#addClassIcon {
+    width: 30px;
+    height : 30px;
+    
+}
+.addClassButton {
+    float: right;
+    margin-right: 370px;
+    height: 30px;
+}
+#inputClass {
+    margin-left: 480px;
+    max-width: 200px;
 }
 
 </style>

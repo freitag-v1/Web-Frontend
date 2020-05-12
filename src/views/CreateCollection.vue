@@ -33,6 +33,16 @@
             <b-form-input size="sm" class="inputSubject" placeholder="수집 데이터 갯수" v-model="totalData" ></b-form-input>
             <br>
             <br>
+            <p>원하는 수집 데이터</p>
+            <b-button variant="light" class="addClassButton" v-on:click="addClass">
+                    Add <b-icon icon="plus" aria-hidden="true"></b-icon>
+            </b-button>
+                <div v-for="data in dataClass">
+                    <b-form-input size="sm" id="inputClass" placeholder="수집 데이터" v-model="data.name" ></b-form-input>
+                    <br>
+                </div>
+            <br>
+            <br>
             <p>프로젝트 설명</p>
             <b-form-input  id="description" placeholder="description" v-model="description" ></b-form-input>
             <br>
@@ -65,6 +75,7 @@
 </template>
 <script>
 import axios from 'axios';
+
 export default {
   name: 'CreateProject',
     data() {
@@ -79,10 +90,12 @@ export default {
             exampleContent: null,
             imageUrl: null,
             totalData: 0,
+            dataClass: [{name : '수집 데이터'}],
         }
     },
     async beforeCreate() {
       var loginStatus = await localStorage.getItem('loginState');
+      axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
       if(!loginStatus) {
           alert("로그인이 필요한 페이지입니다.")
           this.$router.push("/login"); 
@@ -97,11 +110,17 @@ export default {
             var userId = await localStorage.getItem('userId');
             alert(userId);
             if(this.name == null || this.selectedData == null || this.subject == null || this.wayContent == null 
-            || this.description == null || this.conditionContent == null || this.totalData == null){
+            || this.description == null || this.conditionContent == null || this.totalData == null || this.dataClass == null){
                 alert("프로젝트 생성을 위해 내용을 빠짐없이 작성해주세요.");
             }
             else {
-                console.log(this.name, this.selectedData, this.subject, this.wayContent, this.description, this.conditionContent, this.totalData);
+                console.log(this.name, this.selectedData, this.subject, this.wayContent, this.description, this.conditionContent, this.totalData, this.dataClass);
+                let classLength = this.dataClass.length;
+                if(this.dataClass[classLength -1].name == ""){
+                    this.dataClass.splice(classLength-1, 1);
+                }
+                 //맨 뒤에 빈 값이 들어가서 그거 삭제하는 역할
+                console.log(this.dataClass);
                 const projectRes = await axios.post("/api/project/collection","", {
                     params : {
                         projectName : this.name,
@@ -113,10 +132,13 @@ export default {
                         userId : userId,
                         workType : 'collection',
                         totalData: this.totalData,
+                        //className : JSON.stringify(this.dataClass), 배열은 이렇게 변환해서 보내야
                     }
                 });
                 //이미지 예시데이터 업로드 
-                if (projectRes.data == "성공"){
+                console.log(projectRes.headers.bucketname);
+                if (projectRes.headers.bucketname != null){
+                    axios.defaults.headers.common['bucketName'] = projectRes.headers.bucketName;
                     if(this.selectedData == 'image'){
                         // const exampleUrl = URL.createObjectURL(this.exampleContent); //업로드 한 파일에 대해서 url을 만듦 
                         // console.log(exampleUrl);
@@ -135,7 +157,12 @@ export default {
                             let exampleImageData = new FormData();
                             exampleImageData.append('file',this.exampleContent);
                             const imageRes = await axios.post("/api/project/upload/example", exampleImageData, config); 
-                            
+                            alert("수집 프로젝트 생성 완료!");
+                            this.$router.push({name: "ProjectPayment", 
+                                params : {
+                                    point: imageRes.headers.cost,
+                                    projectName : this.name,
+                                }});
                         }
                     }
                     else if (this.selectedData == 'audio'){
@@ -143,19 +170,29 @@ export default {
                             if(this.exampleContent != null){
                                 let exampleAudioData = new FormData();
                                 exampleAudioData.append('file',this.exampleContent);
-
                                 const audioRes = await axios.post("/api/project/upload/example", exampleAudioData, config);
+                                alert("수집 프로젝트 생성 완료!");
+                                 this.$router.push({name: "ProjectPayment", 
+                                params : {
+                                    point: audioRes.headers.cost,
+                                    projectName : this.name,
+                                }});
                             }
                     }
-                    else { //텍스트 파일인 예시 데이터 업로드 
+                    else  { //텍스트 파일인 예시 데이터 업로드 
                         if(this.exampleContent != null){
                                 let exampleTextData = new FormData();
                                 exampleTextData.append('file',this.exampleContent);
                                 const textRes = await axios.post("/api/project/upload/example", exampleTextData, config);
+                                alert("수집 프로젝트 생성 완료!");
+                                 this.$router.push({name: "ProjectPayment", 
+                                params : {
+                                    point: textRes.headers.cost,
+                                    projectName : this.name,
+                                }});
                         }
                     }
-                    alert("수집 프로젝트 생성 완료!");
-                    this.$router.push("/project");//결제하는 페이지를 만들어서 이동하도록 
+                    
                 }
                 else {
                     alert("수집 프로젝트 생성 실패");
@@ -167,6 +204,15 @@ export default {
                 console.log(e.target.files);
                 const file = e.target.files[0];
                 this.imageUrl = URL.createObjectURL(file);    
+        },
+        addClass() {
+            
+                this.dataClass.push({name:''});
+                console.log(this.dataClass);
+            
+            // else {
+            //     alert("원하는 수집 데이터를 입력해주세요!");
+            // }
         }
     }
 }
@@ -235,5 +281,18 @@ p {
     height: 70px;
     margin : auto;
 }
-
+#addClassIcon {
+    width: 30px;
+    height : 30px;
+    
+}
+.addClassButton {
+    float: right;
+    margin-right: 370px;
+    height: 30px;
+}
+#inputClass {
+    margin-left: 480px;
+    max-width: 200px;
+}
 </style>
