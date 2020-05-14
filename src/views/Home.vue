@@ -12,10 +12,10 @@
           <b-dropdown-item href="project" style="font-size: 18px;" >Project List</b-dropdown-item>
           <b-dropdown-item href="newProject" style="font-size: 18px;">Project Create</b-dropdown-item>
         </b-nav-item-dropdown>
-        <b-nav-item href="#" link-classes="bar-font" style="font-size: 18px;">Colletion</b-nav-item>
+        <b-nav-item v-on:click="collectionProject" link-classes="bar-font" style="font-size: 18px;">Collection</b-nav-item>
         <b-nav-item-dropdown text="Labelling" style="font-size: 18px;" right>
-          <b-dropdown-item href="#" style="font-size: 18px;" >Image Bounding Box</b-dropdown-item>
-          <b-dropdown-item href="#" style="font-size: 18px;">Classification</b-dropdown-item>
+          <b-dropdown-item v-on:click="boundingBoxProject" style="font-size: 18px;" >Image Bounding Box</b-dropdown-item>
+          <b-dropdown-item v-on:click="classificationProject" style="font-size: 18px;">Classification</b-dropdown-item>
         </b-nav-item-dropdown>
       </b-navbar-nav>
       <b-navbar-nav class="ml-auto">
@@ -52,10 +52,12 @@
             </b-form-select>
             <b-form-group label="난이도 별 검색" v-if="searchType == 'levelType'">
             <b-form-checkbox-group id="checkbox-group-2" v-model="selectedLevel" name="flavour-2">
-              <b-form-checkbox value="상">상</b-form-checkbox>
-              <b-form-checkbox value="중">중</b-form-checkbox>
-              <b-form-checkbox value="하">하</b-form-checkbox>
-              <b-form-checkbox value="미정">미정</b-form-checkbox>
+              <b-form-checkbox value="0">0</b-form-checkbox>
+              <b-form-checkbox value="1">1</b-form-checkbox>
+              <b-form-checkbox value="2">2</b-form-checkbox>
+              <b-form-checkbox value="3">3</b-form-checkbox>
+              <b-form-checkbox value="4">4</b-form-checkbox>
+              <b-form-checkbox value="5">5</b-form-checkbox>
             </b-form-checkbox-group>
           </b-form-group>
           <b-form-select v-if="searchType == 'dataType'" v-model="selectedData" class="mb-3">
@@ -67,8 +69,8 @@
             </b-form-select>
             <b-form-select v-if="searchType == 'workType' && selectedProject == 'Labelling'" v-model="selectedWork" class="mb-3">
             <b-form-select-option-group label="작업 종류">
-                <b-form-select-option :value="'Bounding'">이미지 바운딩 박스</b-form-select-option>
-                <b-form-select-option :value="'Classification'">분류</b-form-select-option>
+                <b-form-select-option :value="'boundingBox'">이미지 바운딩 박스</b-form-select-option>
+                <b-form-select-option :value="'classification'">분류</b-form-select-option>
               </b-form-select-option-group>
             </b-form-select>
             <b-form-input size="sm" class="mr-sm-2" placeholder="Search" v-model="selectedSubject" v-if="searchType == 'subjectType' && selectedProject == 'Collection'"></b-form-input>
@@ -209,7 +211,25 @@ export default {
           }
           
           }
+        },
+        collectionProject: function() {
+          this.$router.push({name : "Project", params : {
+              projectType : "Collection",
+          }});
+        },
+        boundingBoxProject: function() {
+            this.$router.push({name : "Project", params : {
+              projectType : "Labelling",
+              workType: 'boundingBox'
+            }});
+        },
+        classificationProject: function() {
+          this.$router.push({name : "Project", params : {
+              projectType : "Labelling",
+              workType: 'classification'
+            }});
         }
+
       },
      
 }

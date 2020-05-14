@@ -108,7 +108,7 @@ export default {
                     headers: { 'Content-type': 'multipart/form-data'}
             };
             var userId = await localStorage.getItem('userId');
-            alert(userId);
+            //alert(userId);
             if(this.name == null || this.selectedData == null || this.subject == null || this.wayContent == null 
             || this.description == null || this.conditionContent == null || this.totalData == null || this.dataClass == null){
                 alert("프로젝트 생성을 위해 내용을 빠짐없이 작성해주세요.");

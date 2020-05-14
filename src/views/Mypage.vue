@@ -187,9 +187,6 @@ export default {
   font-size: 20px;
   font-weight: bold;
 }
-#userName{
-  font-family: fantasy;
-}
 #requestProjectList{
   max-width: 500px; 
 }

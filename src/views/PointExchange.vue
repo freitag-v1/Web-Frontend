@@ -1,6 +1,6 @@
 <template>
     <div class = "pointExchange">
-    <img id="exchangeLogo" v-on:click="createCollection" src = "../assets/pointExchange.png"/>
+    <img id="exchangeLogo"  src = "../assets/pointExchange.png"/>
     <br>
         <b-card
     no-body
@@ -44,7 +44,7 @@
               확인이 완료되었습니다. 환전이 가능합니다.
               </b-form-valid-feedback>
                 </b-form>
-                <b-button id="modifybutton" v-if="userPasswordValidation" v-on:click ="exchagePoint" variant="outline-info">환전</b-button><!--v-if해서 비밀번호 맞으면 보여주도록-->
+                <b-button id="modifybutton" v-if="userPasswordValidation" v-on:click ="exchangePoint" variant="outline-info">환전</b-button><!--v-if해서 비밀번호 맞으면 보여주도록-->
                 <br>
                 <br>
             </b-card>
@@ -91,14 +91,14 @@ export default {
         return checkPassword;
     },
     pointValidation() {
-        if(this.wantPoint > this.userPoint) {
+        if(Number(this.wantPoint) > Number(this.userPoint)) {
             return false;
         }
         else return true;
     }
   },
   methods : {
-      exchagePoint() {
+      exchangePoint() {
           if(this.wantPoint == 0){
               alert("환전하고 싶은 포인트를 입력해주세요!!");
           }
