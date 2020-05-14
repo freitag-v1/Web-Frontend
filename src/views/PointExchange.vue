@@ -8,19 +8,29 @@
     class = "point"
   >
     <b-card-body id="userInfoBody">
-      <b-card-title id="userName">{{userName + "'s Point"}}</b-card-title>
+      <b-card-title id="userName" style="font-size: 30px;">{{userName + "'s Point"}}</b-card-title>
       <div class = "userDetail">
-      <br>
-      <b-card-text>
+      <b-card-text style="font-size: 20px; text-align:center;">
             <img id = "pointLogo" src ="../assets/point.jpg">
             {{"포인트 :"+ userPoint}}</b-list-group-item>
       </b-card-text>
       </div>
       <b-form  @submit.stop.prevent>
+      <br>
+      <p>계좌를 입력하세요.</p>
+      <b-form-input
+          id="accountInput"
+          v-model="account"
+          required
+          placeholder="계좌 입력"
+        ></b-form-input>
+        <br>
+      <p>환전하기를 원하는 포인트를 입력하세요.</p>
       <b-form-input
           id="wantPoint"
           v-model="wantPoint"
           required
+          placeholder="포인트 입력"
         ></b-form-input>
         <b-form-invalid-feedback  :state="pointValidation">
               환전 가능한 포인트를 초과하였습니다.
@@ -28,7 +38,6 @@
               <b-form-valid-feedback :state="pointValidation">
               </b-form-valid-feedback>
         </b-form>
-        <br>
         <br>
         <b-button id = "firstToggle" v-if= "pointValidation" v-b-toggle.collapse-1 variant="outline-info">포인트 환전</b-button>
     </b-card-body>
@@ -68,6 +77,7 @@ export default {
         userPoint: '',
         userName: '',
         wantPoint: 0,
+        account: null,
       }
   },
   async beforeCreate() { //페이지 간 라우터로 데이터를 주고받을지 아님 다시 mypage에 접근해서 가져올지 고민
@@ -106,6 +116,7 @@ export default {
             const exchangeResult = axios.put("/api/mypage/exchange","", {
                 params : {
                     point : this.wantPoint,
+                    account : this.account,
                 }
             });
           }
@@ -124,5 +135,10 @@ export default {
 }
 .point{
     margin: auto;
+}
+#accountInput {
+  max-width: 300px;
+  margin: auto;
+  margin-top: 30px;
 }
 </style>

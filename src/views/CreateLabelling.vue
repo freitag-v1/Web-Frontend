@@ -226,7 +226,11 @@ export default {
                     }
                 }
                 alert("라벨링 프로젝트 생성 완료!");
-                this.$router.push("/project");//결제하는 페이지를 만들어서 이동하도록  
+                this.$router.push({name: "ProjectPayment", 
+                    params : {
+                        //point: textRes.headers.cost,
+                        projectName : this.name,
+                                }});//결제하는 페이지를 만들어서 이동하도록  
 
                 
             //}

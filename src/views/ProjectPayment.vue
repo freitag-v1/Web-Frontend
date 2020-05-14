@@ -44,7 +44,7 @@ export default {
                 this.value += 20;
             }, 1000);
             setTimeout(()=> {
-                const pointPayRes = axios.get("/api/project/pointPayment")
+                const pointPayRes = axios.get("/api/project/point/payment")
                 .then(res => {
                     if(res.headers.payment == 'success'){
                         alert("결제가 완료되었습니다!");
@@ -59,7 +59,7 @@ export default {
                 },6000);   
         },
         accountPay() {  
-            //window.open();
+            
         }
 
     }

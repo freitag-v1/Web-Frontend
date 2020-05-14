@@ -4,10 +4,11 @@
         <br/>
         <img id="accountLogo" src="../assets/accountLogo.png"/>
         <br/>
-        <b-button class="button" v-on:click="accountAuthenticate"variant="outline-primary" style="font-size: 18px; font-weight: bold">계좌 인증</b-button>
+        <p>프로젝트 의뢰 및 작업 포인트를 환전하기 위해 계좌 인증이 필요합니다.</p>
+        <br>   
         <br/>
         <br/>
-        <b-button href='/signup' class="button" variant="outline-primary" style="font-size: 18px;">Prev</b-button>
+        <b-button class="button" v-on:click="accountAuthenticate"variant="outline-primary" style="font-size: 18px; font-weight: bold">계좌 인증</b-button>   
         <b-button class="button" v-on:click ="signUpComplete" variant="outline-primary" style="font-size: 18px;">complete</b-button>
         <!--signup complete 이 부분 계좌인증 안받으면 보이지 않도록 v-if해서 설정해야-->
     </div>

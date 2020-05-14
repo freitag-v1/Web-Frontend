@@ -9,7 +9,7 @@
     <b-collapse id="nav-collapse" is-nav>
       <b-navbar-nav>
         <b-nav-item-dropdown text="Project" style="font-size: 18px;" right>
-          <b-dropdown-item href="project" style="font-size: 18px;" >Project List</b-dropdown-item>
+          <!--<b-dropdown-item href="project" style="font-size: 18px;" >Project List</b-dropdown-item>-->
           <b-dropdown-item href="newProject" style="font-size: 18px;">Project Create</b-dropdown-item>
         </b-nav-item-dropdown>
         <b-nav-item v-on:click="collectionProject" link-classes="bar-font" style="font-size: 18px;">Collection</b-nav-item>
@@ -36,22 +36,23 @@
                 </b-form-select-option-group>
               </b-form-select-option-group>
             </b-form-select>
-            <b-form-select v-if="selectedProject == 'Labelling'" v-model="searchType" class="mb-3">
+            <br>
+            <!--<b-form-select v-if="selectedProject == 'Labelling'" class="mb-3">
             <b-form-select-option-group label="검색 타입">
                 <b-form-select-option :value="'dataType'">데이터 종류</b-form-select-option>
                 <b-form-select-option :value="'levelType'">난이도</b-form-select-option>
                 <b-form-select-option :value="'workType'">작업 종류</b-form-select-option>
               </b-form-select-option-group>
             </b-form-select>
-            <b-form-select v-if="selectedProject == 'Collection'" v-model="searchType" class="mb-3">
+            <b-form-select v-if="selectedProject == 'Collection'" class="mb-3">
             <b-form-select-option-group label="검색 타입">
                 <b-form-select-option :value="'dataType'">데이터 종류</b-form-select-option>
                 <b-form-select-option :value="'levelType'">난이도</b-form-select-option>
                 <b-form-select-option :value="'subjectType'">주제</b-form-select-option>
               </b-form-select-option-group>
-            </b-form-select>
-            <b-form-group label="난이도 별 검색" v-if="searchType == 'levelType'">
-            <b-form-checkbox-group id="checkbox-group-2" v-model="selectedLevel" name="flavour-2">
+            </b-form-select>-->
+            <b-form-group label="난이도 별 검색" v-if="selectedProject!=null"  style="font-size: 15px;">
+            <b-form-checkbox-group id="checkbox-group-2" v-model="selectedLevel"  name="flavour-2">
               <b-form-checkbox value="0">0</b-form-checkbox>
               <b-form-checkbox value="1">1</b-form-checkbox>
               <b-form-checkbox value="2">2</b-form-checkbox>
@@ -60,20 +61,26 @@
               <b-form-checkbox value="5">5</b-form-checkbox>
             </b-form-checkbox-group>
           </b-form-group>
-          <b-form-select v-if="searchType == 'dataType'" v-model="selectedData" class="mb-3">
+          <br>
+          <p  v-if="selectedProject == 'Collection'" style="font-size: 15px;">데이터 별 검색</p>
+          <b-form-select  v-model="selectedData"  v-if="selectedProject == 'Collection'" class="mb-3">
             <b-form-select-option-group label="데이터 타입">
                 <b-form-select-option :value="'image'">이미지</b-form-select-option>
                 <b-form-select-option :value="'audio'">음성</b-form-select-option>
                 <b-form-select-option :value="'text'">텍스트</b-form-select-option>
               </b-form-select-option-group>
             </b-form-select>
-            <b-form-select v-if="searchType == 'workType' && selectedProject == 'Labelling'" v-model="selectedWork" class="mb-3">
+            <br>
+            <p v-if="selectedProject == 'Labelling'"  style="font-size: 15px;" >작업 종류 별 검색</p>
+            <b-form-select v-if="selectedProject == 'Labelling'" v-model="selectedWork" class="mb-3">
             <b-form-select-option-group label="작업 종류">
                 <b-form-select-option :value="'boundingBox'">이미지 바운딩 박스</b-form-select-option>
                 <b-form-select-option :value="'classification'">분류</b-form-select-option>
               </b-form-select-option-group>
             </b-form-select>
-            <b-form-input size="sm" class="mr-sm-2" placeholder="Search" v-model="selectedSubject" v-if="searchType == 'subjectType' && selectedProject == 'Collection'"></b-form-input>
+            <br>
+            <p v-if="selectedProject != null"  style="font-size: 15px;">주제 별 검색</p>
+            <b-form-input size="sm" class="mr-sm-2" placeholder="Search" v-model="selectedSubject" v-if="selectedProject != null"></b-form-input>
           <br>
           <br>
           <b-button class="searchButton" v-on:click = "search" variant="outline-primary">Search</b-button>
@@ -215,18 +222,26 @@ export default {
         collectionProject: function() {
           this.$router.push({name : "Project", params : {
               projectType : "Collection",
-          }});
+              dataType: null,
+              difficulty : null,
+              subject : null,
+              }
+          });
         },
         boundingBoxProject: function() {
             this.$router.push({name : "Project", params : {
               projectType : "Labelling",
-              workType: 'boundingBox'
+              dataType: 'boundingBox',
+              difficulty : null,
+              subject : null,
             }});
         },
         classificationProject: function() {
           this.$router.push({name : "Project", params : {
               projectType : "Labelling",
-              workType: 'classification'
+              workType: 'classification',
+              difficulty : null,
+              subject : null,
             }});
         }
 

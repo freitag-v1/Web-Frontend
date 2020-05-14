@@ -115,7 +115,7 @@
         return this.userId.length > 4 && this.userId.length < 13
       },
       userEmailValidation() { // email에는 @이 필수 요소니까 @ 여부로 validation
-        return this.userEmail.includes('@') && this.userEmail.includes('.com') && this.userEmail.includes('.kr');
+        return this.userEmail.includes('@') && this.userEmail.includes('.com') || this.userEmail.includes('.kr');
       },
       userPasswordValidation() {
         var pattern1 = /[0-9]/;
@@ -155,12 +155,18 @@
             userAffiliation : this.userAffiliation,
             userPhone : this.userPhonenumber,
         }}).then(res => { //여기서 response header 가져와서 
-            setTimeout(()=> {
-            localStorage.bankState = res.headers.state;
-            this.$router.push("/signup/account");
-                console.log(res.headers.state); //state 저장
-                
-            },500);
+            if(res.headers.update == "success"){
+              setTimeout(()=> {
+              localStorage.bankState = res.headers.state;
+              this.$router.push("/signup/account");
+                  console.log(res.headers.state); //state 저장
+                  
+              },500);
+            }
+            else {
+               alert("아이디가 중복됩니다. 다시 입력해주세요!");
+              location.reload();
+            }
         })
         .catch(function(error) {
             if(error.response){

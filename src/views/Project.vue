@@ -1,6 +1,9 @@
 <template>
     <div class ="projectList">
         <img id="projectLogo" src ="../assets/projectList.png"/>
+        <b-button  href="/newProject" style="margin-top: 10px; ">
+            Create
+        </b-button>
         <hr class = "bar">
         <!--<b-list-group-item id ="projectNav" variant="info" class="d-flex justify-content-between align-items-center">
                 Project Name
@@ -20,8 +23,15 @@
             :per-page="perPage"
             :current-page="currentPage"
             :fields="fields"
+            @row-dbclicked="moveProject"
             small
-            ></b-table>
+            >
+            <template v-slot:cell(show_details)="row">
+                <b-button size="sm" v-on:click="moveProject(row.item)" class="mr-2">
+                    {{ row.item.name }}
+                </b-button>
+            </template>
+            </b-table>
             <br>
             <b-pagination
             v-model="currentPage"
@@ -41,6 +51,7 @@
 </template>
 <script>
 import axios from 'axios';
+
 export default {
   name: 'Project',
   data() {
@@ -87,7 +98,7 @@ export default {
               {name : 'test19', userId : 'nahyun', workType : 'Image Bounding Box'},
               {name : 'test20', userId : 'nahyun', workType : 'collection'},
           ],
-          fields: [{key : 'name', label: '프로젝트 이름'},{key : 'userId', label: '의뢰자'}, 'workType'],
+          fields: [{key : 'name', label: '프로젝트 이름'},{key : 'userId', label: '의뢰자'}, 'workType', 'show_details'],
           workType:'',
           dataType:'',
           perPage : 10,
@@ -96,105 +107,134 @@ export default {
   },
   async beforeCreate() {
       var loginStatus = await localStorage.getItem('loginState');
+      axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
       if(!loginStatus) {
           alert("로그인이 필요한 페이지입니다.")
           this.$router.push("/login"); 
       }
-       console.log(this.$route.params);
-      //라벨링 작업 프로젝트 리스트
-      //라벨링의 경우 workType이 boundingBox나 분류로 나누어져있는데 라벨링 프로젝트 목록을 보여줘야 하는경우 
-      // 정하기 쉽지않으므로 workType : 'labelling' 으로 일단은 보낸단
+        //라벨링 작업 프로젝트 
       if(this.$route.params.projectType == "Labelling") {
-            if(this.$route.params.workType != null) {// 작업 종류 검색한 경우 
-                //alert("라벨링 - 작업 종류");
-                const projectListRes = await axios.get("/api/projectList", {
-                params: {
-                    workType : this.$route.params.workType,
-                }});
+          //console.log(this.$route.params.difficulty, this.$route.params.workType, this.$route.params.subject);
+         
+          const projectListRes = await axios.get("/api/project/list/labelling", {
+              params : {
+                  dataType : this.$route.params.workType,
+                  difficulty : this.$route.params.difficulty[0],
+                  subject : this.$route.params.subject,
+              }
+          });
+            if(projectListRes.headers.search == "success"){
                 this.projectList = projectListRes.data;
             }
-            else if(this.$route.params.dataType != null) { //데이터 종류 검색한 경우
-                //alert("라벨링 - 데이터 종류");
-                const projectListRes = await axios.get("/api/projectList", {
-                params: {
-                    workType : 'labelling',
-                    dataType : this.$route.params.dataType,
-                }});
-                this.projectList = projectListRes.data;
-            
-            }
-            else if(this.$route.params.difficulty != null){ //난이도를 선택한 경우 
-                //alert("라벨링 - 난이도");
-                const projectListRes = await axios.get("/api/projectList", {
-                params: {
-                    workType : 'labelling',
-                    difficulty : this.$route.params.difficulty,
-                }});
-                this.projectList = projectListRes.data;
-            }
-            //라벨링 프로젝트 목록 전체 
             else {
-                //alert("라벨링");
-                const projectListRes = await axios.get("/api/projectList", {
-                params: {
-                    workType : 'labelling',
-                }});
-                this.projectList = projectListRes.data;
+                alert("검색한 프로젝트가 존재하지 않습니다.");
             }
+          
+            // if(this.$route.params.workType != null) {// 작업 종류 검색한 경우 
+            //     //alert("라벨링 - 작업 종류");
+            //     const projectListRes = await axios.get("/api/project", {
+            //     params: {
+            //         workType : this.$route.params.workType,
+            //     }});
+            //     this.projectList = projectListRes.data;
+            // }
+            // else if(this.$route.params.dataType != null) { //데이터 종류 검색한 경우
+            //     //alert("라벨링 - 데이터 종류");
+            //     const projectListRes = await axios.get("/api/project", {
+            //     params: {
+            //         workType : 'labelling',
+            //         dataType : this.$route.params.dataType,
+            //     }});
+            //     this.projectList = projectListRes.data;
+            
+            // }
+            // else if(this.$route.params.difficulty != null){ //난이도를 선택한 경우 
+            //     //alert("라벨링 - 난이도");
+            //     const projectListRes = await axios.get("/api/project", {
+            //     params: {
+            //         workType : 'labelling',
+            //         difficulty : this.$route.params.difficulty,
+            //     }});
+            //     this.projectList = projectListRes.data;
+            // }
+            // //라벨링 프로젝트 목록 전체 
+            // else {
+            //     //alert("라벨링");
+            //     const projectListRes = await axios.get("/api/project", {
+            //     params: {
+            //         workType : 'labelling',
+            //     }});
+            //     this.projectList = projectListRes.data;
+            // }
         
       }
       //수집 프로젝트 리스트 
-        else if (this.$route.params.projectType == "Collection"){
-            if(this.$route.params.subject != null) {// 주제 검색한 경우 
-                //alert("수집 - 주제 검색");
-                const projectListRes = await axios.get("/api/projectList", {
-                params: {
-                    workType : 'collection',
-                    subject : this.$route.params.subject,
-                }});
+        if(this.$route.params.projectType == "Collection") {
+            console.log(this.$route.params.difficulty, this.$route.params.dataType, this.$route.params.subject);
+             const projectListRes = await axios.get("/api/project/list/collection", {
+              params : {
+                  dataType : this.$route.params.dataType,
+                  difficulty : this.$route.params.difficulty,
+                  subject : this.$route.params.subject,
+              }
+            });
+            if(projectListRes.headers.search == "success"){
                 this.projectList = projectListRes.data;
             }
-            else if(this.$route.params.dataType != null) { //데이터 종류 검색한 경우
-                //alert("수집 - 데이터 종류");
-                const projectListRes = await axios.get("/api/projectList", {
-                params: {
-                    workType : 'collection',
-                    dataType : this.$route.params.dataType,
-                }});
-                this.projectList = projectListRes.data;
+            else {
+                alert("검색한 프로젝트가 존재하지 않습니다.");
+            }
+
+            // if(this.$route.params.subject != null) {// 주제 검색한 경우 
+            //     //alert("수집 - 주제 검색");
+            //     const projectListRes = await axios.get("/api/project", {
+            //     params: {
+            //         workType : 'collection',
+            //         subject : this.$route.params.subject,
+            //     }});
+            //     this.projectList = projectListRes.data;
+            // }
+            // else if(this.$route.params.dataType != null) { //데이터 종류 검색한 경우
+            //     //alert("수집 - 데이터 종류");
+            //     const projectListRes = await axios.get("/api/project", {
+            //     params: {
+            //         workType : 'collection',
+            //         dataType : this.$route.params.dataType,
+            //     }});
+            //     this.projectList = projectListRes.data;
             
-            }
-            else if(this.$route.params.difficulty != null) { //난이도를 선택한 경우 
-                //alert("수집 - 난이도");
-                const projectListRes = await axios.get("/api/projectList", {
-                params: {
-                    workType : 'collection',
-                    difficulty : this.$route.params.difficulty,
-                }});
-                this.projectList = projectListRes.data;
-            }
-            else { //수집 프로젝트 검색
-            //alert("수집");
-                const projectListRes = await axios.get("/api/projectList", {
-                params: {
-                    workType : 'collection',
-                }});
-                this.projectList = projectListRes.data;
-            }
+            // }
+            // else if(this.$route.params.difficulty != null) { //난이도를 선택한 경우 
+            //     //alert("수집 - 난이도");
+            //     const projectListRes = await axios.get("/api/project", {
+            //     params: {
+            //         workType : 'collection',
+            //         difficulty : this.$route.params.difficulty,
+            //     }});
+            //     this.projectList = projectListRes.data;
+            // }
+            // else { //수집 프로젝트 검색
+            // //alert("수집");
+            //     const projectListRes = await axios.get("/api/project", {
+            //     params: {
+            //         workType : 'collection',
+            //     }});
+            //     this.projectList = projectListRes.data;
+            // }
         }
-        else { //검색한게 없다면 전체
-           //alert("전체");
-          const projectListRes = await axios.get("/api/projectList");
-          this.projectList = projectListRes.data;
-          
-      }
 
   },
   computed: {
       rows() {
-        return this.projectList.length
+        return this.projectList.length;
       }
     },
+    methods : {
+        moveProject(detailItem){
+            alert(detailItem); // 자세히 보고싶은 프로젝트를 보여줄 수 있도록 
+        }
+    }
+
 
 }
 </script>

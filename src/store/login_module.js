@@ -44,9 +44,9 @@ export default new Vuex.Store({
     },
     actions: {
         async LOGIN({commit},{userId, password}){
-                axios.get("/api/login?userId="+userId+"&userPassword="+password)
+                axios.post("/api/login?userId="+userId+"&userPassword="+password)
                 .then(res => {
-                    console.log(res.headers.authorization);
+                    //console.log(res.headers.authorization);
                     var token = res.headers.authorization;
                     var authorities = res.data.authorities;
                     commit('LOGIN',{token, authorities,userId}) //로그인 성공시 session id랑 authorities이거 넘겨주는
