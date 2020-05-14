@@ -1,7 +1,7 @@
 <template>
     <div id="projectPayment"> 
     <br>
-    <h1 id="projectCost">{{projectName+" 프로젝트의 기본 비용은 "+point+"원 입니다."}}</h1>
+    <h1 id="projectCost">{{projectName+" 프로젝트의 기본 비용은 "+cost+"원 입니다."}}</h1>
     <p id = "progressMSG" v-if="pointPay">결제 진행 중입니다.</p>
      <b-progress id ="paymentProgress" v-if="pointPay" :value="value" :max="max" show-progress animated></b-progress>
     <p id = "paymentMSG" v-if="!pointPaySuccess">포인트가 부족하여 결제를 실패하였습니다. 계좌이체로 결제를 진행해주세요! </p>
@@ -15,7 +15,7 @@ export default {
   name: 'ProjectPayment',
     data() {
         return {
-            point : 0,
+            cost : 0,
             projectName: null,
             max : 100,
             value: 0,
@@ -30,7 +30,7 @@ export default {
           alert("로그인이 필요한 페이지입니다.")
           this.$router.push("/login"); 
       }
-      this.point = this.$route.params.point;
+      this.cost = this.$route.params.point;
       this.projectName = this.$route.params.projectName;
     },
     methods: {
@@ -59,7 +59,10 @@ export default {
                 },6000);   
         },
         accountPay() {  
-            
+            this.$router.push({name : "AccountPayment", params : {
+                cost : this.cost,
+                name : this.projectName,
+            }})
         }
 
     }

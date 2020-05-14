@@ -13,6 +13,7 @@ import CreateLabelling from '../views/CreateLabelling.vue'
 import PointExchange from '../views/PointExchange.vue'
 import ProjectPayment from '../views/ProjectPayment.vue'
 import ProjectDetail from '../views/ProjectDetail.vue'
+import AccountPayment from '../views/AccountPayment.vue'
 
 Vue.use(VueRouter)
 
@@ -81,6 +82,11 @@ Vue.use(VueRouter)
     path:'/project/detail',
     name: 'ProjectDetail',
     component: ProjectDetail, 
+  },
+  {
+    path:'/project/payment/account',
+    name: 'AccountPayment',
+    component: AccountPayment, 
   },
 
 
