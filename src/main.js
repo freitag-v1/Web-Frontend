@@ -12,10 +12,13 @@ import VuePhoneNumberInput from 'vue-phone-number-input';
 import 'vue-phone-number-input/dist/vue-phone-number-input.css';
 
 
+
+
 Vue.use(BootstrapVue)
 Vue.use(BootstrapVueIcons)
 Vue.use(VueSession)
 Vue.use(VueCookies);
+
 Vue.config.productionTip = false
 Vue.prototype.$Axios = axios;
 Vue.component('vue-phone-number-input', VuePhoneNumberInput);

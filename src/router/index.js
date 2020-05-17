@@ -79,7 +79,7 @@ Vue.use(VueRouter)
     component: ProjectPayment, 
   },
   {
-    path:'/project/detail',
+    path:'/project/detail/:idx',
     name: 'ProjectDetail',
     component: ProjectDetail, 
   },

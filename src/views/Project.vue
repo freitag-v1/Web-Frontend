@@ -31,6 +31,12 @@
                     {{ row.item.name }}
                 </b-button>
             </template>
+            <template v-slot:cell(dataType)="data">
+                <p class = "data" v-if="data.value == 'image'"><b-icon icon="image" variant="success"></b-icon> 이미지</p>
+                <p class = "data" v-if="data.value == 'audio'"><b-icon icon="mic-fill" variant="primary"></b-icon> 음성</p>
+                <p class = "data" v-if="data.value == 'text'"><b-icon icon="blockquote-left" variant="warning"></b-icon> 텍스트</p>
+            </template>
+            
             </b-table>
             <br>
             <b-pagination
@@ -57,48 +63,48 @@ export default {
   data() {
       return {
           projectList: [
-              {name : 'test1', userId : 'nahyun', workType : 'collection'},
+              {name : 'test1', userId : 'nahyun', workType : 'collection', dataType: 'image'},
               {name : 'test2', userId : 'nahyun', workType : 'Image Bounding Box'},
-              {name : 'test3', userId : 'nahyun', workType : 'collection'},
+              {name : 'test3', userId : 'nahyun', workType : 'collection', dataType: 'image'},
               {name : 'test4', userId : 'nahyun', workType : 'Image Bounding Box'},
-              {name : 'test5', userId : 'nahyun', workType : 'collection'},
+              {name : 'test5', userId : 'nahyun', workType : 'collection', dataType: 'audio'},
               {name : 'test6', userId : 'nahyun', workType : 'Image Bounding Box'},
               {name : 'test7', userId : 'nahyun', workType : 'classification'},
-              {name : 'test8', userId : 'nahyun', workType : 'collection'},
+              {name : 'test8', userId : 'nahyun', workType : 'collection', dataType: 'image'},
               {name : 'test9', userId : 'nahyun', workType : 'classification'},
-              {name : 'test10', userId : 'nahyun', workType : 'collection'},
+              {name : 'test10', userId : 'nahyun', workType : 'collection', dataType: 'audio'},
               {name : 'test11', userId : 'nahyun', workType : 'classification'},
-              {name : 'test12', userId : 'nahyun', workType : 'collection'},
+              {name : 'test12', userId : 'nahyun', workType : 'collection', dataType: 'text'},
               {name : 'test13', userId : 'nahyun', workType : 'Image Bounding Box'},
               {name : 'test14', userId : 'nahyun', workType : 'classification'},
-              {name : 'test15', userId : 'nahyun', workType : 'collection'},
+              {name : 'test15', userId : 'nahyun', workType : 'collection', dataType: 'image'},
               {name : 'test16', userId : 'nahyun', workType : 'Image Bounding Box'},
               {name : 'test17', userId : 'nahyun', workType : 'Image Bounding Box'},
-              {name : 'test18', userId : 'nahyun', workType : 'collection'},
+              {name : 'test18', userId : 'nahyun', workType : 'collection', dataType: 'image'},
               {name : 'test19', userId : 'nahyun', workType : 'Image Bounding Box'},
-              {name : 'test20', userId : 'nahyun', workType : 'collection'},
-              {name : 'test1', userId : 'nahyun', workType : 'collection'},
+              {name : 'test20', userId : 'nahyun', workType : 'collection', dataType: 'audio'},
+              {name : 'test1', userId : 'nahyun', workType : 'collection', dataType: 'image'},
               {name : 'test2', userId : 'nahyun', workType : 'Image Bounding Box'},
-              {name : 'test3', userId : 'nahyun', workType : 'collection'},
+              {name : 'test3', userId : 'nahyun', workType : 'collection', dataType: 'text'},
               {name : 'test4', userId : 'nahyun', workType : 'Image Bounding Box'},
-              {name : 'test5', userId : 'nahyun', workType : 'collection'},
+              {name : 'test5', userId : 'nahyun', workType : 'collection', dataType: 'image'},
               {name : 'test6', userId : 'nahyun', workType : 'Image Bounding Box'},
               {name : 'test7', userId : 'nahyun', workType : 'classification'},
-              {name : 'test8', userId : 'nahyun', workType : 'collection'},
+              {name : 'test8', userId : 'nahyun', workType : 'collection', dataType: 'image'},
               {name : 'test9', userId : 'nahyun', workType : 'classification'},
-              {name : 'test10', userId : 'nahyun', workType : 'collection'},
+              {name : 'test10', userId : 'nahyun', workType : 'collection', dataType: 'audio'},
               {name : 'test11', userId : 'nahyun', workType : 'classification'},
-              {name : 'test12', userId : 'nahyun', workType : 'collection'},
+              {name : 'test12', userId : 'nahyun', workType : 'collection', dataType: 'image'},
               {name : 'test13', userId : 'nahyun', workType : 'Image Bounding Box'},
               {name : 'test14', userId : 'nahyun', workType : 'classification'},
-              {name : 'test15', userId : 'nahyun', workType : 'collection'},
+              {name : 'test15', userId : 'nahyun', workType : 'collection', dataType: 'text'},
               {name : 'test16', userId : 'nahyun', workType : 'Image Bounding Box'},
               {name : 'test17', userId : 'nahyun', workType : 'Image Bounding Box'},
-              {name : 'test18', userId : 'nahyun', workType : 'collection'},
+              {name : 'test18', userId : 'nahyun', workType : 'collection', dataType: 'audio'},
               {name : 'test19', userId : 'nahyun', workType : 'Image Bounding Box'},
-              {name : 'test20', userId : 'nahyun', workType : 'collection'},
+              {name : 'test20', userId : 'nahyun', workType : 'collection', dataType: 'audio'},
           ],
-          fields: [{key : 'name', label: '프로젝트 이름'},{key : 'userId', label: '의뢰자'}, 'workType', 'show_details'],
+          fields: [{key : 'name', label: '프로젝트 이름'},{key : 'userId', label: '의뢰자'}, 'workType','dataType', 'show_details'],
           workType:'',
           dataType:'',
           perPage : 10,
@@ -231,7 +237,11 @@ export default {
     },
     methods : {
         moveProject(detailItem){
-            alert(detailItem); // 자세히 보고싶은 프로젝트를 보여줄 수 있도록 
+            console.log(detailItem); // 자세히 보고싶은 프로젝트를 보여줄 수 있도록 
+            this.$router.push({name: 'ProjectDetail', params: {
+                idx: detailItem.name,
+                project : detailItem,
+            }})
         }
     }
 
@@ -260,6 +270,10 @@ export default {
     margin: auto;
     font-size: 30px;
     font-family: 'Hanna', sans-serif;
+}
+.data {
+    font-size: 15px;
+    font-weight: lighter;
 }
 
 </style>
