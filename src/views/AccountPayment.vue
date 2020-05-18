@@ -16,14 +16,6 @@
       </b-card-text>
       </div>
       <br>
-      <p>계좌를 입력하세요.</p>
-      <b-form-input
-          id="accountInput"
-          v-model="account"
-          required
-          placeholder="계좌 입력"
-        ></b-form-input>
-        <br>
         <br>
         <b-button id = "firstToggle" v-on:click="accountPayment" variant="outline-info">계좌이체</b-button>
     </b-card-body> 
@@ -41,7 +33,6 @@ export default {
       return {
         projectCost: '',
         projectName: '',
-        account: null,
       }
   },
   async beforeCreate() { //페이지 간 라우터로 데이터를 주고받을지 아님 다시 mypage에 접근해서 가져올지 고민
@@ -59,7 +50,6 @@ export default {
       async accountPayment() {
         const paymentRes = await axios.get('/api/project/account/payment', {
             params: {
-                account : this.account,
                 cost : this.projectCost,
             }
         });  

@@ -100,7 +100,7 @@ var user = null;
     },
     computed: {
       userEmailValidation() { // email에는 @이 필수 요소니까 @ 여부로 validation, 그리고 .com 과 .kr 로 끝나는지를 확인
-        return this.userEmail.includes('@') && this.userEmail.includes('.com') && this.userEmail.includes('.kr');
+        return this.userEmail.includes('@') && this.userEmail.includes('.com') || this.userEmail.includes('.kr');
       },
     },
     methods: {

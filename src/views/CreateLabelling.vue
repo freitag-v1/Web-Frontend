@@ -187,7 +187,7 @@ export default {
                     let labelImageData = new FormData();
                     for(let i = 0; i < this.labellingContent.length; i++){
                         labelImageData.append('imagefile'+i, this.labellingContent[i], this.labellingContent[i].name);
-                        const imageRes = await axios.post("/api/project/labelling/data", labelImageData,config);
+                        const imageRes = await axios.post("/api/project/labelling", labelImageData,config);
                     }
 
                 }
@@ -203,7 +203,7 @@ export default {
                     let labelAudioData = new FormData();
                     for(let i = 0; i < this.labellingContent.length; i++){
                         labelAudioData.append('audiofile'+i, this.labellingContent[i], this.labellingContent[i].name);
-                        const audioRes = await axios.post("/api/project/labelling/data", labelAudioData, config);
+                        const audioRes = await axios.post("/api/project/labelling", labelAudioData, config);
                     }
                 }
                 else {
@@ -217,7 +217,7 @@ export default {
                     let labelTextData = new FormData();
                     for(let i = 0; i < this.labellingContent.length; i++){
                         labelTextData.append('textfile'+i, this.labellingContent[i], this.labellingContent[i].name);
-                        const textRes = await axios.post("/api/project/labelling/data", labelTextData, config);
+                        const textRes = await axios.post("/api/project/labelling", labelTextData, config);
                     }
                 }
                 alert("라벨링 프로젝트 생성 완료!");

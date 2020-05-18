@@ -10,7 +10,7 @@
     </template>
 
     <b-card-body>
-      <b-card-title>{{ project.name }}</b-card-title>
+      <b-card-title>{{ project.projectName }}</b-card-title>
       <b-card-text v-if="project.workType =='collection'">
         프로젝트 데이터 종류: 
         <b-icon icon="image" v-if="project.dataType == 'image'" variant="success"></b-icon>
@@ -43,11 +43,14 @@
         </b-list-group-item>
     </b-list-group>
     <b-card-footer style="font-weight: bolder">프로젝트 진행 방법</b-card-footer>
-    <b-card-text class ="content">project.wayContent</b-card-text>
+    <br>
+    <b-card-text class ="content">{{project.wayContent}}</b-card-text>
     <b-card-footer style="font-weight: bolder">프로젝트 조건</b-card-footer>
-    <b-card-text class ="content">project.conditionContent</b-card-text>
+    <br>
+    <b-card-text class ="content">{{project.conditionContent}}</b-card-text>
     <b-card-footer style="font-weight: bolder">프로젝트 예시 데이터</b-card-footer>
-    <b-card-text class ="content">project.exampleContent</b-card-text>
+    <br>
+    <b-card-text class ="content">{{project.exampleContent}}</b-card-text>
     <!-- 프로젝트 생성 시 업로드한 예시 데이터를 -->
     <br>
     <b-card-footer style="font-weight: bolder">작업 정보 수집 동의</b-card-footer>
@@ -79,7 +82,8 @@
     </b-card>
     <br>
     <br>
-    <b-button id ="startButton" variant="outline-primary" v-on:click="startProject">{{project.name }} 작업 시작</b-button>
+    <b-button id ="startButton" variant="outline-primary" v-on:click="startProject">{{ project.projectName }} 
+    <br>작업 시작</b-button>
     <br>
   </b-card>
 
@@ -127,33 +131,33 @@ let day = today.getDay();  // 요일
                     if(this.project.dataType == 'image') {
                         this.$router.push({name: 'ImageCollection', params : {
                         project : this.project,
-                        idx : this.project.name,
+                        idx : this.project.projectName,
                       }});
                       break;
                     }
                     else if (this.project.dataType == 'audio'){
                         this.$router.push({name: 'AudioCollection', params : {
                         project : this.project,
-                        idx : this.project.name,
+                        idx : this.project.projectName,
                       }});
                     }
                     else {
                       this.$router.push({name: 'TextCollection', params : {
                         project : this.project,
-                        idx : this.project.name,
+                        idx : this.project.projectName,
                       }});
                     }
                     break;
                   case "Image Bounding Box" :
                     this.$router.push({name: 'ImageBoundingBox', params : {
                         project : this.project,
-                        idx : this.project.name,
+                        idx : this.project.projectName,
                       }});
                       break;
                   case "classification" : 
                     this.$router.push({name: 'Classification', params : {
                         project : this.project,
-                        idx : this.project.name,
+                        idx : this.project.projectName,
                       }});
                       break;
               }
@@ -180,7 +184,7 @@ let day = today.getDay();  // 요일
 }
 #startButton {
     margin :auto;
-    width: 200px;
+    width: 250px;
     height: 70px;
     font-size: 20px;
 }

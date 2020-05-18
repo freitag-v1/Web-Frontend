@@ -149,8 +149,11 @@ export default {
 }
 </script>
 <style>
+.information{
+  margin-left: 100px;
+}
 #myPagelogo {
-    margin: auto;
+    margin-left: 150px;
     max-width: 250px;
     max-height: 100px;
 }
@@ -167,7 +170,7 @@ export default {
     margin : auto;
 }
 #modifybutton {
-     margin : 10px;
+    margin : 10px;
 }
 .userInfo {
     margin-left: 430px;

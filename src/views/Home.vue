@@ -51,7 +51,7 @@
                 <b-form-select-option :value="'subjectType'">주제</b-form-select-option>
               </b-form-select-option-group>
             </b-form-select>-->
-            <b-form-group label="난이도 별 검색" v-if="selectedProject!=null"  style="font-size: 15px;">
+            <b-form-group label="난이도 별 검색" v-if="selectedProject!=''"  style="font-size: 15px;">
             <b-form-checkbox-group id="checkbox-group-2" v-model="selectedLevel"  name="flavour-2">
               <b-form-checkbox value="0">0</b-form-checkbox>
               <b-form-checkbox value="1">1</b-form-checkbox>
@@ -79,8 +79,8 @@
               </b-form-select-option-group>
             </b-form-select>
             <br>
-            <p v-if="selectedProject != null"  style="font-size: 15px;">주제 별 검색</p>
-            <b-form-input size="sm" class="mr-sm-2" placeholder="Search" v-model="selectedSubject" v-if="selectedProject != null"></b-form-input>
+            <p v-if="selectedProject != ''"  style="font-size: 15px;">주제 별 검색</p>
+            <b-form-input size="sm" class="mr-sm-2" placeholder="Search" v-model="selectedSubject" v-if="selectedProject != ''"></b-form-input>
           <br>
           <br>
           <b-button class="searchButton" v-on:click = "search" variant="outline-primary">Search</b-button>
@@ -173,13 +173,13 @@ export default {
   data() {
     return {
       loginStatus: '',
-      selected: null,
+      selected: "",
       selectedLevel: 0,
-      searchType: null,
-      selectedProject: null,
-      selectedData : null,
-      selectedWork: null,
-      selectedSubject: null,
+      searchType: "",
+      selectedProject: "",
+      selectedData : "",
+      selectedWork: "",
+      selectedSubject: "",
   }
   },
   async beforeCreate() {
@@ -211,7 +211,7 @@ export default {
                 projectType : this.selectedProject,
                 workType : this.selectedWork,
                 dataType: this.selectedData,
-                difficulty : this.selectedLevel,
+                difficulty : this.selectedLevel[0],
                 subject : this.selectedSubject,
               }
             })
@@ -222,9 +222,9 @@ export default {
         collectionProject: function() {
           this.$router.push({name : "Project", params : {
               projectType : "Collection",
-              dataType: null,
-              difficulty : '0',
-              subject : null,
+              dataType: "",
+              difficulty : 0,
+              subject : "",
               }
           });
         },
@@ -232,16 +232,16 @@ export default {
             this.$router.push({name : "Project", params : {
               projectType : "Labelling",
               dataType: 'boundingBox',
-              difficulty : '0',
-              subject : null,
+              difficulty : 0,
+              subject : "",
             }});
         },
         classificationProject: function() {
           this.$router.push({name : "Project", params : {
               projectType : "Labelling",
               workType: 'classification',
-              difficulty : '0',
-              subject : null,
+              difficulty : 0,
+              subject : "",
             }});
         }
 

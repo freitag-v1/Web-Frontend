@@ -16,14 +16,6 @@
       </b-card-text>
       </div>
       <b-form  @submit.stop.prevent>
-      <br>
-      <p>계좌를 입력하세요.</p>
-      <b-form-input
-          id="accountInput"
-          v-model="account"
-          required
-          placeholder="계좌 입력"
-        ></b-form-input>
         <br>
       <p>환전하기를 원하는 포인트를 입력하세요.</p>
       <b-form-input
@@ -77,7 +69,6 @@ export default {
         userPoint: '',
         userName: '',
         wantPoint: 0,
-        account: null,
       }
   },
   async beforeCreate() { //페이지 간 라우터로 데이터를 주고받을지 아님 다시 mypage에 접근해서 가져올지 고민
@@ -116,7 +107,6 @@ export default {
             const exchangeResult = axios.put("/api/mypage/exchange","", {
                 params : {
                     point : this.wantPoint,
-                    account : this.account,
                 }
             });
           }

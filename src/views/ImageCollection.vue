@@ -9,7 +9,7 @@
       <h4 class="mb-0">이미지 수집 작업</h4>
     </template>
     <b-list-group flush>
-      <b-list-group-item>프로젝트 이름 : {{" "+ project.name}}</b-list-group-item>
+      <b-list-group-item>프로젝트 이름 : {{" "+ project.projectName}}</b-list-group-item>
       <b-list-group-item>프로젝트 의뢰자 : {{" " + project.userId}}</b-list-group-item>
       <b-list-group-item><프로젝트 수집 데이터 목록>
         <div v-for="classname, index in classNameList">
@@ -19,11 +19,11 @@
         </b-list-group-item>
     </b-list-group>
     <b-card-footer style="font-weight: bolder">프로젝트 진행 방법</b-card-footer>
-    <b-card-text class ="content">project.wayContent</b-card-text>
+    <b-card-text class ="content">{{project.wayContent}}</b-card-text>
     <b-card-footer style="font-weight: bolder">프로젝트 조건</b-card-footer>
-    <b-card-text class ="content">project.conditionContent</b-card-text>
+    <b-card-text class ="content">{{project.conditionContent}}</b-card-text>
     <b-card-footer style="font-weight: bolder">프로젝트 예시 데이터</b-card-footer>
-    <b-card-text class ="content">project.exampleContent</b-card-text>
+    <b-card-text class ="content">{{project.exampleContent}}</b-card-text>
     <div v-for="i in imageCount">
         <ImageUpload v-bind:idx=i @registerImg="registerImageUrl"> </ImageUpload>
         <br>
@@ -77,13 +77,14 @@ var ImageList = new Array();
             this.imageCount += 1;
         },
         upload() { //formData 리스트!
-            imageFormData = new Array();
-           for(uploadImageFile in ImageList){
-               let imgUrl = new formData();
+            //var imageFormData = new Array(); 뭔가 formdata 리스트가 아니라 formdata에 append해서 보내는거 같다
+            let imgUrl = new FormData();
+           for(var uploadImageFile of ImageList){
                imgUrl.append('file', uploadImageFile);
-               imageFormData.push(imgUrl);
+               //imageFormData.push(imgUrl);
            }
-           //여기서 데이터 보내면 된다
+           console.log(imgUrl);//여기서 데이터 보내면 된다
+           console.log("=========================================");
         },
         registerImageUrl(data) { //index를 저장을 해서 기존에 올린 사진을 수정하는 경우 추가되지 않고 변경해야해서 props로 index 주고 받고 해서 변경
             let i = data.index -1;
@@ -95,6 +96,7 @@ var ImageList = new Array();
                 ImageList.splice(i,1,url);
 
             }
+            alert("등록완료!");
             console.log(ImageList);
         }
 

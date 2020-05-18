@@ -5,17 +5,6 @@
             Create
         </b-button>
         <hr class = "bar">
-        <!--<b-list-group-item id ="projectNav" variant="info" class="d-flex justify-content-between align-items-center">
-                Project Name
-                <b-badge variant="outline-primary"> 의뢰자 </b-badge>
-            </b-list-group-item>
-        <b-list-group class="list-group" v-for="project in projectList">
-            <b-list-group-item class="d-flex justify-content-between align-items-center">
-                {{ project.name }}
-                <b-badge variant="outline-primary"> {{ project.userId }}</b-badge>
-            </b-list-group-item>
-
-        </b-list-group>-->
         <div class="overflow-auto">
             <b-table
             id="my-table"
@@ -27,8 +16,8 @@
             small
             >
             <template v-slot:cell(show_details)="row">
-                <b-button size="sm" v-on:click="moveProject(row.item)" class="mr-2">
-                    {{ row.item.name }}
+                <b-button style="width: 230px; "v-on:click="moveProject(row.item)" class="mr-2">
+                    {{ row.item.projectName }}
                 </b-button>
             </template>
             <template v-slot:cell(dataType)="data">
@@ -63,49 +52,8 @@ export default {
   name: 'Project',
   data() {
       return {
-          projectList: [
-              {name : 'test1', userId : 'nahyun', workType : 'collection', dataType: 'image'},
-              {name : 'test2', userId : 'nahyun', workType : 'Image Bounding Box'},
-              {name : 'test3', userId : 'nahyun', workType : 'collection', dataType: 'image'},
-              {name : 'test4', userId : 'nahyun', workType : 'Image Bounding Box'},
-              {name : 'test5', userId : 'nahyun', workType : 'collection', dataType: 'audio'},
-              {name : 'test6', userId : 'nahyun', workType : 'Image Bounding Box'},
-              {name : 'test7', userId : 'nahyun', workType : 'classification'},
-              {name : 'test8', userId : 'nahyun', workType : 'collection', dataType: 'image'},
-              {name : 'test9', userId : 'nahyun', workType : 'classification'},
-              {name : 'test10', userId : 'nahyun', workType : 'collection', dataType: 'audio'},
-              {name : 'test11', userId : 'nahyun', workType : 'classification'},
-              {name : 'test12', userId : 'nahyun', workType : 'collection', dataType: 'text'},
-              {name : 'test13', userId : 'nahyun', workType : 'Image Bounding Box'},
-              {name : 'test14', userId : 'nahyun', workType : 'classification'},
-              {name : 'test15', userId : 'nahyun', workType : 'collection', dataType: 'image'},
-              {name : 'test16', userId : 'nahyun', workType : 'Image Bounding Box'},
-              {name : 'test17', userId : 'nahyun', workType : 'Image Bounding Box'},
-              {name : 'test18', userId : 'nahyun', workType : 'collection', dataType: 'image'},
-              {name : 'test19', userId : 'nahyun', workType : 'Image Bounding Box'},
-              {name : 'test20', userId : 'nahyun', workType : 'collection', dataType: 'audio'},
-              {name : 'test1', userId : 'nahyun', workType : 'collection', dataType: 'image'},
-              {name : 'test2', userId : 'nahyun', workType : 'Image Bounding Box'},
-              {name : 'test3', userId : 'nahyun', workType : 'collection', dataType: 'text'},
-              {name : 'test4', userId : 'nahyun', workType : 'Image Bounding Box'},
-              {name : 'test5', userId : 'nahyun', workType : 'collection', dataType: 'image'},
-              {name : 'test6', userId : 'nahyun', workType : 'Image Bounding Box'},
-              {name : 'test7', userId : 'nahyun', workType : 'classification'},
-              {name : 'test8', userId : 'nahyun', workType : 'collection', dataType: 'image'},
-              {name : 'test9', userId : 'nahyun', workType : 'classification'},
-              {name : 'test10', userId : 'nahyun', workType : 'collection', dataType: 'audio'},
-              {name : 'test11', userId : 'nahyun', workType : 'classification'},
-              {name : 'test12', userId : 'nahyun', workType : 'collection', dataType: 'image'},
-              {name : 'test13', userId : 'nahyun', workType : 'Image Bounding Box'},
-              {name : 'test14', userId : 'nahyun', workType : 'classification'},
-              {name : 'test15', userId : 'nahyun', workType : 'collection', dataType: 'text'},
-              {name : 'test16', userId : 'nahyun', workType : 'Image Bounding Box'},
-              {name : 'test17', userId : 'nahyun', workType : 'Image Bounding Box'},
-              {name : 'test18', userId : 'nahyun', workType : 'collection', dataType: 'audio'},
-              {name : 'test19', userId : 'nahyun', workType : 'Image Bounding Box'},
-              {name : 'test20', userId : 'nahyun', workType : 'collection', dataType: 'audio'},
-          ],
-          fields: [{key : 'name', label: '프로젝트 이름'},{key : 'userId', label: '의뢰자'}, 'workType','dataType', 'show_details'],
+          projectList: '',
+          fields: [{key : 'projectName', label: '프로젝트 이름'},{key : 'userId', label: '의뢰자'}, 'workType','dataType', 'show_details'],
           workType:'',
           dataType:'',
           perPage : 10,
@@ -122,58 +70,29 @@ export default {
         //라벨링 작업 프로젝트 
       if(this.$route.params.projectType == "Labelling") {
           //console.log(this.$route.params.difficulty, this.$route.params.workType, this.$route.params.subject)
-          const projectListRes = await axios.get("/api/project/list", {
+          await axios.get("/api/project/list", {
               params : {
                   workType : 'labelling',
                   dataType : this.$route.params.workType,
-                  difficulty : this.$route.params.difficulty[0],
+                  difficulty : this.$route.params.difficulty,
                   subject : this.$route.params.subject,
               }
-          });
-            if(projectListRes.headers.search == "success"){
+            })
+            .then(projectListRes => {
+                if(projectListRes.headers.search == "success"){
                 this.projectList = projectListRes.data;
-            }
-            else {
-                alert("검색한 프로젝트가 존재하지 않습니다.");
-            }
-          
-            // if(this.$route.params.workType != null) {// 작업 종류 검색한 경우 
-            //     //alert("라벨링 - 작업 종류");
-            //     const projectListRes = await axios.get("/api/project", {
-            //     params: {
-            //         workType : this.$route.params.workType,
-            //     }});
-            //     this.projectList = projectListRes.data;
-            // }
-            // else if(this.$route.params.dataType != null) { //데이터 종류 검색한 경우
-            //     //alert("라벨링 - 데이터 종류");
-            //     const projectListRes = await axios.get("/api/project", {
-            //     params: {
-            //         workType : 'labelling',
-            //         dataType : this.$route.params.dataType,
-            //     }});
-            //     this.projectList = projectListRes.data;
+                console.log(projectListRes.data);
+                }
+                else {
+                    alert("검색한 프로젝트가 존재하지 않습니다.");
+                }
+            })
+            .catch(function(error) {
+                        if(error.response){
+                            alert("검색 정보가 없습니다!");
+                        }
+                });
             
-            // }
-            // else if(this.$route.params.difficulty != null){ //난이도를 선택한 경우 
-            //     //alert("라벨링 - 난이도");
-            //     const projectListRes = await axios.get("/api/project", {
-            //     params: {
-            //         workType : 'labelling',
-            //         difficulty : this.$route.params.difficulty,
-            //     }});
-            //     this.projectList = projectListRes.data;
-            // }
-            // //라벨링 프로젝트 목록 전체 
-            // else {
-            //     //alert("라벨링");
-            //     const projectListRes = await axios.get("/api/project", {
-            //     params: {
-            //         workType : 'labelling',
-            //     }});
-            //     this.projectList = projectListRes.data;
-            // }
-        
       }
       //수집 프로젝트 리스트 
         if(this.$route.params.projectType == "Collection") {
@@ -185,51 +104,23 @@ export default {
                   difficulty : this.$route.params.difficulty,
                   subject : this.$route.params.subject,
               }
-            });
-            if(projectListRes.headers.search == "success"){
+            })
+            .then(projectListRes => {
+                if(projectListRes.headers.search == "success"){
                 this.projectList = projectListRes.data;
+                console.log(projectListRes.data);
+                }
+                else {
+                    alert("검색한 프로젝트가 존재하지 않습니다.");
+                }
+            })
+            .catch(function(error) {
+                        if(error.response){
+                            alert("검색 정보가 없습니다!");
+                        }
+                });
             }
-            else {
-                alert("검색한 프로젝트가 존재하지 않습니다.");
-            }
-
-            // if(this.$route.params.subject != null) {// 주제 검색한 경우 
-            //     //alert("수집 - 주제 검색");
-            //     const projectListRes = await axios.get("/api/project", {
-            //     params: {
-            //         workType : 'collection',
-            //         subject : this.$route.params.subject,
-            //     }});
-            //     this.projectList = projectListRes.data;
-            // }
-            // else if(this.$route.params.dataType != null) { //데이터 종류 검색한 경우
-            //     //alert("수집 - 데이터 종류");
-            //     const projectListRes = await axios.get("/api/project", {
-            //     params: {
-            //         workType : 'collection',
-            //         dataType : this.$route.params.dataType,
-            //     }});
-            //     this.projectList = projectListRes.data;
             
-            // }
-            // else if(this.$route.params.difficulty != null) { //난이도를 선택한 경우 
-            //     //alert("수집 - 난이도");
-            //     const projectListRes = await axios.get("/api/project", {
-            //     params: {
-            //         workType : 'collection',
-            //         difficulty : this.$route.params.difficulty,
-            //     }});
-            //     this.projectList = projectListRes.data;
-            // }
-            // else { //수집 프로젝트 검색
-            // //alert("수집");
-            //     const projectListRes = await axios.get("/api/project", {
-            //     params: {
-            //         workType : 'collection',
-            //     }});
-            //     this.projectList = projectListRes.data;
-            // }
-        }
 
   },
   computed: {
@@ -241,7 +132,7 @@ export default {
         moveProject(detailItem){
             console.log(detailItem); // 자세히 보고싶은 프로젝트를 보여줄 수 있도록 
             this.$router.push({name: 'ProjectDetail', params: {
-                idx: detailItem.name,
+                idx: detailItem.projectName,
                 project : detailItem,
             }})
         }

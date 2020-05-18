@@ -141,7 +141,14 @@ export default {
                     }
                 });
                 //이미지 예시데이터 업로드 
-                console.log(projectRes.headers.bucketname);
+                console.log(projectRes.headers.bucketname); //class를 먼저 업로드를 하고 예시데이터 업로드!
+                // if(projectRes.headers.bucketname != null){
+                //     const classNameRes = await axios.post("/api/project/class", "", {
+                //         params : {
+                //             className : JSON.stringify(this.dataClass), //배열은 이렇게 변환해서 보내야
+                //         }
+                //     });
+                // }
                 if (projectRes.headers.bucketname != null){
                     axios.defaults.headers.common['bucketName'] = projectRes.headers.bucketName;
                     if(this.selectedData == 'image'){
