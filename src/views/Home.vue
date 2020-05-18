@@ -174,7 +174,7 @@ export default {
     return {
       loginStatus: '',
       selected: null,
-      selectedLevel: null,
+      selectedLevel: 0,
       searchType: null,
       selectedProject: null,
       selectedData : null,
@@ -223,7 +223,7 @@ export default {
           this.$router.push({name : "Project", params : {
               projectType : "Collection",
               dataType: null,
-              difficulty : null,
+              difficulty : '0',
               subject : null,
               }
           });
@@ -232,7 +232,7 @@ export default {
             this.$router.push({name : "Project", params : {
               projectType : "Labelling",
               dataType: 'boundingBox',
-              difficulty : null,
+              difficulty : '0',
               subject : null,
             }});
         },
@@ -240,7 +240,7 @@ export default {
           this.$router.push({name : "Project", params : {
               projectType : "Labelling",
               workType: 'classification',
-              difficulty : null,
+              difficulty : '0',
               subject : null,
             }});
         }

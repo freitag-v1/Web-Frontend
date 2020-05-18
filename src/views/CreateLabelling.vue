@@ -15,13 +15,7 @@
                 </b-form-group>
                 </b-form>
                 <br>
-                <p>프로젝트 라벨링 데이터 종류 선택</p>
-                 <b-form-select v-model="selectedData" class="dataTypeForm">
-                    <b-form-select-option-group label="데이터 타입">
-                        <b-form-select-option :value="'image'">이미지</b-form-select-option>
-                        <b-form-select-option :value="'audio'">음성</b-form-select-option>
-                        <b-form-select-option :value="'text'">텍스트</b-form-select-option>
-                    </b-form-select-option-group>
+                
             </b-form-select>
             <br>
             <br>
@@ -97,7 +91,6 @@ export default {
         return {
             show : true,
             name: null,
-            selectedData: null,
             subject: null,
             wayContent: null,
             inputCondition: null,
@@ -120,6 +113,7 @@ export default {
     methods : {
         async createProject() {
             console.log(this.exampleContent);
+            
             var userId = await localStorage.getItem('userId');
             const config = {
                             headers: { 'Content-type': 'multipart/form-data'}
@@ -129,7 +123,7 @@ export default {
             //     alert("프로젝트 생성을 위해 내용을 빠짐없이 작성해주세요.");
             // }
             // else {
-                // const projectRes = awai= await axios.post("/api/project/collection", {
+                // const projectRes = awai= await axios.post("/api/project/create", {
                 //     params : {
                 //         name : this.name,
                 //         dataType : this.selectedData,
@@ -139,6 +133,7 @@ export default {
                 //         description : this.description,
                 //         userId : userId,
                 //         workType : this.workType,
+                //         totalData : 0,
                 //     }
                 // });
                 // 이미지 가져오면 디코딩해서 보여주는 역할 

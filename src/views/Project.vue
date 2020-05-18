@@ -33,8 +33,9 @@
             </template>
             <template v-slot:cell(dataType)="data">
                 <p class = "data" v-if="data.value == 'image'"><b-icon icon="image" variant="success"></b-icon> 이미지</p>
-                <p class = "data" v-if="data.value == 'audio'"><b-icon icon="mic-fill" variant="primary"></b-icon> 음성</p>
-                <p class = "data" v-if="data.value == 'text'"><b-icon icon="blockquote-left" variant="warning"></b-icon> 텍스트</p>
+                <p class = "data" v-else-if="data.value == 'audio'"><b-icon icon="mic-fill" variant="primary"></b-icon> 음성</p>
+                <p class = "data" v-else-if="data.value == 'text'"><b-icon icon="blockquote-left" variant="warning"></b-icon> 텍스트</p>
+                <p class = "data" v-else><b-icon icon="tag" color="#e83e8c"></b-icon> 라벨링</p>
             </template>
             
             </b-table>
@@ -112,18 +113,18 @@ export default {
       }
   },
   async beforeCreate() {
-      var loginStatus = await localStorage.getItem('loginState');
+      //var loginStatus = await localStorage.getItem('loginState');
       axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
-      if(!loginStatus) {
-          alert("로그인이 필요한 페이지입니다.")
-          this.$router.push("/login"); 
-      }
+    //   if(!loginStatus) {
+    //       alert("로그인이 필요한 페이지입니다.")
+    //       this.$router.push("/login"); 
+    //   }
         //라벨링 작업 프로젝트 
       if(this.$route.params.projectType == "Labelling") {
-          //console.log(this.$route.params.difficulty, this.$route.params.workType, this.$route.params.subject);
-         
-          const projectListRes = await axios.get("/api/project/list/labelling", {
+          //console.log(this.$route.params.difficulty, this.$route.params.workType, this.$route.params.subject)
+          const projectListRes = await axios.get("/api/project/list", {
               params : {
+                  workType : 'labelling',
                   dataType : this.$route.params.workType,
                   difficulty : this.$route.params.difficulty[0],
                   subject : this.$route.params.subject,
@@ -177,8 +178,9 @@ export default {
       //수집 프로젝트 리스트 
         if(this.$route.params.projectType == "Collection") {
             console.log(this.$route.params.difficulty, this.$route.params.dataType, this.$route.params.subject);
-             const projectListRes = await axios.get("/api/project/list/collection", {
+             const projectListRes = await axios.get("/api/project/list", {
               params : {
+                  workType : 'collection',
                   dataType : this.$route.params.dataType,
                   difficulty : this.$route.params.difficulty,
                   subject : this.$route.params.subject,

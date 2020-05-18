@@ -10,7 +10,7 @@
     </template>
 
     <b-card-body>
-      <b-card-title>{{project.name}}</b-card-title>
+      <b-card-title>{{ project.name }}</b-card-title>
       <b-card-text v-if="project.workType =='collection'">
         프로젝트 데이터 종류: 
         <b-icon icon="image" v-if="project.dataType == 'image'" variant="success"></b-icon>
@@ -55,11 +55,11 @@
     <br>
     <b-card class="agreement">
         <b-card-title>정보 수집 이용 동의</b-card-title>
-        <p>프로젝트 진행 시 작업자가 제공하는 음성, 텍스트, 이미지 등 작업 정보를 처리합니다.</p>
+        <p>프로젝트 진행 시 작업자가 제공하는 음성, 텍스트, 이미지 등 작업 정보를 수집 및 처리합니다.</p>
         <br>
         <b-table striped hover :items="agreements" :fields="fields"></b-table>
         <br>
-        <p>※ 위와 같이 개인정보를 처리하는데 동의를 거부할 권리가 있습니다.
+        <p>※ 위와 같이 작업 정보를 수집 및 처리하는데 동의를 거부할 권리가 있습니다.
         <br>
             그러나 동의를 거부할 경우 일부 작업 서비스 제공이 제한될 수 있습니다.</p>
         <br>
@@ -120,6 +120,43 @@ let day = today.getDay();  // 요일
         async startProject() {
             if(this.status ==  "비동의" || this.status == null){
                 alert("동의하지 않은 경우 프로젝트를 진행할 수 없습니다!");
+            }
+            else {
+              switch(this.project.workType){
+                  case "collection" : 
+                    if(this.project.dataType == 'image') {
+                        this.$router.push({name: 'ImageCollection', params : {
+                        project : this.project,
+                        idx : this.project.name,
+                      }});
+                      break;
+                    }
+                    else if (this.project.dataType == 'audio'){
+                        this.$router.push({name: 'AudioCollection', params : {
+                        project : this.project,
+                        idx : this.project.name,
+                      }});
+                    }
+                    else {
+                      this.$router.push({name: 'TextCollection', params : {
+                        project : this.project,
+                        idx : this.project.name,
+                      }});
+                    }
+                    break;
+                  case "Image Bounding Box" :
+                    this.$router.push({name: 'ImageBoundingBox', params : {
+                        project : this.project,
+                        idx : this.project.name,
+                      }});
+                      break;
+                  case "classification" : 
+                    this.$router.push({name: 'Classification', params : {
+                        project : this.project,
+                        idx : this.project.name,
+                      }});
+                      break;
+              }
             }
             
         }

@@ -14,6 +14,11 @@ import PointExchange from '../views/PointExchange.vue'
 import ProjectPayment from '../views/ProjectPayment.vue'
 import ProjectDetail from '../views/ProjectDetail.vue'
 import AccountPayment from '../views/AccountPayment.vue'
+import ImageCollection from '../views/ImageCollection.vue'
+import AudioCollection from '../views/AudioCollection.vue'
+import TextCollection from '../views/TextCollection.vue'
+import ImageBoundingBox from '../views/ImageBoundingBox.vue'
+import Classification from '../views/Classification.vue'
 
 Vue.use(VueRouter)
 
@@ -79,7 +84,7 @@ Vue.use(VueRouter)
     component: ProjectPayment, 
   },
   {
-    path:'/project/detail/:idx',
+    path:'/project/:idx/information',
     name: 'ProjectDetail',
     component: ProjectDetail, 
   },
@@ -88,6 +93,32 @@ Vue.use(VueRouter)
     name: 'AccountPayment',
     component: AccountPayment, 
   },
+  {
+    path:'/project/collection/image/:idx',
+    name: 'ImageCollection',
+    component: ImageCollection,
+  },
+  {
+    path:'/project/collection/audio/:idx',
+    name: 'AudioCollection',
+    component: AudioCollection,
+  },
+  {
+    path:'/project/collection/text/:idx',
+    name: 'TextCollection',
+    component: TextCollection,
+  },
+  {
+    path:'/project/labelling/boundingBox/:idx',
+    name: 'ImageBoundingBox',
+    component: ImageBoundingBox,
+  },
+  {
+    path:'/project/labelling/classification/:idx',
+    name: 'Classification',
+    component: Classification,
+  },
+
 
 
 ]

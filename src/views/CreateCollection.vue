@@ -56,6 +56,9 @@
             <br>
             <br>
             <p>예시 데이터 업로드</p>
+            <p>텍스트 데이터 프로젝트인 경우 아래에 글을 작성하시거나 텍스트 파일을 업로드 해주세요!</p>
+            <b-form-input id="inputExample" placeholder="예시 데이터를 작성해주세요." v-model="exampleTextContent" ></b-form-input>
+            <br>
             <b-form-file 
                 v-model="exampleContent"
                 :state="Boolean(exampleContent)"
@@ -75,6 +78,7 @@
 </template>
 <script>
 import axios from 'axios';
+var FileSaver = require("file-saver");
 
 export default {
   name: 'CreateProject',
@@ -91,6 +95,7 @@ export default {
             imageUrl: null,
             totalData: 0,
             dataClass: [{name : '수집 데이터'}],
+            exampleTextContent: null,
         }
     },
     async beforeCreate() {
@@ -104,6 +109,7 @@ export default {
     methods : {
         async createProject() {
             console.log(this.exampleContent);
+            console.log(typeof(this.exampleContent));
             const config = {
                     headers: { 'Content-type': 'multipart/form-data'}
             };
@@ -120,8 +126,7 @@ export default {
                     this.dataClass.splice(classLength-1, 1);
                 }
                  //맨 뒤에 빈 값이 들어가서 그거 삭제하는 역할
-                console.log(this.dataClass);
-                const projectRes = await axios.post("/api/project/collection","", {
+                const projectRes = await axios.post("/api/project/create","", {
                     params : {
                         projectName : this.name,
                         dataType : this.selectedData,
@@ -140,20 +145,7 @@ export default {
                 if (projectRes.headers.bucketname != null){
                     axios.defaults.headers.common['bucketName'] = projectRes.headers.bucketName;
                     if(this.selectedData == 'image'){
-                        // const exampleUrl = URL.createObjectURL(this.exampleContent); //업로드 한 파일에 대해서 url을 만듦 
-                        // console.log(exampleUrl);
-                        // let buffer = new Buffer(exampleUrl);
-                        // var base64ExampleUrl = buffer.toString('base64'); // url을 이용해서 http 통신을 위해 base64로 변형 
-                        // console.log(base64ExampleUrl);
-                        // base64ExampleUrl = base64ExampleUrl.replace(/\r?\n?/g, ''); // 개행이 있으면 오류가 나서 없애서 보내야
-                        // base64ExampleUrl = base64ExampleUrl.trim();
-                        // //이미지 파일 전송 
-                        // const exampleData = await axios.post("/api/project/upload/example", {
-                        //         headers: {'Content-type': 'application/x-www-form-urlencoded',},
-                        //         imageName, imageData: base64ExampleUrl
-                        // });
                         if(this.exampleContent != null){
-                            //alert("hello");
                             let exampleImageData = new FormData();
                             exampleImageData.append('file',this.exampleContent);
                             const imageRes = await axios.post("/api/project/upload/example", exampleImageData, config); 
@@ -191,6 +183,22 @@ export default {
                                     projectName : this.name,
                                 }});
                         }
+                        else if(this.exampleTextContent != null){
+
+                            var exampleTextFile = new File([this.exampleTextContent],userId+this.name+".txt",{type: "text/plain;charset=utf-8"});
+                            FileSaver.saveAs(exampleTextFile)
+                            console.log("====="+exampleTextFile);
+                            let exampleTextData = new FormData();
+                                exampleTextData.append('file',exampleTextFile);
+                                const textRes = await axios.post("/api/project/upload/example", exampleTextData, config);
+                                alert("수집 프로젝트 생성 완료!");
+                                 this.$router.push({name: "ProjectPayment", 
+                                params : {
+                                    point: textRes.headers.cost,
+                                    projectName : this.name,
+                                }});
+                           
+                        }
                     }
                     
                 }
@@ -209,7 +217,7 @@ export default {
             
                 this.dataClass.push({name:''});
                 console.log(this.dataClass);
-            
+
             // else {
             //     alert("원하는 수집 데이터를 입력해주세요!");
             // }
@@ -235,6 +243,9 @@ export default {
     margin: auto;
 }
 #inputWay{
+    height: 300px;
+}
+#inputExample {
     height: 300px;
 }
 #inputCondition {
