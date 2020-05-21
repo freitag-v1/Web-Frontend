@@ -83,7 +83,7 @@
             <b-form-input size="sm" class="mr-sm-2" placeholder="Search" v-model="selectedSubject" v-if="selectedProject != ''"></b-form-input>
           <br>
           <br>
-          <b-button class="searchButton" v-on:click = "search" variant="outline-primary">Search</b-button>
+          <b-button class="searchButton" v-on:click ="search" variant="outline-primary">Search</b-button>
         </div>
         
         </b-sidebar>
@@ -174,7 +174,7 @@ export default {
     return {
       loginStatus: '',
       selected: "",
-      selectedLevel: 0,
+      selectedLevel: -1,
       searchType: "",
       selectedProject: "",
       selectedData : "",
@@ -206,15 +206,16 @@ export default {
             alert("원하는 검색 종류를 선택해주세요!");
           }
           else {
+            
             this.$router.push({name: "Project",
               params: {
                 projectType : this.selectedProject,
                 workType : this.selectedWork,
                 dataType: this.selectedData,
-                difficulty : this.selectedLevel[0],
+                difficulty : (this.selectedLevel == 0) ? this.selectedLevel : this.selectedLevel[0] ,
                 subject : this.selectedSubject,
               }
-            })
+            });
           }
           
           }
@@ -232,7 +233,7 @@ export default {
             this.$router.push({name : "Project", params : {
               projectType : "Labelling",
               dataType: 'boundingBox',
-              difficulty : 0,
+              difficulty : -1,
               subject : "",
             }});
         },
@@ -240,7 +241,7 @@ export default {
           this.$router.push({name : "Project", params : {
               projectType : "Labelling",
               workType: 'classification',
-              difficulty : 0,
+              difficulty : -1,
               subject : "",
             }});
         }

@@ -64,7 +64,7 @@
                 accept="audio/*,image/*,text/*"
                 ></b-form-file>
                 <div class="mt-3">Selected file: {{ exampleContent ? exampleContent.name : '' }}</div>
-                <img id ="examplePreview" v-if="imageUrl && this.selectedData == 'image'" :src = "imageUrl"></img>
+                <img id ="examplePreview" v-if="imageUrl != null" :src = "imageUrl"></img>
                 <br>
                 <br>
                 <p>라벨링 데이터 업로드</p>
@@ -93,7 +93,6 @@ export default {
             name: null,
             subject: null,
             wayContent: null,
-            inputCondition: null,
             description: null,
             conditionContent: null,
             exampleContent: null,
@@ -109,6 +108,7 @@ export default {
           alert("로그인이 필요한 페이지입니다.")
           this.$router.push("/login"); 
       }
+      axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
     },
     methods : {
         async createProject() {
@@ -116,126 +116,80 @@ export default {
             
             var userId = await localStorage.getItem('userId');
             const config = {
-                            headers: { 'Content-type': 'multipart/form-data'}
+                    headers: { 'Content-type': 'multipart/form-data'}
                 };
-            // if(this.name == null || this.selectedData == null || this.subject == null || this.wayContent == null || this.inputCondition == null
-            // || this.description == null || this.conditionContent == null || this.selectedWork  == null || this.labellingContent == null){
-            //     alert("프로젝트 생성을 위해 내용을 빠짐없이 작성해주세요.");
-            // }
-            // else {
-                // const projectRes = awai= await axios.post("/api/project/create", {
-                //     params : {
-                //         name : this.name,
-                //         dataType : this.selectedData,
-                //         subject : this.subject,
-                //         wayContent : this.wayContent,
-                //         conditionContent : this.conditionContent,
-                //         description : this.description,
-                //         userId : userId,
-                //         workType : this.workType,
-                //         totalData : 0,
-                //     }
-                // });
-                // 이미지 가져오면 디코딩해서 보여주는 역할 
-                // function getBase64(url) {
-                //     retur= await axios
-                //         .get(url, {
-                //         responseType: 'arraybuffer'
-                //         })
-                //         .then(response => new Buffer(response.data, 'binary').toString('base64'))
-                //   }
-                //이미지는 base64로 encoding해서 그냥 보내는거 그래서 작업이 image인 경우 이렇게 보낸다. formdata로 보내거나 base64로 보내거나
-                if(this.selectedData == 'image'){
-                    if(this.exampleContent != null){
-                        // const exampleUrl = URL.createObjectURL(this.exampleContent); //업로드 한 파일에 대해서 url을 만듦 
-                        // console.log(exampleUrl);
-                        // let buffer = new Buffer(exampleUrl);
-                        // var base64ExampleUrl = buffer.toString('base64'); // url을 이용해서 http 통신을 위해 base64로 변형 
-                        // console.log(base64ExampleUrl);
-                        // base64ExampleUrl = base64ExampleUrl.replace(/\r?\n?/g, ''); // 개행이 있으면 오류가 나서 없애서 보내야
-                        // base64ExampleUrl = base64ExampleUrl.trim();
-                        // //이미지 파일 전송 
-                        // const exampleData = awai= await axios.post("/api/project/upload/example", {
-                        //         headers: {'Content-type': 'application/x-www-form-urlencoded',},
-                        //         imageName: this.exampleContent.name, imageData: base64ExampleUrl
-                        // });
-                        let exampleImageData = new FormData();
-                        exampleImageData.append('file',this.examplContent, this.examplContent.name);
-                        exampleImageData.append('bucketName', )
-                        const imageRes = await axios.post("/api/project/upload/example", exampleImageData, config);
-
-                    }
-                    // //라벨링 데이터 파일 => url
-                    // var labellingUrl = new Array();
-                    // var base64LabellingUrl = new Array();
-                    // //const labellingUrl = URL.createObjectURL(this.labellingContent);
-                    // for(let i = 0; i < this.labellingContent.length; i++){ //여러개니까 반복문을 이용해서 하나하나
-                    //     labellingUrl[i] = URL.createObjectURL(this.labellingContent[i]);
-                    //     let buffer = new Buffer(labellingUrl[i]);
-                    //     base64LabellingUrl[i] = buffer.toString('base64');
-                    //     base64LabellingUrl[i] = base64LabellingUrl[i].replace(/\r?\n?/g, '');
-                    //     base64LabellingUrl[i] = base64LabellingUrl[i].trim();
-                    //     console.log(base64LabellingUrl[i]);
-                    // }
-                    // var labellingData = new Array();
-                    // for(let i = 0; i < base64LabellingUrl.length; i++){
-                    //     labellingData[i] = await axios.post("/api/project/labelling/data", {
-                    //     headers: {'Content-type': 'application/x-www-form-urlencoded',},
-                    //     imageName: this.labellingContent[i].name, imageData
-                    //     })
-                    // }
-                    let labelImageData = new FormData();
-                    for(let i = 0; i < this.labellingContent.length; i++){
-                        labelImageData.append('imagefile'+i, this.labellingContent[i], this.labellingContent[i].name);
-                        const imageRes = await axios.post("/api/project/labelling", labelImageData,config);
-                    }
-
+            if(this.name == null  || this.subject == null || this.wayContent == null 
+            || this.description == null || this.conditionContent == null || this.selectedWork  == null || this.labellingContent == null){
+                console.log(this.labellingContent);
+                alert("프로젝트 생성을 위해 내용을 빠짐없이 작성해주세요.");
+            }
+            else {
+                let classLength = this.dataClass.length;
+                if(this.dataClass[classLength -1].name == ""){
+                    this.dataClass.splice(classLength-1, 1);
                 }
-                else if (this.selectedData == 'audio'){
-                    //음성 파일인 예시 데이터 업로드 얘는 따로 base64 인코딩을 안하는 것 같은데...
-                    if(this.exampleContent != null){
-                        let exampleAudioData = new FormData();
-                        exampleAudioData.append('file',this.exampleContent, this.exampleContent.name);
-                        const imageRes = await axios.post("/api/project/upload/example",exampleAudioData,config);
-
-                    }
-                    //음성 파일인 라벨링 데이터 업로드 
-                    let labelAudioData = new FormData();
-                    for(let i = 0; i < this.labellingContent.length; i++){
-                        labelAudioData.append('audiofile'+i, this.labellingContent[i], this.labellingContent[i].name);
-                        const audioRes = await axios.post("/api/project/labelling", labelAudioData, config);
-                    }
-                }
-                else {
-                    //텍스트 파일인 예시 데이터 업로드 
-                    if(this.examplContent != null){
-                        let exampleTextData = new FormData();
-                        exampleTextData.append('file',this.exampleContent, this.exampleContent.name);
-                        const textRes = await axios.post("/api/project/upload/example", exampleTextData, config);
-                    }
-                    //텍스트 파일인 라벨링 데이터 업로드
-                    let labelTextData = new FormData();
-                    for(let i = 0; i < this.labellingContent.length; i++){
-                        labelTextData.append('textfile'+i, this.labellingContent[i], this.labellingContent[i].name);
-                        const textRes = await axios.post("/api/project/labelling", labelTextData, config);
-                    }
-                }
-                alert("라벨링 프로젝트 생성 완료!");
-                this.$router.push({name: "ProjectPayment", 
+                const projectRes =  await axios.post("/api/project/create", "",{
                     params : {
-                        //point: textRes.headers.cost,
                         projectName : this.name,
-                                }});//결제하는 페이지를 만들어서 이동하도록  
+                        dataType : this.selectedWork,
+                        subject : this.subject,
+                        wayContent : this.wayContent,
+                        conditionContent : this.conditionContent,
+                        description : this.description,
+                        userId : userId,
+                        workType : 'labelling',
+                        totalData: 0,
+                    }
+                });
+                console.log(projectRes.headers.create); 
+                  if(projectRes.headers.create == "success"){
+                        const projectId = projectRes.headers.projectid;
+                        console.log(projectId);
+                        var params = new URLSearchParams();
+                        for (let i = 0; i < this.dataClass.length; i++){
+                            params.append("className",this.dataClass[i].name);
+                        }
+                        params.append("projectId",projectId);
+                        const classNameRes = await axios.post("/api/project/class", params);
+                        console.log(classNameRes.headers.class);
+                        if(classNameRes.headers.class == "success"){
+                            axios.defaults.headers.common['bucketName'] = "nahyun";
+                            let exampleData = new FormData();
+                            exampleData.append('file',this.exampleContent);
+                            const exampleDataRes = await axios.post("/api/project/upload/example", exampleData, config); 
+                            if(exampleDataRes.headers.example == "success") {
+                                let labellingData = new FormData();
+                                for(let labellingDataNumber = 0; labellingDataNumber < this.labellingContent.length; labellingDataNumber++){
+                                    labellingData.append('file',this.labellingContent[labellingDataNumber]);
+                                }
+                                const labellingDataRes = await axios.post("/api/project/upload/labelling",labellingData, config);
+                                if(labellingDataRes.headers.upload == "success") {
+                                            alert("라벨링 프로젝트 생성 완료!");
+                                            this.$router.push({name: "ProjectPayment", 
+                                            params : {
+                                                point: 50000,
+                                                projectName : this.name,
+                                            }});
+                                    }
+                                    else {
+                                            alert("라벨링 프로젝트 생성 실패");
+                                    }   
+                            }
+                        }
 
-                
-            //}
+
+                    }
+                  else {
+                        alert("수집 프로젝트 생성 실패");
+                    }
+
+            }
+            
         },
         onChangeImages(e) { 
-            if(this.selectedData == 'image'){
                 console.log(e.target.files);
                 const file = e.target.files[0];
                 this.imageUrl = URL.createObjectURL(file);
-            }
         },
         addClass() {
             

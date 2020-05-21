@@ -48,11 +48,7 @@ export default {
   },
   methods : {
       async accountPayment() {
-        const paymentRes = await axios.get('/api/project/account/payment', {
-            params: {
-                cost : this.projectCost,
-            }
-        });  
+        const paymentRes = await axios.get('/api/project/account/payment');  
       }
     
     

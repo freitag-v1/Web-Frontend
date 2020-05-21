@@ -69,12 +69,12 @@ export default {
     //   }
         //라벨링 작업 프로젝트 
       if(this.$route.params.projectType == "Labelling") {
-          //console.log(this.$route.params.difficulty, this.$route.params.workType, this.$route.params.subject)
+          console.log(this.$route.params.difficulty, this.$route.params.workType, this.$route.params.subject)
           await axios.get("/api/project/list", {
               params : {
                   workType : 'labelling',
                   dataType : this.$route.params.workType,
-                  difficulty : this.$route.params.difficulty,
+                  difficulty : 0,//this.$route.params.difficulty,
                   subject : this.$route.params.subject,
               }
             })

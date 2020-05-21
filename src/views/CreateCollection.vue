@@ -78,6 +78,8 @@
 </template>
 <script>
 import axios from 'axios';
+import Qs from 'qs';
+
 var FileSaver = require("file-saver");
 
 export default {
@@ -117,6 +119,7 @@ export default {
             //alert(userId);
             if(this.name == null || this.selectedData == null || this.subject == null || this.wayContent == null 
             || this.description == null || this.conditionContent == null || this.totalData == null || this.dataClass == null){
+                console.log(typeof(this.totalData));
                 alert("프로젝트 생성을 위해 내용을 빠짐없이 작성해주세요.");
             }
             else {
@@ -125,6 +128,7 @@ export default {
                 if(this.dataClass[classLength -1].name == ""){
                     this.dataClass.splice(classLength-1, 1);
                 }
+                
                  //맨 뒤에 빈 값이 들어가서 그거 삭제하는 역할
                 const projectRes = await axios.post("/api/project/create","", {
                     params : {
@@ -137,77 +141,81 @@ export default {
                         userId : userId,
                         workType : 'collection',
                         totalData: this.totalData,
-                        //className : JSON.stringify(this.dataClass), 배열은 이렇게 변환해서 보내야
                     }
                 });
-                //이미지 예시데이터 업로드 
-                console.log(projectRes.headers.bucketname); //class를 먼저 업로드를 하고 예시데이터 업로드!
-                // if(projectRes.headers.bucketname != null){
-                //     const classNameRes = await axios.post("/api/project/class", "", {
-                //         params : {
-                //             className : JSON.stringify(this.dataClass), //배열은 이렇게 변환해서 보내야
-                //         }
-                //     });
-                // }
-                if (projectRes.headers.bucketname != null){
-                    axios.defaults.headers.common['bucketName'] = projectRes.headers.bucketName;
-                    if(this.selectedData == 'image'){
-                        if(this.exampleContent != null){
-                            let exampleImageData = new FormData();
-                            exampleImageData.append('file',this.exampleContent);
-                            const imageRes = await axios.post("/api/project/upload/example", exampleImageData, config); 
-                            alert("수집 프로젝트 생성 완료!");
-                            this.$router.push({name: "ProjectPayment", 
-                                params : {
-                                    point: imageRes.headers.cost,
-                                    projectName : this.name,
-                                }});
-                        }
+                //프로젝트 class 전송
+                console.log(projectRes.headers.create); //class를 먼저 업로드를 하고 예시데이터 업로드!
+                if(projectRes.headers.create == "success"){
+                    const projectId = projectRes.headers.projectid;
+                    console.log(projectId);
+                    var params = new URLSearchParams();
+                    for (let i = 0; i < this.dataClass.length; i++){
+                        params.append("className",this.dataClass[i].name);
                     }
-                    else if (this.selectedData == 'audio'){
-                            //음성 파일인 예시 데이터 업로드 얘는 따로 base64 인코딩을 안하는 것 같은데...
-                            if(this.exampleContent != null){
-                                let exampleAudioData = new FormData();
-                                exampleAudioData.append('file',this.exampleContent);
-                                const audioRes = await axios.post("/api/project/upload/example", exampleAudioData, config);
+                    params.append("projectId",projectId);
+                    
+                    const classNameRes = await axios.post("/api/project/class", params);
+                    console.log(classNameRes.headers.class);
+                    if(classNameRes.headers.class == "success"){
+                        axios.defaults.headers.common['bucketName'] = "nahyun";
+                        if(this.selectedData == 'text'){
+                            if(this.exampleContent == null){ //텍스트인데 그냥 적은 내용 자체가 텍스트 예시 데이터 인경우 파일로 변환을 해야 
+                                var exampleTextFile = new File([this.exampleTextContent],userId+this.name+".txt",{type: "text/plain;charset=utf-8"});
+                                //FileSaver.saveAs(exampleTextFile)
+                                console.log(exampleTextFile);
+                                let exampleTextData = new FormData();
+                                    exampleTextData.append('file',exampleTextFile);
+                                    const textRes = await axios.post("/api/project/upload/example", exampleTextData, config);
+                                    if(textRes.headers.example == "success") {
+                                        alert("수집 프로젝트 생성 완료!");
+                                        this.$router.push({name: "ProjectPayment", 
+                                        params : {
+                                            point: exampleDataRes.headers.cost,
+                                            projectName : this.name,
+                                        }});
+                                    }
+                                    else {
+                                        alert("수집 프로젝트 생성 실패");
+                                    }
+                            }
+                            else {//그냥 텍스트 첨부파일을 올리는 경우 
+                                let exampleData = new FormData();
+                                        exampleData.append('file',this.exampleContent);
+                                        const exampleDataRes = await axios.post("/api/project/upload/example", exampleData, config); 
+                                        if(exampleDataRes.headers.example == "success") {
+                                            alert("수집 프로젝트 생성 완료!");
+                                            this.$router.push({name: "ProjectPayment", 
+                                            params : {
+                                                point: exampleDataRes.headers.cost,
+                                                projectName : this.name,
+                                            }});
+                                        }
+                                        else {
+                                            alert("수집 프로젝트 생성 실패");
+                                        }     
+                            }
+                        }
+                        else  {// 이미지, 음성인 경우 
+                            let exampleData = new FormData();
+                            exampleData.append('file',this.exampleContent);
+                            const exampleDataRes = await axios.post("/api/project/upload/example", exampleData, config); 
+                            if(exampleDataRes.headers.example == "success") {
                                 alert("수집 프로젝트 생성 완료!");
-                                 this.$router.push({name: "ProjectPayment", 
+                                this.$router.push({name: "ProjectPayment", 
                                 params : {
-                                    point: audioRes.headers.cost,
+                                    point: exampleDataRes.headers.cost,
                                     projectName : this.name,
                                 }});
                             }
-                    }
-                    else  { //텍스트 파일인 예시 데이터 업로드 
-                        if(this.exampleContent != null){
-                                let exampleTextData = new FormData();
-                                exampleTextData.append('file',this.exampleContent);
-                                const textRes = await axios.post("/api/project/upload/example", exampleTextData, config);
-                                alert("수집 프로젝트 생성 완료!");
-                                 this.$router.push({name: "ProjectPayment", 
-                                params : {
-                                    point: textRes.headers.cost,
-                                    projectName : this.name,
-                                }});
+                            else {
+                                alert("수집 프로젝트 생성 실패");
+                            }
                         }
-                        else if(this.exampleTextContent != null){
+                    }
+                    else {
+                        alert("수집 프로젝트 생성 실패");
+                    }
 
-                            var exampleTextFile = new File([this.exampleTextContent],userId+this.name+".txt",{type: "text/plain;charset=utf-8"});
-                            FileSaver.saveAs(exampleTextFile)
-                            console.log("====="+exampleTextFile);
-                            let exampleTextData = new FormData();
-                                exampleTextData.append('file',exampleTextFile);
-                                const textRes = await axios.post("/api/project/upload/example", exampleTextData, config);
-                                alert("수집 프로젝트 생성 완료!");
-                                 this.$router.push({name: "ProjectPayment", 
-                                params : {
-                                    point: textRes.headers.cost,
-                                    projectName : this.name,
-                                }});
-                           
-                        }
-                    }
-                    
                 }
                 else {
                     alert("수집 프로젝트 생성 실패");
