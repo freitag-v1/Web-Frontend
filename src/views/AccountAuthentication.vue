@@ -23,6 +23,7 @@ import SignUpComplete from '../components/SignUpComplete';
 import axios from 'axios';
   var state = null;
   var userId = null;
+
   export default {
     name: 'SignUp',
     components: {
@@ -31,19 +32,38 @@ import axios from 'axios';
     data() {
         return {
             Authentication: false,
+            isComplete: false,
         }
     },
-    async beforeCreate () {
+    async created () {
       state = await localStorage.bankState;
-      alert(state);
-      //axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
-      //userId = await localStorage.getItem('userId');
+    },
+    beforeMount() {
+            window.addEventListener("beforeunload", this.preventNav);
+            this.$once("hook:beforeDestroy", () => {
+            window.removeEventListener("beforeunload", this.preventNav);
+        });
+    },
+    beforeRouteLeave(to, from, next) {
+        if(!this.isComplete){ //버튼을 눌러서 완성이 되면 이 기능을 무시하도록 
+            if (!window.confirm("페이지를 벗어나면 회원가입이 실패합니다.")) {
+                return;
+            }
+        }
+        next();
+        
     },
     methods: {
+        preventNav(event) {
+                event.preventDefault();
+                // Chrome requires returnValue to be set.
+                event.returnValue = "";
+        },
         async signUpComplete() { //로그인을 해야 jwt 토큰을 받아서 나의 정보를 알아올 수 없음 그래서 계좌인증 여부를 여기서 알기 힘드니까 마이페이지에서 ! 
             this.Authentication = true;
                 alert("3초 뒤에 로그인 페이지로 이동합니다.");
-              setTimeout(()=> {
+                this.isComplete = true;
+                setTimeout(()=> {
                   this.$router.push("/login");
                   },3000);   
 
@@ -52,6 +72,9 @@ import axios from 'axios';
             window.open("https://testapi.openbanking.or.kr/oauth/2.0/authorize?auth_type=0&scope=login+transfer+inquiry&response_type=code&redirect_uri=http%3a%2f%2fwodnd999999.iptime.org%3a8080%2fexternalapi%2fopenbanking%2foauth%2ftoken&lang=kor&state="+state+"&client_id=XXyvh2Ij7l9rss0HAVObS880qY3penX57JXkib9q");
             
         },
+        backbuttonFunc () {
+          alert("뒤로가지마");
+        }
     },
 
   }

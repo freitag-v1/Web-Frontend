@@ -108,13 +108,7 @@ let day = today.getDay();  // 요일
             date: year + "년 "+month+"월 "+todayDate+"일 ",
         }
     },
-    async beforeCreate() {
-        var loginStatus = await localStorage.getItem('loginState');
-        //axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
-        if(!loginStatus) {
-            alert("로그인이 필요한 페이지입니다.")
-            this.$router.push("/login"); 
-        }
+    created() {
         this.project = this.$route.params.project;
         console.log(this.project);
         //var projectClassName = await axios.get("/api/project/className");

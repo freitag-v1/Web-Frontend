@@ -61,12 +61,8 @@ export default {
       }
   },
   async beforeCreate() {
-      //var loginStatus = await localStorage.getItem('loginState');
+      
       axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
-    //   if(!loginStatus) {
-    //       alert("로그인이 필요한 페이지입니다.")
-    //       this.$router.push("/login"); 
-    //   }
         //라벨링 작업 프로젝트 
       if(this.$route.params.projectType == "Labelling") {
           console.log(this.$route.params.difficulty, this.$route.params.workType, this.$route.params.subject)

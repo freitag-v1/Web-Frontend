@@ -12,7 +12,6 @@
       <b-form-group
         id="input-group-1"
         label-for="input-1"
-        description="We'll never share your email with anyone else."
       >
     <b-form  @submit.stop.prevent>
       <label for="feedback-user">Your ID</label>
@@ -94,6 +93,8 @@
 <script>
   import VuePhoneNumberInput from 'vue-phone-number-input';
   import axios from 'axios';
+
+  var signUpSuccess = '';
   export default {
     name: 'SignUp',
     components: {
@@ -108,7 +109,48 @@
         userAffiliation: '',
         userName: '',
         userPhonenumber: '',
+        isEditing: false,
       }
+    },
+    beforeMount() {
+            window.addEventListener("beforeunload", this.preventNav);
+            this.$once("hook:beforeDestroy", () => {
+            window.removeEventListener("beforeunload", this.preventNav);
+        });
+    },
+    beforeRouteLeave(to, from, next) {
+        if (this.isEditing && signUpSuccess != "success") {
+            if (!window.confirm("저장하지 않고 이동하시겠습니까?")) {
+                return;
+            }
+        }
+        next();
+    },
+    watch : {
+      userEmail : function(data) {
+            this.isEditing = true;
+            
+        },
+      userAffiliation : function(data) {
+            this.isEditing = true;
+            
+      },
+      userName : function(data) {
+            this.isEditing = true;
+            
+      },
+      userPhonenumber : function(data) {
+            this.isEditing = true;
+            
+      },
+      userId : function(data) {
+            this.isEditing = true;
+            
+      },
+      userPassword : function(data) {
+            this.isEditing = true;
+            
+      },
     },
     computed: {
       userIdValidation() { //user id validation
@@ -128,6 +170,12 @@
       }
     },
     methods: {
+      preventNav(event) {
+                if (!this.isEditing) return;
+                event.preventDefault();
+                // Chrome requires returnValue to be set.
+                event.returnValue = "";
+        },
         NextPage() {
         alert(this.page);
         //location.reload();
@@ -155,6 +203,7 @@
             userAffiliation : this.userAffiliation,
             userPhone : this.userPhonenumber,
         }}).then(res => { //여기서 response header 가져와서 
+            signUpSuccess = res.headers.update;
             if(res.headers.update == "success"){
               setTimeout(()=> {
               localStorage.bankState = res.headers.state;

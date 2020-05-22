@@ -72,7 +72,7 @@ import axios from 'axios';
 
 
 var user = null;
-
+var modifySuccess = '';
   export default {
     name: 'MypageModify',
     components: {
@@ -85,17 +85,13 @@ var user = null;
         userAffiliation: '',
         userName: '',
         userPhonenumber: '',
+        isEditing: false,
 
       }
     },
     async beforeCreate() {
-      var loginStatus = await localStorage.getItem('loginState');
       var state = await localStorage.getItem('bankState');
       axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
-      if(!loginStatus) {
-          alert("로그인이 필요한 페이지입니다.")
-          this.$router.push("/login"); 
-      }
       user = this.$route.params.user;
     },
     computed: {
@@ -103,7 +99,45 @@ var user = null;
         return this.userEmail.includes('@') && this.userEmail.includes('.com') || this.userEmail.includes('.kr');
       },
     },
+    beforeMount() {
+            window.addEventListener("beforeunload", this.preventNav);
+            this.$once("hook:beforeDestroy", () => {
+            window.removeEventListener("beforeunload", this.preventNav);
+        });
+    },
+    beforeRouteLeave(to, from, next) {
+        if (this.isEditing || modifySuccess != "success") {
+            if (!window.confirm("저장하지 않고 이동하시겠습니까?")) {
+                return;
+            }
+        }
+        next();
+    },
+    watch : {
+      userEmail : function(data) {
+            this.isEditing = true;
+            
+        },
+      userAffiliation : function(data) {
+            this.isEditing = true;
+            
+      },
+      userName : function(data) {
+            this.isEditing = true;
+            
+      },
+      userPhonenumber : function(data) {
+            this.isEditing = true;
+            
+      },
+    },
     methods: {
+        preventNav(event) {
+                if (!this.isEditing) return;
+                event.preventDefault();
+                // Chrome requires returnValue to be set.
+                event.returnValue = "";
+        },
         async modify() {
             console.log(user.userName, user.userEmail, user.userAffiliation, user.userPhone);
             var userNamedata = this.userName != '' ? this.userName : user.userName;
@@ -121,6 +155,7 @@ var user = null;
               // }
             )
             .then(res => {
+              modifySuccess = res.headers.update;
               console.log(res.headers.update);
               if(res.headers.update == "success"){
                 

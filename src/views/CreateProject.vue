@@ -8,13 +8,7 @@
 import axios from 'axios';
 export default {
   name: 'CreateProject',
-    async beforeCreate() {
-      var loginStatus = await localStorage.getItem('loginState');
-      if(!loginStatus) {
-          alert("로그인이 필요한 페이지입니다.")
-          this.$router.push("/login"); 
-      }
-    },
+    
     methods: {
         createCollection() {
             this.$router.push("/project/collection");

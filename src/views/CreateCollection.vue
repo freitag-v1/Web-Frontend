@@ -81,7 +81,7 @@ import axios from 'axios';
 import Qs from 'qs';
 
 var FileSaver = require("file-saver");
-
+var createSuccess = '';
 export default {
   name: 'CreateProject',
     data() {
@@ -98,27 +98,87 @@ export default {
             totalData: 0,
             dataClass: [{name : '수집 데이터'}],
             exampleTextContent: null,
+            isEditing: false,
+            
         }
     },
     async beforeCreate() {
-      var loginStatus = await localStorage.getItem('loginState');
       axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
-      if(!loginStatus) {
-          alert("로그인이 필요한 페이지입니다.")
-          this.$router.push("/login"); 
-      }
+    },
+    beforeMount() {
+            window.addEventListener("beforeunload", this.preventNav);
+            this.$once("hook:beforeDestroy", () => {
+            window.removeEventListener("beforeunload", this.preventNav);
+        });
+    },
+    beforeRouteLeave(to, from, next) {
+        if (this.isEditing && createSuccess != "success") {
+            if (!window.confirm("페이지를 벗어나는 경우 프로젝트이 생성되지 않습니다. 그래도 이동하시겠습니까?")) {
+                return;
+            }
+        }
+        next();
+    },
+    watch : {
+        name : function(data) {
+            this.isEditing = true;
+            
+        },
+        selectedData : function(data) {
+            this.isEditing = true;
+            
+        },
+        subject : function(data) {
+            this.isEditing = true;
+        },
+        wayContent : function(data) {
+            this.isEditing = true;
+        },
+        description : function(data) {
+            this.isEditing = true;
+            
+        },
+        conditionContent : function(data) {
+            this.isEditing = true;
+            
+        },
+        exampleContent : function(data) {
+            this.isEditing = true;
+            
+        },
+        imageUrl : function(data) {
+            this.isEditing = true;
+            
+        },
+        totalData : function(data) {
+            this.isEditing = true;
+            
+        },
+        dataClass : function(data) {
+            this.isEditing = true;
+            
+        },
+        exampleTextContent : function(data) {
+            this.isEditing = true;
+            
+        },
+
     },
     methods : {
+        preventNav(event) {
+                if (!this.isEditing) return;
+                event.preventDefault();
+                // Chrome requires returnValue to be set.
+                event.returnValue = "";
+        },
         async createProject() {
-            console.log(this.exampleContent);
-            console.log(typeof(this.exampleContent));
             const config = {
                     headers: { 'Content-type': 'multipart/form-data'}
             };
             var userId = await localStorage.getItem('userId');
             //alert(userId);
             if(this.name == null || this.selectedData == null || this.subject == null || this.wayContent == null 
-            || this.description == null || this.conditionContent == null || this.totalData == null || this.dataClass == null){
+            || this.description == null || this.conditionContent == null || this.totalData == null || this.dataClass == null || this.exampleContent == null){
                 console.log(typeof(this.totalData));
                 alert("프로젝트 생성을 위해 내용을 빠짐없이 작성해주세요.");
             }
@@ -166,6 +226,7 @@ export default {
                                 let exampleTextData = new FormData();
                                     exampleTextData.append('file',exampleTextFile);
                                     const textRes = await axios.post("/api/project/upload/example", exampleTextData, config);
+                                    createSuccess = textRes.headers.example;
                                     if(textRes.headers.example == "success") {
                                         alert("수집 프로젝트 생성 완료!");
                                         this.$router.push({name: "ProjectPayment", 
@@ -182,6 +243,7 @@ export default {
                                 let exampleData = new FormData();
                                         exampleData.append('file',this.exampleContent);
                                         const exampleDataRes = await axios.post("/api/project/upload/example", exampleData, config); 
+                                        createSuccess = exampleDataRes.headers.example;
                                         if(exampleDataRes.headers.example == "success") {
                                             alert("수집 프로젝트 생성 완료!");
                                             this.$router.push({name: "ProjectPayment", 
@@ -199,6 +261,7 @@ export default {
                             let exampleData = new FormData();
                             exampleData.append('file',this.exampleContent);
                             const exampleDataRes = await axios.post("/api/project/upload/example", exampleData, config); 
+                            createSuccess = exampleDataRes.headers.example;
                             if(exampleDataRes.headers.example == "success") {
                                 alert("수집 프로젝트 생성 완료!");
                                 this.$router.push({name: "ProjectPayment", 

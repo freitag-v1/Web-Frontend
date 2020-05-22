@@ -32,7 +32,7 @@
         <b-button size="lg" variant="primary" v-on:click="addImage">
                 <b-icon icon="file-earmark-plus" aria-label="Help"></b-icon> Add
         </b-button>
-        <b-button size="lg" variant="warning" v-on:click="upload">
+        <b-button size="lg" variant="warning" v-on:click="upload" v-model ="createCollection">
                 <b-icon icon="upload"></b-icon> Upload
         </b-button>
     </div>
@@ -49,6 +49,8 @@ import ImageUpload from '../components/ImageUpload.vue';
 
 
 var ImageList = new Array();
+var dataState = false; //데이터가 업로드 되었는지의 여부
+
  export default {
     name: 'ImageCollection',
     components : {
@@ -59,45 +61,66 @@ var ImageList = new Array();
             project: null,
             classNameList: ['사과', '배', '마라탕'],
             imageCount: 1,
+            createCollection: false,
 
         }
     },
-    async beforeCreate() {
-         var loginStatus = await localStorage.getItem('loginState');
-        //axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
-        if(!loginStatus) {
-            alert("로그인이 필요한 페이지입니다.")
-            this.$router.push("/login"); 
-        }
+    created() {
         this.project = this.$route.params.project;
         console.log(this.project);
     },
+    beforeMount() {
+            window.addEventListener("beforeunload", this.preventNav);
+            this.$once("hook:beforeDestroy", () => {
+            window.removeEventListener("beforeunload", this.preventNav);
+        });
+    },
+    beforeRouteLeave(to, from, next) {
+        if (dataState && !this.createCollection) {
+            if (!window.confirm("페이지를 벗어나면 작업이 저장되지 않습니다. 그래도 이동하시겠습니까?")) {
+                return;
+            }
+        }
+        next();
+    },
     methods : {
+        preventNav(event) {
+                if (!dataState || this.createCollection) return;
+                event.preventDefault();
+                // Chrome requires returnValue to be set.
+                event.returnValue = "";
+        },
         addImage() {
             this.imageCount += 1;
         },
         upload() { //formData 리스트!
             //var imageFormData = new Array(); 뭔가 formdata 리스트가 아니라 formdata에 append해서 보내는거 같다
-            let imgUrl = new FormData();
+        this.createCollection = true;
+        let imgUrl = new FormData();
            for(var uploadImageFile of ImageList){
                imgUrl.append('file', uploadImageFile);
                //imageFormData.push(imgUrl);
            }
            console.log(imgUrl);//여기서 데이터 보내면 된다
            console.log("=========================================");
+           
         },
         registerImageUrl(data) { //index를 저장을 해서 기존에 올린 사진을 수정하는 경우 추가되지 않고 변경해야해서 props로 index 주고 받고 해서 변경
-            let i = data.index -1;
-            let url  = data.url;
-            if(ImageList[i] == null){
-                ImageList.push(url);
-            }
-            else {
-                ImageList.splice(i,1,url);
+                if(data != null) {
+                    dataState = true;
+                }
+                let i = data.index -1;
+                let url  = data.url;
+                if(ImageList[i] == null){
+                    ImageList.push(url);
+                }
+                else {
+                    ImageList.splice(i,1,url);
 
-            }
-            alert("등록완료!");
-            console.log(ImageList);
+                }
+                alert("등록완료!");
+                console.log(ImageList);
+        
         }
 
 

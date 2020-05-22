@@ -36,19 +36,24 @@ export default {
       }
   },
   async beforeCreate() { //페이지 간 라우터로 데이터를 주고받을지 아님 다시 mypage에 접근해서 가져올지 고민
-    var loginStatus = await localStorage.getItem('loginState');
     //var userId = await localStorage.getItem('userId');
     axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
-      if(!loginStatus) {
-          alert("로그인이 필요한 페이지입니다.")
-          this.$router.push("/"); 
-      }
-      this.projectCost = this.$route.params.cost;
-      this.projectName = this.$route.params.name;
+    
+  },
+  created() {
+    this.fetchData();
+  },
+  watch : {
+    '$route' : 'fetchData' //라우터 객체를 감시하고 있다가 fetchData 함수를 호출한다. 
   },
   methods : {
       async accountPayment() {
         const paymentRes = await axios.get('/api/project/account/payment');  
+      },
+      async fetchData() {
+          this.projectCost = await localStorage.getItem('projectCost'); //스토리지에서 가져오고 
+          delete localStorage.projectCost; //얻었으니까 지운다 
+          this.projectName = this.$route.params.name;
       }
     
     

@@ -85,6 +85,8 @@
 </template>
 <script>
 import axios from 'axios';
+
+var createSuccess = '';
 export default {
   name: 'CreateProject',
     data() {
@@ -103,14 +105,74 @@ export default {
         }
     },
     async beforeCreate() {
-      var loginStatus = await localStorage.getItem('loginState');
-      if(!loginStatus) {
-          alert("로그인이 필요한 페이지입니다.")
-          this.$router.push("/login"); 
-      }
       axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
     },
+    beforeMount() {
+            window.addEventListener("beforeunload", this.preventNav);
+            this.$once("hook:beforeDestroy", () => {
+            window.removeEventListener("beforeunload", this.preventNav);
+        });
+    },
+    beforeRouteLeave(to, from, next) {
+        if (this.isEditing && createSuccess != "success") {
+            if (!window.confirm("페이지를 벗어나는 경우 프로젝트이 생성되지 않습니다. 그래도 이동하시겠습니까?")) {
+                return;
+            }
+        }
+        next();
+    },
+    watch : {
+        name : function(data) {
+            this.isEditing = true;
+            
+        },
+        subject : function(data) {
+            this.isEditing = true;
+        },
+        wayContent : function(data) {
+            this.isEditing = true;
+        },
+        description : function(data) {
+            this.isEditing = true;
+            
+        },
+        conditionContent : function(data) {
+            this.isEditing = true;
+            
+        },
+        exampleContent : function(data) {
+            this.isEditing = true;
+            
+        },
+        imageUrl : function(data) {
+            this.isEditing = true;
+            
+        },
+        dataClass : function(data) {
+            this.isEditing = true;
+            
+        },
+        exampleTextContent : function(data) {
+            this.isEditing = true;
+            
+        },
+        selectedWork : function(data) {
+            this.isEditing = true;
+            
+        },
+        labellingContent : function(data) {
+            this.isEditing = true;
+            
+        },
+
+    },
     methods : {
+        preventNav(event) {
+                if (!this.isEditing) return;
+                event.preventDefault();
+                // Chrome requires returnValue to be set.
+                event.returnValue = "";
+        },
         async createProject() {
             console.log(this.exampleContent);
             
@@ -163,6 +225,7 @@ export default {
                                     labellingData.append('file',this.labellingContent[labellingDataNumber]);
                                 }
                                 const labellingDataRes = await axios.post("/api/project/upload/labelling",labellingData, config);
+                                createSuccess = labellingDataRes.headers.upload;
                                 if(labellingDataRes.headers.upload == "success") {
                                             alert("라벨링 프로젝트 생성 완료!");
                                             this.$router.push({name: "ProjectPayment", 

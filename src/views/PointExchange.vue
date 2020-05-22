@@ -72,13 +72,8 @@ export default {
       }
   },
   async beforeCreate() { //페이지 간 라우터로 데이터를 주고받을지 아님 다시 mypage에 접근해서 가져올지 고민
-    var loginStatus = await localStorage.getItem('loginState');
-    //var userId = await localStorage.getItem('userId');
+   
     axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
-      if(!loginStatus) {
-          alert("로그인이 필요한 페이지입니다.")
-          this.$router.push("/"); 
-      }
       this.userPoint = this.$route.params.point;
       this.userName = this.$route.params.userName;
       userBcryptPwd = this.$route.params.userPassword;

@@ -174,7 +174,7 @@ export default {
     return {
       loginStatus: '',
       selected: "",
-      selectedLevel: -1,
+      selectedLevel: 0,
       searchType: "",
       selectedProject: "",
       selectedData : "",
@@ -182,10 +182,9 @@ export default {
       selectedSubject: "",
   }
   },
-  async beforeCreate() {
+  async created() {
       this.loginStatus = await localStorage.getItem('loginState');
-      //console.log("ggggg"+this.loginStatus);
-      //alert(this.loginStatus);
+      
   },
    methods : {
      logout: function() {
@@ -232,8 +231,8 @@ export default {
         boundingBoxProject: function() {
             this.$router.push({name : "Project", params : {
               projectType : "Labelling",
-              dataType: 'boundingBox',
-              difficulty : -1,
+              workType: 'boundingBox',
+              difficulty : 0,
               subject : "",
             }});
         },
@@ -241,7 +240,7 @@ export default {
           this.$router.push({name : "Project", params : {
               projectType : "Labelling",
               workType: 'classification',
-              difficulty : -1,
+              difficulty : 0,
               subject : "",
             }});
         }

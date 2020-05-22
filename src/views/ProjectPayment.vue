@@ -11,6 +11,7 @@
 </template>
 <script>
 import axios from 'axios';
+var pointPaySuccess = '';
 export default {
   name: 'ProjectPayment',
     data() {
@@ -24,16 +25,31 @@ export default {
         }
     },
     async beforeCreate() {
-      var loginStatus = await localStorage.getItem('loginState');
       axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
-      if(!loginStatus) {
-          alert("로그인이 필요한 페이지입니다.")
-          this.$router.push("/login"); 
-      }
       this.cost = this.$route.params.point;
       this.projectName = this.$route.params.projectName;
     },
+    beforeMount() {
+            window.addEventListener("beforeunload", this.preventNav);
+            this.$once("hook:beforeDestroy", () => {
+            window.removeEventListener("beforeunload", this.preventNav);
+        });
+    },
+    beforeRouteLeave(to, from, next) {
+        if (pointPaySuccess != "success") {
+            if (!window.confirm("결제 페이지를 벗어나는 경우 프로젝트이 생성되지 않습니다. 그래도 이동하시겠습니까?")) {
+                return;
+            }
+        }
+        next();
+    },
     methods: {
+        preventNav(event) {
+                if (!this.isEditing) return;
+                event.preventDefault();
+                // Chrome requires returnValue to be set.
+                event.returnValue = "";
+        },
         pointPayment() {
             this.pointPay = true;
             var startProgess = setInterval(() => {
@@ -46,6 +62,7 @@ export default {
             setTimeout(()=> {
                 const pointPayRes = axios.get("/api/project/point/payment")
                 .then(res => {
+                    pointPaySuccess = res.headers.payment; 
                     if(res.headers.payment == 'success'){
                         alert("결제가 완료되었습니다!");
                         this.$router.push("/");
