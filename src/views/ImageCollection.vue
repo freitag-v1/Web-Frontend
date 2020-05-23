@@ -14,7 +14,7 @@
       <b-list-group-item><프로젝트 수집 데이터 목록>
         <div v-for="classname, index in classNameList">
             <br>
-            {{index+1+". "+classname}}
+            {{index+1+". "+classname.className}}
         </div>
         </b-list-group-item>
     </b-list-group>
@@ -59,23 +59,26 @@ var dataState = false; //데이터가 업로드 되었는지의 여부
     data() {
         return {
             project: null,
-            classNameList: ['사과', '배', '마라탕'],
+            classNameList: [],
             imageCount: 1,
             createCollection: false,
 
         }
     },
     created() {
-        this.project = this.$route.params.project;
-        console.log(this.project);
+        this.fetchData()
+    },
+    watch : {
+        '$route' : 'fetchData'
     },
     beforeMount() {
-            window.addEventListener("beforeunload", this.preventNav);
+            window.addEventListener("beforeunload", this.preventNav); //웹페이지 닫을 때 일어나는거 
             this.$once("hook:beforeDestroy", () => {
             window.removeEventListener("beforeunload", this.preventNav);
         });
     },
-    beforeRouteLeave(to, from, next) {
+    beforeRouteLeave(to, from, next) { //작업하고나서 나가려고 하면 이루어지는거
+
         if (dataState && !this.createCollection) {
             if (!window.confirm("페이지를 벗어나면 작업이 저장되지 않습니다. 그래도 이동하시겠습니까?")) {
                 return;
@@ -84,6 +87,14 @@ var dataState = false; //데이터가 업로드 되었는지의 여부
         next();
     },
     methods : {
+        async fetchData() {
+            var searchproject = await localStorage.getItem('searchProject');//this.$route.params.project;
+            console.log(JSON.parse(searchproject));
+
+            this.project = JSON.parse(searchproject).projectDto;
+            this.classNameList = JSON.parse(searchproject).classNameList;//this.$route.params.classList;
+            console.log(this.project);
+        },
         preventNav(event) {
                 if (!dataState || this.createCollection) return;
                 event.preventDefault();

@@ -217,7 +217,7 @@ export default {
                     const classNameRes = await axios.post("/api/project/class", params);
                     console.log(classNameRes.headers.class);
                     if(classNameRes.headers.class == "success"){
-                        axios.defaults.headers.common['bucketName'] = "nahyun";
+                        axios.defaults.headers.common['bucketName'] = classNameRes.headers.bucketname;
                         if(this.selectedData == 'text'){
                             if(this.exampleContent == null){ //텍스트인데 그냥 적은 내용 자체가 텍스트 예시 데이터 인경우 파일로 변환을 해야 
                                 var exampleTextFile = new File([this.exampleTextContent],userId+this.name+".txt",{type: "text/plain;charset=utf-8"});
@@ -231,6 +231,7 @@ export default {
                                         alert("수집 프로젝트 생성 완료!");
                                         this.$router.push({name: "ProjectPayment", 
                                         params : {
+                                            projectId : textRes.headers.projectid,
                                             point: exampleDataRes.headers.cost,
                                             projectName : this.name,
                                         }});
@@ -248,6 +249,7 @@ export default {
                                             alert("수집 프로젝트 생성 완료!");
                                             this.$router.push({name: "ProjectPayment", 
                                             params : {
+                                                projectId : exampleDataRes.headers.projectid,
                                                 point: exampleDataRes.headers.cost,
                                                 projectName : this.name,
                                             }});
@@ -266,6 +268,7 @@ export default {
                                 alert("수집 프로젝트 생성 완료!");
                                 this.$router.push({name: "ProjectPayment", 
                                 params : {
+                                    projectId : exampleDataRes.headers.projectid,
                                     point: exampleDataRes.headers.cost,
                                     projectName : this.name,
                                 }});

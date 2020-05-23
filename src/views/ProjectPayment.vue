@@ -22,12 +22,14 @@ export default {
             value: 0,
             pointPay: false,
             pointPaySuccess : true,
+            projectId: '',
         }
     },
     async beforeCreate() {
       axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
       this.cost = this.$route.params.point;
       this.projectName = this.$route.params.projectName;
+      this.projectId = this.$route.params.projectId;
     },
     beforeMount() {
             window.addEventListener("beforeunload", this.preventNav);
@@ -45,7 +47,7 @@ export default {
     },
     methods: {
         preventNav(event) {
-                if (!this.isEditing) return;
+                if(pointPaySuccess == "success") return ;
                 event.preventDefault();
                 // Chrome requires returnValue to be set.
                 event.returnValue = "";
@@ -60,7 +62,11 @@ export default {
                 this.value += 20;
             }, 1000);
             setTimeout(()=> {
-                const pointPayRes = axios.get("/api/project/point/payment")
+                const pointPayRes = axios.get("/api/project/point/payment", {
+                    params : {
+                        projectId : this.projectId,
+                    }
+                })
                 .then(res => {
                     pointPaySuccess = res.headers.payment; 
                     if(res.headers.payment == 'success'){

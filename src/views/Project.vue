@@ -15,12 +15,12 @@
             @row-dbclicked="moveProject"
             small
             >
-            <template v-slot:cell(show_details)="row">
+            <template v-slot:cell(projectDto.show_details)="row">
                 <b-button style="width: 230px; "v-on:click="moveProject(row.item)" class="mr-2">
-                    {{ row.item.projectName }}
+                    {{ row.item.projectDto.projectName }}
                 </b-button>
             </template>
-            <template v-slot:cell(dataType)="data">
+            <template v-slot:cell(projectDto.dataType)="data">
                 <p class = "data" v-if="data.value == 'image'"><b-icon icon="image" variant="success"></b-icon> 이미지</p>
                 <p class = "data" v-else-if="data.value == 'audio'"><b-icon icon="mic-fill" variant="primary"></b-icon> 음성</p>
                 <p class = "data" v-else-if="data.value == 'text'"><b-icon icon="blockquote-left" variant="warning"></b-icon> 텍스트</p>
@@ -53,7 +53,8 @@ export default {
   data() {
       return {
           projectList: '',
-          fields: [{key : 'projectName', label: '프로젝트 이름'},{key : 'userId', label: '의뢰자'}, 'workType','dataType', 'show_details'],
+          fields: [{key : 'projectDto.projectName', label: '프로젝트 이름'},{key : 'projectDto.userId', label: '의뢰자'}, {key:'projectDto.workType', label: 'Work Type'},
+          {key : 'projectDto.dataType', label: 'Data Type'},{ key: 'projectDto.show_details', label: 'Show Detatils'}],
           workType:'',
           dataType:'',
           perPage : 10,
@@ -63,61 +64,13 @@ export default {
   async beforeCreate() {
       
       axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
-        //라벨링 작업 프로젝트 
-      if(this.$route.params.projectType == "Labelling") {
-          console.log(this.$route.params.difficulty, this.$route.params.workType, this.$route.params.subject)
-          await axios.get("/api/project/list", {
-              params : {
-                  workType : 'labelling',
-                  dataType : this.$route.params.workType,
-                  difficulty : 0,//this.$route.params.difficulty,
-                  subject : this.$route.params.subject,
-              }
-            })
-            .then(projectListRes => {
-                if(projectListRes.headers.search == "success"){
-                this.projectList = projectListRes.data;
-                console.log(projectListRes.data);
-                }
-                else {
-                    alert("검색한 프로젝트가 존재하지 않습니다.");
-                }
-            })
-            .catch(function(error) {
-                        if(error.response){
-                            alert("검색 정보가 없습니다!");
-                        }
-                });
-            
-      }
-      //수집 프로젝트 리스트 
-        if(this.$route.params.projectType == "Collection") {
-            console.log(this.$route.params.difficulty, this.$route.params.dataType, this.$route.params.subject);
-             const projectListRes = await axios.get("/api/project/list", {
-              params : {
-                  workType : 'collection',
-                  dataType : this.$route.params.dataType,
-                  difficulty : this.$route.params.difficulty,
-                  subject : this.$route.params.subject,
-              }
-            })
-            .then(projectListRes => {
-                if(projectListRes.headers.search == "success"){
-                this.projectList = projectListRes.data;
-                console.log(projectListRes.data);
-                }
-                else {
-                    alert("검색한 프로젝트가 존재하지 않습니다.");
-                }
-            })
-            .catch(function(error) {
-                        if(error.response){
-                            alert("검색 정보가 없습니다!");
-                        }
-                });
-            }
-            
 
+  },
+  created(){    
+      this.fetchData()
+  },
+  watch: {
+      '$route' : 'fetchData'
   },
   computed: {
       rows() {
@@ -126,11 +79,70 @@ export default {
     },
     methods : {
         moveProject(detailItem){
-            console.log(detailItem); // 자세히 보고싶은 프로젝트를 보여줄 수 있도록 
-            this.$router.push({name: 'ProjectDetail', params: {
-                idx: detailItem.projectName,
-                project : detailItem,
-            }})
+            console.log(detailItem);
+             // 자세히 보고싶은 프로젝트를 보여줄 수 있도록
+            localStorage.searchProject = JSON.stringify(detailItem); 
+            this.$router.push({name: 'ProjectDetail', params : {
+                idx : detailItem.projectDto.projectId,
+            }});
+        },
+        async fetchData () {
+            var projectListParams = await localStorage.getItem('projectList');
+            console.log(JSON.parse(projectListParams));
+            //라벨링 작업 프로젝트 
+            if(JSON.parse(projectListParams).projectType == "Labelling") {
+                console.log(JSON.parse(projectListParams).difficulty, JSON.parse(projectListParams).workType, JSON.parse(projectListParams).subject);
+                await axios.get("/api/project/list", {
+                    params : {
+                        workType : 'labelling',
+                        dataType : JSON.parse(projectListParams).workType,
+                        difficulty : JSON.parse(projectListParams).difficulty,
+                        subject : JSON.parse(projectListParams).subject,
+                    }
+                    })
+                    .then(projectListRes => {
+                        if(projectListRes.headers.search == "success"){
+                            this.projectList = projectListRes.data;
+                            console.log(projectListRes.data);
+                        }
+                        else {
+                            alert("검색한 프로젝트가 존재하지 않습니다.");
+                        }
+                    })
+                    .catch(function(error) {
+                                if(error.response){
+                                    alert("검색 정보가 없습니다!");
+                                }
+                        });
+                    
+                    
+            }
+            //수집 프로젝트 리스트 
+                if(JSON.parse(projectListParams).projectType == "Collection") {
+                    console.log(JSON.parse(projectListParams).difficulty, JSON.parse(projectListParams).dataType, JSON.parse(projectListParams).subject);
+                    const projectListRes = await axios.get("/api/project/list", {
+                    params : {
+                        workType : 'collection',
+                        dataType : JSON.parse(projectListParams).dataType,
+                        difficulty : JSON.parse(projectListParams).difficulty,
+                        subject : JSON.parse(projectListParams).subject,
+                    }
+                    })
+                    .then(projectListRes => {
+                        if(projectListRes.headers.search == "success"){
+                        this.projectList = projectListRes.data;
+                        console.log(projectListRes.data);
+                        }
+                        else {
+                            alert("검색한 프로젝트가 존재하지 않습니다.");
+                        }
+                    })
+                    .catch(function(error) {
+                                if(error.response){
+                                    alert("검색 정보가 없습니다!");
+                                }
+                        });
+                    }
         }
     }
 

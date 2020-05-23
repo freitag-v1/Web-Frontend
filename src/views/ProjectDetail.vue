@@ -32,13 +32,13 @@
       <b-list-group-item v-if="project.workType =='collection'"><프로젝트 수집 데이터 목록>
         <div v-for="classname, index in classNameList">
             <br>
-            {{index+1+". "+classname}}
+            {{index+1+". "+classname.className}}
         </div>
         </b-list-group-item>
         <b-list-group-item v-if="project.workType!='collection'"><프로젝트 라벨링 데이터 목록>
-        <div v-for="classname, index in classNameList">
+        <div v-for="(index, value) in classNameList">
             <br>
-            {{index+1+". "+classname}}
+            {{index+1+". "+ value.className}}
         </div>
         </b-list-group-item>
     </b-list-group>
@@ -102,17 +102,19 @@ let day = today.getDay();  // 요일
         return {
             project : null,
             status: null,
-            classNameList: ['사과', '배', '마라탕'],
+            classNameList:[],
             agreements: [{content : '작업 정보', purpose: '프로젝트 진행 & 포인트 지급', period: '1년'}],
             fields: [{key : 'content', label: '항목'},{key : 'purpose', label: '수집 목적'}, {key: 'period', label:'보유 기간'}],
             date: year + "년 "+month+"월 "+todayDate+"일 ",
         }
     },
-    created() {
-        this.project = this.$route.params.project;
-        console.log(this.project);
-        //var projectClassName = await axios.get("/api/project/className");
-        //this.classNameList = projectClassName.data;
+    async created() {
+        var searchproject = await localStorage.getItem('searchProject');//this.$route.params.project;
+        console.log(JSON.parse(searchproject));
+
+        this.project = JSON.parse(searchproject).projectDto;
+        this.classNameList = JSON.parse(searchproject).classNameList;//this.$route.params.classList;
+        console.log(this.project, this.classNameList[0].className);
     },
     methods : {
         async startProject() {
@@ -124,35 +126,22 @@ let day = today.getDay();  // 요일
                   case "collection" : 
                     if(this.project.dataType == 'image') {
                         this.$router.push({name: 'ImageCollection', params : {
-                        project : this.project,
-                        idx : this.project.projectName,
-                      }});
+                          idx : this.project.projectId,
+                        }});
                       break;
                     }
                     else if (this.project.dataType == 'audio'){
-                        this.$router.push({name: 'AudioCollection', params : {
-                        project : this.project,
-                        idx : this.project.projectName,
-                      }});
+                        this.$router.push({name: 'AudioCollection'});
                     }
                     else {
-                      this.$router.push({name: 'TextCollection', params : {
-                        project : this.project,
-                        idx : this.project.projectName,
-                      }});
+                      this.$router.push({name: 'TextCollection'});
                     }
                     break;
                   case "Image Bounding Box" :
-                    this.$router.push({name: 'ImageBoundingBox', params : {
-                        project : this.project,
-                        idx : this.project.projectName,
-                      }});
+                    this.$router.push({name: 'ImageBoundingBox'});
                       break;
                   case "classification" : 
-                    this.$router.push({name: 'Classification', params : {
-                        project : this.project,
-                        idx : this.project.projectName,
-                      }});
+                    this.$router.push({name: 'Classification'});
                       break;
               }
             }

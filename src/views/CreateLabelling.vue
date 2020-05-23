@@ -215,7 +215,7 @@ export default {
                         const classNameRes = await axios.post("/api/project/class", params);
                         console.log(classNameRes.headers.class);
                         if(classNameRes.headers.class == "success"){
-                            axios.defaults.headers.common['bucketName'] = "nahyun";
+                            axios.defaults.headers.common['bucketName'] = classNameRes.headers.bucketname;
                             let exampleData = new FormData();
                             exampleData.append('file',this.exampleContent);
                             const exampleDataRes = await axios.post("/api/project/upload/example", exampleData, config); 

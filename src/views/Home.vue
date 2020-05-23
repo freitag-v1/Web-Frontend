@@ -174,7 +174,7 @@ export default {
     return {
       loginStatus: '',
       selected: "",
-      selectedLevel: 0,
+      selectedLevel: -1,
       searchType: "",
       selectedProject: "",
       selectedData : "",
@@ -195,54 +195,47 @@ export default {
                            //alert("hello");
                 },2000);   
       },
+      //파라미터를 router params로 보내면 페이지를 벗어난 경우 데이터가 유지가 안되기 때문에 localstorage에 파라미터를 담아서 진행을 한ㄷ.
       search: function() {
         if(!this.loginStatus){
           alert("로그인이 필요한 작업입니다.");
           this.$router.push("/login");
         }
         else {
-          if (this.selectedProject == null) {
-            alert("원하는 검색 종류를 선택해주세요!");
-          }
-          else {
-            
-            this.$router.push({name: "Project",
-              params: {
-                projectType : this.selectedProject,
-                workType : this.selectedWork,
-                dataType: this.selectedData,
-                difficulty : (this.selectedLevel == 0) ? this.selectedLevel : this.selectedLevel[0] ,
-                subject : this.selectedSubject,
+        
+              if (this.selectedProject == null) {
+                alert("원하는 검색 종류를 선택해주세요!");
               }
-            });
-          }
-          
+              else {
+                let difficulty = (this.selectedLevel == -1) ? this.selectedLevel : this.selectedLevel[0];
+                var params = {'projectType': this.selectedProject, 'workType': this.selectedWork, 'dataType' : this.selectedData,
+                    'difficulty': difficulty,'subject': this.selectedSubject};
+                localStorage.projectList = JSON.stringify(params);
+                console.log("======================");
+                console.log(JSON.stringify(params));
+                this.$router.push({name: "Project"});
+              }
+              
           }
         },
         collectionProject: function() {
-          this.$router.push({name : "Project", params : {
-              projectType : "Collection",
-              dataType: "",
-              difficulty : 0,
-              subject : "",
-              }
-          });
+          var params = {'projectType': 'Collection','dataType' : "",
+                'difficulty': -1,'subject': ""};
+          console.log(params);
+          localStorage.projectList = JSON.stringify(params);
+          this.$router.push({name : "Project"});
         },
         boundingBoxProject: function() {
-            this.$router.push({name : "Project", params : {
-              projectType : "Labelling",
-              workType: 'boundingBox',
-              difficulty : 0,
-              subject : "",
-            }});
+          var params = {'projectType': 'Labelling','workType' : "boundingBox",
+                'difficulty': -1,'subject': ""};
+          localStorage.projectList = JSON.stringify(params);
+          this.$router.push({name : "Project"});
         },
         classificationProject: function() {
-          this.$router.push({name : "Project", params : {
-              projectType : "Labelling",
-              workType: 'classification',
-              difficulty : 0,
-              subject : "",
-            }});
+          var params = {'projectType': 'Labelling','workType' : "classification",
+                'difficulty': -1,'subject': ""};
+          localStorage.projectList = JSON.stringify(params);
+          this.$router.push({name : "Project"});
         }
 
       },
