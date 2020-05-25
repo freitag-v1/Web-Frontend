@@ -24,10 +24,27 @@
     <b-card-text class ="content">{{project.conditionContent}}</b-card-text>
     <b-card-footer style="font-weight: bolder">프로젝트 예시 데이터</b-card-footer>
     <b-card-text class ="content">{{project.exampleContent}}</b-card-text>
-    <div v-for="i in imageCount">
+    <!--<div v-for="i in imageCount">
         <ImageUpload v-bind:idx=i @registerImg="registerImageUrl"> </ImageUpload>
         <br>
-    </div>
+    </div>-->
+    <b-card-footer style="font-weight: bolder">이미지 수집 데이터 업로드</b-card-footer>
+    <b-form-file multiple 
+                v-model="imageContent"
+                :state="Boolean(imageContent)"
+                placeholder="Choose a file or drop it here..."
+                drop-placeholder="Drop file here..."
+                hidden @change="onChangeImages"
+                accept="image/*"
+                ></b-form-file>
+                <br>
+                <p>{{ "업로드 데이터 " + imageContent[0].name + "의 preview" }} </p>
+                <img id ="previewImg" v-if="imageUrl" :src = "imageUrl"></img>
+                <div class="mt-3"  v-for = "name, index in imageContent">
+                    Selected file: {{ index + 1 + "." + name ? name.name : '' }}
+                </div>
+                
+                <br>
     <div class = "buttons">
         <b-button size="lg" variant="primary" v-on:click="addImage">
                 <b-icon icon="file-earmark-plus" aria-label="Help"></b-icon> Add
@@ -54,7 +71,7 @@ var dataState = false; //데이터가 업로드 되었는지의 여부
  export default {
     name: 'ImageCollection',
     components : {
-        ImageUpload,
+        //ImageUpload,
     },
     data() {
         return {
@@ -62,6 +79,8 @@ var dataState = false; //데이터가 업로드 되었는지의 여부
             classNameList: [],
             imageCount: 1,
             createCollection: false,
+            imageContent: '',
+            imageUrl : '',
 
         }
     },
@@ -79,7 +98,7 @@ var dataState = false; //데이터가 업로드 되었는지의 여부
     },
     beforeRouteLeave(to, from, next) { //작업하고나서 나가려고 하면 이루어지는거
 
-        if (dataState && !this.createCollection) {
+        if (dataState || this.createCollection) {
             if (!window.confirm("페이지를 벗어나면 작업이 저장되지 않습니다. 그래도 이동하시겠습니까?")) {
                 return;
             }
@@ -94,6 +113,13 @@ var dataState = false; //데이터가 업로드 되었는지의 여부
             this.project = JSON.parse(searchproject).projectDto;
             this.classNameList = JSON.parse(searchproject).classNameList;//this.$route.params.classList;
             console.log(this.project);
+        },
+        onChangeImages(e) {
+            console.log(e.target.files);
+            const file = e.target.files[0];
+            this.imageUrl = URL.createObjectURL(file);    
+            this.$refs.cropper.replace(this.imageUrl);
+            this.cropImg="";
         },
         preventNav(event) {
                 if (!dataState || this.createCollection) return;

@@ -7,6 +7,8 @@
     "build": "vue-cli-service build"
   },
   "dependencies": {
+    "audiomaker": "^1.0.3",
+    "aws-sdk": "^2.348.0",
     "axios": "^0.19.2",
     "bcrypt-nodejs": "0.0.3",
     "bootstrap": "^4.4.1",
@@ -18,15 +20,23 @@
     "fs": "0.0.1-security",
     "hashmap": "^2.4.0",
     "moment": "^2.25.3",
+    "mp3-cutter": "^1.0.6",
     "qs": "^6.9.4",
     "vue": "^2.6.11",
+    "vue-audio-visual": "^2.0.2",
     "vue-cookies": "^1.7.0",
     "vue-cropperjs": "^4.1.0",
     "vue-momentjs": "^0.1.2",
     "vue-phone-number-input": "^1.1.9",
     "vue-router": "^3.1.6",
+    "vue-runtime-helpers": "^1.1.2",
     "vue-session": "^1.0.0",
-    "vuex": "^3.3.0"
+    "vue-wave-surfer": "^1.0.1",
+    "vue-waveform": "^2.2.19",
+    "vuex": "^3.3.0",
+    "waveform-playlist": "^3.2.4",
+    "wavesurfer-player-vue": "^0.1.2",
+    "wavesurfer.js": "^3.3.3"
   },
   "devDependencies": {
     "@vue/cli-plugin-router": "~4.3.0",

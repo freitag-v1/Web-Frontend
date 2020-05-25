@@ -52,7 +52,8 @@ export default new Vuex.Store({
                     commit('LOGIN',{token, authorities,userId}) //로그인 성공시 session id랑 authorities이거 넘겨주는
                     alert("로그인 완료!");
                     setTimeout(()=> {
-                        router.push("/");
+                        window.location.reload();
+                        router.go(-1);
                     },2000);  
                 })
                 .catch(function(error) {

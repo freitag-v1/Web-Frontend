@@ -1,30 +1,5 @@
 <template>
   <div class="login">
-    <div class ="wrapper">
-        <b-navbar toggleable="lg" type="light" variant="light">
-    <b-navbar-brand href="#">
-    Collector In Room</b-navbar-brand>
-
-    <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
-
-    <b-collapse id="nav-collapse" is-nav>
-      <b-navbar-nav>
-        <b-nav-item href="#" link-classes="bar-font">Project</b-nav-item>
-        <b-nav-item href="#" link-classes="bar-font">Colletion</b-nav-item>
-        <b-nav-item-dropdown text="Labelling" right>
-          <b-dropdown-item href="#">Image Bounding Box</b-dropdown-item>
-          <b-dropdown-item href="#">Classification</b-dropdown-item>
-        </b-nav-item-dropdown>
-      </b-navbar-nav>
-      <b-navbar-nav class="ml-auto">
-        <b-nav-form>
-          <b-form-input size="sm" class="mr-sm-2" placeholder="Search"></b-form-input>
-          <b-icon icon="search" scale="1.5" shift-v="1.25" type = "submit" aria-hidden="true"></b-icon>
-        </b-nav-form>
-        </b-nav-item-dropdown>
-      </b-navbar-nav>
-    </b-collapse>
-  </b-navbar>
         <form class="form-signin">
             <h2 class="form-signin-heading">Please login</h2>
             <input id ="email" v-model ="userId" type="text" class="form-control" name="username" placeholder="Email Address" required="" autofocus=""/>

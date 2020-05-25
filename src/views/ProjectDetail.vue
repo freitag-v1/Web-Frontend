@@ -36,21 +36,21 @@
         </div>
         </b-list-group-item>
         <b-list-group-item v-if="project.workType!='collection'"><프로젝트 라벨링 데이터 목록>
-        <div v-for="(index, value) in classNameList">
+        <div v-for="classname, index in classNameList">
             <br>
-            {{index+1+". "+ value.className}}
+            {{index+1+". "+ classname.className}}
         </div>
         </b-list-group-item>
     </b-list-group>
+    <b-card-footer style="font-weight: bolder">프로젝트 예시 데이터</b-card-footer>
+    <br>
+    <b-card-text class ="content">{{project.exampleContent}}</b-card-text>
     <b-card-footer style="font-weight: bolder">프로젝트 진행 방법</b-card-footer>
     <br>
     <b-card-text class ="content">{{project.wayContent}}</b-card-text>
     <b-card-footer style="font-weight: bolder">프로젝트 조건</b-card-footer>
     <br>
     <b-card-text class ="content">{{project.conditionContent}}</b-card-text>
-    <b-card-footer style="font-weight: bolder">프로젝트 예시 데이터</b-card-footer>
-    <br>
-    <b-card-text class ="content">{{project.exampleContent}}</b-card-text>
     <!-- 프로젝트 생성 시 업로드한 예시 데이터를 -->
     <br>
     <b-card-footer style="font-weight: bolder">작업 정보 수집 동의</b-card-footer>
@@ -114,7 +114,7 @@ let day = today.getDay();  // 요일
 
         this.project = JSON.parse(searchproject).projectDto;
         this.classNameList = JSON.parse(searchproject).classNameList;//this.$route.params.classList;
-        console.log(this.project, this.classNameList[0].className);
+        console.log("======================="+this.classNameList[0]);
     },
     methods : {
         async startProject() {
@@ -137,12 +137,16 @@ let day = today.getDay();  // 요일
                       this.$router.push({name: 'TextCollection'});
                     }
                     break;
-                  case "Image Bounding Box" :
-                    this.$router.push({name: 'ImageBoundingBox'});
+                  case "labelling" :
+                    if(this.project.dataType == "boundingBox"){
+                      this.$router.push({name: 'ImageBoundingBox'});
                       break;
-                  case "classification" : 
-                    this.$router.push({name: 'Classification'});
+                    }
+                    else {
+                      this.$router.push({name: 'Classification'});
                       break;
+                    }
+                
               }
             }
             

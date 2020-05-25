@@ -43,6 +43,22 @@
                 </div>
             <br>
             <br>
+            <p>예시 데이터 업로드</p>
+            <p v-if="selectedData == 'text'">텍스트 데이터 프로젝트인 경우 아래에 글을 작성하시거나 텍스트 파일을 업로드 해주세요!</p>
+            <b-form-input id="inputExample" v-if="selectedData == 'text'"  placeholder="예시 데이터를 작성해주세요." v-model="exampleTextContent" ></b-form-input>
+            <br>
+            <b-form-file 
+                v-model="exampleContent"
+                :state="Boolean(exampleContent)"
+                placeholder="Choose a file or drop it here..."
+                drop-placeholder="Drop file here..."
+                hidden @change="onChangeImages"
+                accept="audio/*,image/*,text/*"
+                ></b-form-file>
+                <div class="mt-3">Selected file: {{ exampleContent ? exampleContent.name : '' }}</div>
+                <img id ="examplePreview" v-if="imageUrl && this.selectedData == 'image'" :src = "imageUrl"></img>
+            <br>
+            <br>
             <p>프로젝트 설명</p>
             <b-form-input  id="description" placeholder="description" v-model="description" ></b-form-input>
             <br>
@@ -55,20 +71,7 @@
             <b-form-input id="inputCondition" placeholder="수집 조건을 작성해주세요." v-model="conditionContent" ></b-form-input>
             <br>
             <br>
-            <p>예시 데이터 업로드</p>
-            <p>텍스트 데이터 프로젝트인 경우 아래에 글을 작성하시거나 텍스트 파일을 업로드 해주세요!</p>
-            <b-form-input id="inputExample" placeholder="예시 데이터를 작성해주세요." v-model="exampleTextContent" ></b-form-input>
-            <br>
-            <b-form-file 
-                v-model="exampleContent"
-                :state="Boolean(exampleContent)"
-                placeholder="Choose a file or drop it here..."
-                drop-placeholder="Drop file here..."
-                hidden @change="onChangeImages"
-                accept="audio/*,image/*,text/*"
-                ></b-form-file>
-                <div class="mt-3">Selected file: {{ exampleContent ? exampleContent.name : '' }}</div>
-                <img id ="examplePreview" v-if="imageUrl && this.selectedData == 'image'" :src = "imageUrl"></img>
+            
             </b-card-text>
 
             <b-button id ="createButton" variant="outline-info" v-on:click ="createProject">Create</b-button>
@@ -178,7 +181,7 @@ export default {
             var userId = await localStorage.getItem('userId');
             //alert(userId);
             if(this.name == null || this.selectedData == null || this.subject == null || this.wayContent == null 
-            || this.description == null || this.conditionContent == null || this.totalData == null || this.dataClass == null || this.exampleContent == null){
+            || this.description == null || this.conditionContent == null || this.totalData == null || this.dataClass == null){
                 console.log(typeof(this.totalData));
                 alert("프로젝트 생성을 위해 내용을 빠짐없이 작성해주세요.");
             }
@@ -232,7 +235,7 @@ export default {
                                         this.$router.push({name: "ProjectPayment", 
                                         params : {
                                             projectId : textRes.headers.projectid,
-                                            point: exampleDataRes.headers.cost,
+                                            point: textRes.headers.cost,
                                             projectName : this.name,
                                         }});
                                     }
@@ -307,6 +310,11 @@ export default {
 }
 </script>
 <style>
+#createLogo {
+    width: 300px;
+    height: 70px;
+    margin : auto;
+}
 .createForm {
     max-width: 1200px;
     margin: auto;
@@ -368,11 +376,7 @@ p {
     font-weight: bolder;
     font-size: 18px;
 }
-#createLogo {
-    width: 400px;
-    height: 70px;
-    margin : auto;
-}
+
 #addClassIcon {
     width: 30px;
     height : 30px;

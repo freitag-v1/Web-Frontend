@@ -2,7 +2,7 @@
     <div class ="createCollection">
     <div>
         <b-card class ="createForm" body-class="text-center" header-tag="nav">
-            <img id="createLogo" src = "../assets/createlabelingLogo.png"/>
+            <img id="createLabelLogo" src = "../assets/createlabelingLogo.png"/>
             <b-card-text>
             <b-form v-if="show">
                <b-form-group id="inputName" label="Project Name:" label-for="input-2">
@@ -42,18 +42,6 @@
                 </div>
             <br>
             <br>
-            <p>프로젝트 설명</p>
-            <b-form-input  id="description" placeholder="description" v-model="description" ></b-form-input>
-            <br>
-            <br>
-            <p>라벨링 방법 작성</p>
-            <b-form-input id="inputWay" placeholder="라벨링 방법을 작성해주세요." v-model="wayContent" ></b-form-input>
-            <br>
-            <br>
-            <p>라벨링 조건 작성</p>
-            <b-form-input id="inputCondition" placeholder="라벨링 조건을 작성해주세요." v-model="conditionContent" ></b-form-input>
-            <br>
-            <br>
             <p>예시 데이터 업로드</p>
             <b-form-file
                 v-model="exampleContent"
@@ -67,6 +55,19 @@
                 <img id ="examplePreview" v-if="imageUrl != null" :src = "imageUrl"></img>
                 <br>
                 <br>
+            <p>프로젝트 설명</p>
+            <b-form-input  id="description" placeholder="description" v-model="description" ></b-form-input>
+            <br>
+            <br>
+            <p>라벨링 방법 작성</p>
+            <b-form-input id="inputWay" placeholder="라벨링 방법을 작성해주세요." v-model="wayContent" ></b-form-input>
+            <br>
+            <br>
+            <p>라벨링 조건 작성</p>
+            <b-form-input id="inputCondition" placeholder="라벨링 조건을 작성해주세요." v-model="conditionContent" ></b-form-input>
+            <br>
+            <br>
+            
                 <p>라벨링 데이터 업로드</p>
                 <b-form-file multiple
                     v-model="labellingContent"
@@ -222,9 +223,14 @@ export default {
                             if(exampleDataRes.headers.example == "success") {
                                 let labellingData = new FormData();
                                 for(let labellingDataNumber = 0; labellingDataNumber < this.labellingContent.length; labellingDataNumber++){
-                                    labellingData.append('file',this.labellingContent[labellingDataNumber]);
+                                    labellingData.append('files',this.labellingContent[labellingDataNumber]);
                                 }
-                                const labellingDataRes = await axios.post("/api/project/upload/labelling",labellingData, config);
+                                console.log(labellingData);
+                                console.log(typeof(exampleDataRes.headers.projectid));
+                                const labellingDataRes = await axios.post("/api/project/upload/labelling",labellingData, {
+                                    params :{
+                                    projectId :exampleDataRes.headers.projectid,
+                                }}, config);
                                 createSuccess = labellingDataRes.headers.upload;
                                 if(labellingDataRes.headers.upload == "success") {
                                             alert("라벨링 프로젝트 생성 완료!");
@@ -232,6 +238,7 @@ export default {
                                             params : {
                                                 point: 50000,
                                                 projectName : this.name,
+                                                projectId : labellingDataRes.headers.projectid,
                                             }});
                                     }
                                     else {
@@ -325,9 +332,9 @@ p {
     font-weight: bolder;
     font-size: 18px;
 }
-#createLogo {
+#createLabelLogo {
     width: 400px;
-    height: 80px;
+    height: 110px;
     margin : auto;
 }
 .workTypeForm {

@@ -19,6 +19,9 @@ import AudioCollection from '../views/AudioCollection.vue'
 import TextCollection from '../views/TextCollection.vue'
 import ImageBoundingBox from '../views/ImageBoundingBox.vue'
 import Classification from '../views/Classification.vue'
+import StartProject  from '../views/StartProject.vue'
+import CompleteProject  from '../views/CompleteProject.vue'
+import RequestProject  from '../views/RequestProject.vue'
 
 Vue.use(VueRouter)
 
@@ -150,7 +153,30 @@ const requireAuth = async (to, from, next) => {
     component: Classification,
     beforeEnter: requireAuth
   },
-
+  {
+    path:'/startProject',
+    name: 'StartProject',
+    component: StartProject,
+    beforeEnter: requireAuth
+  },
+  {
+    path:'/startProject',
+    name: 'StartProject',
+    component: StartProject,
+    beforeEnter: requireAuth
+  },
+  {
+    path: '/project/complete',
+    name : 'CompleteProject',
+    component : CompleteProject,
+    beforeEnter: requireAuth,
+  },
+  {
+    path: '/project/request',
+    name : 'RequestProject',
+    component : RequestProject,
+    beforeEnter: requireAuth,
+  }
 
 
 ]

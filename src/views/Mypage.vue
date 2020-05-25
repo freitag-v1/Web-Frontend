@@ -5,7 +5,7 @@
     <div class = "information">
     <b-card
     no-body
-    style="max-width: 500px;"
+    style="width: 700px;"
     class = "userInfo"
   >
     <b-card-body id="userInfoBody">
@@ -39,24 +39,6 @@
   </b-card>
   </div>
 
-   <div id = "projectList"> <!-- 각각의 list는 v-for를 이용해서 할 예정 그리고 href는 /project/{projectId} 이런 식으로 요청하면 된다-->
-    <b-card id="requestProjectList" no-body header="의뢰한 프로젝트 목록" style="font-weight: bolder;">
-    <b-list-group flush>
-      <b-list-group-item href="#">Cras justo odio</b-list-group-item>
-      <b-list-group-item href="#">Dapibus ac facilisis in</b-list-group-item>
-      <b-list-group-item href="#">Vestibulum at eros</b-list-group-item>
-      <b-list-group-item href="#">Vestibulum at eros</b-list-group-item>
-    </b-list-group>
-  </b-card>
-      <b-card id="completeWorkList" no-body header="완료한 작업 목록" style="font-weight: bolder;">
-    <b-list-group flush>
-      <b-list-group-item href="#">Cras justo odio</b-list-group-item>
-      <b-list-group-item href="#">Dapibus ac facilisis in</b-list-group-item>
-      <b-list-group-item href="#">Vestibulum at eros</b-list-group-item>
-      <b-list-group-item href="#">Vestibulum at eros</b-list-group-item>
-    </b-list-group>
-  </b-card>
-  </div>
 </b-card-group>
        
         <b-collapse id="collapse-1" class="check">
@@ -145,7 +127,6 @@ export default {
 </script>
 <style>
 .information{
-  margin-left: 100px;
 }
 #myPagelogo {
     margin-left: 150px;
@@ -168,8 +149,7 @@ export default {
     margin : 10px;
 }
 .userInfo {
-    margin-left: 430px;
-    float: left;
+    margin: auto;
     width: 500px;
 }
 #profilePicture {
@@ -185,13 +165,7 @@ export default {
   font-size: 20px;
   font-weight: bold;
 }
-#requestProjectList{
-  max-width: 500px; 
-}
-#projectList{
-  float: left;
-  width: 500px;
-}
+
 .passwordCheck{
   width : 350px;
 }

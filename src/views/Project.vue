@@ -1,9 +1,63 @@
 <template>
     <div class ="projectList">
         <img id="projectLogo" src ="../assets/projectList.png"/>
-        <b-button  href="/newProject" style="margin-top: 10px; ">
-            Create
+        <b-button  class="mr-2" href="/newProject" style="margin-top: 10px; height : 40px; width: 100px;" >
+            작업 의뢰
         </b-button>
+        <b-button  v-b-toggle.sidebar-backdrop class="mr-2" style="margin-top: 10px; height : 40px; " >
+            검색
+        </b-button>
+        <b-sidebar
+            id="sidebar-backdrop"
+            title="Search"
+            backdrop
+            shadow
+          >
+          <div>
+            <!--<b-form-select v-model="selectedProject" class="mb-3">
+              <b-form-select-option-group label="프로젝트 종류">
+                <b-form-select-option :value="'Labelling'">라벨링 프로젝트</b-form-select-option>
+                <b-form-select-option :value="'Collection'">수집 프로젝트</b-form-select-option>
+                </b-form-select-option-group>
+              </b-form-select-option-group>
+            </b-form-select>-->
+            <br>
+            <b-form-group label="난이도 별 검색" v-if="selectedProject!=''"  style="font-size: 15px;">
+            <b-form-checkbox-group id="checkbox-group-2" v-model="selectedLevel"  name="flavour-2">
+              <b-form-checkbox value="0">0</b-form-checkbox>
+              <b-form-checkbox value="1">1</b-form-checkbox>
+              <b-form-checkbox value="2">2</b-form-checkbox>
+              <b-form-checkbox value="3">3</b-form-checkbox>
+              <b-form-checkbox value="4">4</b-form-checkbox>
+              <b-form-checkbox value="5">5</b-form-checkbox>
+            </b-form-checkbox-group>
+          </b-form-group>
+          <br>
+          <p  v-if="selectedProject == 'Collection'" style="font-size: 15px;">데이터 별 검색</p>
+          <b-form-select  v-model="selectedData" style="width: 100px;" v-if="selectedProject == 'Collection'" class="mb-3">
+            <b-form-select-option-group label="데이터 타입">
+                <b-form-select-option :value="'image'">이미지</b-form-select-option>
+                <b-form-select-option :value="'audio'">음성</b-form-select-option>
+                <b-form-select-option :value="'text'">텍스트</b-form-select-option>
+              </b-form-select-option-group>
+            </b-form-select>
+            <br>
+            <p v-if="selectedProject == 'Labelling'"  style="font-size: 15px;" >작업 종류 별 검색</p>
+            <b-form-select style="width: 200px;" v-if="selectedProject == 'Labelling'" v-model="selectedWork" class="mb-3">
+            <b-form-select-option-group label="작업 종류">
+                <b-form-select-option :value="'boundingBox'">이미지 바운딩 박스</b-form-select-option>
+                <b-form-select-option :value="'classification'">분류</b-form-select-option>
+              </b-form-select-option-group>
+            </b-form-select>
+            <br>
+            <p v-if="selectedProject != ''"  style="font-size: 15px;">주제 별 검색</p>
+            <b-form-input size="sm" style="width: 200px; margin: auto;"class="mb-3" placeholder="Search" v-model="selectedSubject" v-if="selectedProject != ''"></b-form-input>
+          <br>
+          <br>
+          <b-button  v-b-toggle.sidebar-backdrop class="searchButton" v-on:click ="search" variant="outline-primary">Search</b-button>
+        </div>
+        
+        </b-sidebar>
         <hr class = "bar">
         <div class="overflow-auto">
             <b-table
@@ -29,6 +83,7 @@
             
             </b-table>
             <br>
+            <br>
             <b-pagination
             v-model="currentPage"
             :total-rows="rows"
@@ -53,12 +108,20 @@ export default {
   data() {
       return {
           projectList: '',
+          loginStatus: '',
           fields: [{key : 'projectDto.projectName', label: '프로젝트 이름'},{key : 'projectDto.userId', label: '의뢰자'}, {key:'projectDto.workType', label: 'Work Type'},
           {key : 'projectDto.dataType', label: 'Data Type'},{ key: 'projectDto.show_details', label: 'Show Detatils'}],
           workType:'',
           dataType:'',
           perPage : 10,
           currentPage : 1,
+          selected: "",
+            selectedLevel: -1,
+            searchType: "",
+            selectedProject: "",
+            selectedData : "",
+            selectedWork: "",
+            selectedSubject: "",
       }
   },
   async beforeCreate() {
@@ -66,8 +129,12 @@ export default {
       axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
 
   },
-  created(){    
-      this.fetchData()
+  async created(){    
+      this.fetchData();
+    this.loginStatus = await localStorage.getItem('loginState');
+      var projectType = await localStorage.getItem('projectList');
+      console.log(JSON.parse(projectType).projectType);
+      this.selectedProject = JSON.parse(projectType).projectType;
   },
   watch: {
       '$route' : 'fetchData'
@@ -143,7 +210,28 @@ export default {
                                 }
                         });
                     }
+        },
+        search: function() {
+        if(!this.loginStatus){
+          alert("로그인이 필요한 작업입니다.");
+          this.$router.push("/login");
         }
+        else {
+        
+              if (this.selectedProject == null) {
+                alert("원하는 검색 종류를 선택해주세요!");
+              }
+              else {
+                let difficulty = (this.selectedLevel == -1) ? this.selectedLevel : this.selectedLevel[0];
+                var params = {'projectType': this.selectedProject, 'workType': this.selectedWork, 'dataType' : this.selectedData,
+                    'difficulty': difficulty,'subject': this.selectedSubject};
+                localStorage.projectList = JSON.stringify(params);
+                this.$router.push({path: '/project', query : {params : params }});
+              }
+              
+          }
+        },
+        
     }
 
 
@@ -153,9 +241,14 @@ export default {
 @import url(//fonts.googleapis.com/earlyaccess/hanna.css);
 @import url(//fonts.googleapis.com/earlyaccess/jejugothic.css);
 
+#my-table {
+    max-width: 1300px;
+    margin: auto;
+}
 #projectLogo {
     width: 250px;
 }
+
 .list-group {
     max-width: 1200px;
     margin: auto;
@@ -176,5 +269,26 @@ export default {
     font-size: 15px;
     font-weight: lighter;
 }
+.mb-3 {
+  margin : 4px;
+  width: 40px;
+}
+
+.searchButton {
+  width: 150px;
+  height: 40px;
+  text-transform: uppercase;
+  color: #000;
+  background-color: #fff;
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease 0s;
+  cursor: pointer;
+  outline: none;
+  font-family:"Verdana";
+  margin-top: 100px;
+}
+
 
 </style>
