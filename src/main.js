@@ -24,7 +24,6 @@ Vue.use(VueSession)
 Vue.use(VueCookies)
 //Vue.use(AudioVisual)
 
-
 Vue.config.productionTip = false
 Vue.prototype.$Axios = axios;
 Vue.component('vue-phone-number-input', VuePhoneNumberInput);

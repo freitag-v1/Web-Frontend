@@ -38,17 +38,14 @@
                 accept="image/*"
                 ></b-form-file>
                 <br>
-                <p>{{ "업로드 데이터 " + imageContent[0].name + "의 preview" }} </p>
-                <img id ="previewImg" v-if="imageUrl" :src = "imageUrl"></img>
+                <p v-if="imageUrl!=''">{{ "업로드 데이터 " + imageContent[0].name + "의 preview" }} </p>
+                <img id ="previewImg" v-if="imageUrl!=''" :src = "imageUrl"></img>
                 <div class="mt-3"  v-for = "name, index in imageContent">
                     Selected file: {{ index + 1 + "." + name ? name.name : '' }}
                 </div>
                 
                 <br>
     <div class = "buttons">
-        <b-button size="lg" variant="primary" v-on:click="addImage">
-                <b-icon icon="file-earmark-plus" aria-label="Help"></b-icon> Add
-        </b-button>
         <b-button size="lg" variant="warning" v-on:click="upload" v-model ="createCollection">
                 <b-icon icon="upload"></b-icon> Upload
         </b-button>
@@ -77,7 +74,6 @@ var dataState = false; //데이터가 업로드 되었는지의 여부
         return {
             project: null,
             classNameList: [],
-            imageCount: 1,
             createCollection: false,
             imageContent: '',
             imageUrl : '',
@@ -118,8 +114,8 @@ var dataState = false; //데이터가 업로드 되었는지의 여부
             console.log(e.target.files);
             const file = e.target.files[0];
             this.imageUrl = URL.createObjectURL(file);    
-            this.$refs.cropper.replace(this.imageUrl);
-            this.cropImg="";
+            //this.$refs.cropper.replace(this.imageUrl);
+            //this.cropImg="";
         },
         preventNav(event) {
                 if (!dataState || this.createCollection) return;
@@ -127,19 +123,30 @@ var dataState = false; //데이터가 업로드 되었는지의 여부
                 // Chrome requires returnValue to be set.
                 event.returnValue = "";
         },
-        addImage() {
-            this.imageCount += 1;
-        },
-        upload() { //formData 리스트!
+        async upload() { //formData 리스트!
             //var imageFormData = new Array(); 뭔가 formdata 리스트가 아니라 formdata에 append해서 보내는거 같다
-        this.createCollection = true;
+        
         let imgUrl = new FormData();
-           for(var uploadImageFile of ImageList){
-               imgUrl.append('file', uploadImageFile);
+           for(var uploadImageFile of this.imageContent){
+               imgUrl.append('files', uploadImageFile);
                //imageFormData.push(imgUrl);
            }
            console.log(imgUrl);//여기서 데이터 보내면 된다
            console.log("=========================================");
+           axios.defaults.headers.common['bucketName'] = this.project.bucketName;
+           const collectionWorkRes = await axios.post("/api/work/collection", imgUrl, {
+               params: {
+                   projectId : this.project.projectId,
+               }
+            });
+           if(collectionWorkRes.headers.upload == "success"){
+               alert("수집 작업이 완료되었습니다!");
+               this.$router.push("/");
+           }
+           else {
+               alert("수집 작업이 실패하였습니다. 다시 시도해주세요!");
+               //location.reload();
+           }
            
         },
         registerImageUrl(data) { //index를 저장을 해서 기존에 올린 사진을 수정하는 경우 추가되지 않고 변경해야해서 props로 index 주고 받고 해서 변경

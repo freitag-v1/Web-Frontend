@@ -21,7 +21,7 @@
         </b-nav-form>
          
         <b-nav-item id = "userIcon" v-if="loginStatus"><b-icon  icon="person" variant="primary"></b-icon> {{userId + "님"}}</b-nav-item>
-        <b-nav-item-dropdown text="작업 기록" right>
+        <b-nav-item-dropdown  v-if="loginStatus" text="작업 기록" right>
           <b-dropdown-item href="/project/request">의뢰 작업 목록</b-dropdown-item>
           <b-dropdown-item href="/project/complete">완료 작업 목록</b-dropdown-item>
         </b-nav-item-dropdown>
