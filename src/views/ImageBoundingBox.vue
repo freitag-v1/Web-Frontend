@@ -48,7 +48,7 @@
 import axios from 'axios';
 import VueCropper from 'vue-cropperjs';
 
-
+axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
 var ImageList = new Array();
 var dataState = false; //데이터가 업로드 되었는지의 여부
 
@@ -57,24 +57,54 @@ const AWS = require('aws-sdk');
 const fs = require('fs');
 const endpoint = new AWS.Endpoint('https://kr.object.ncloudstorage.com');
 const region = 'kr-standard';
-const access_key = 'InfcDU4FIzbmJ85y7trv';
-const secret_key = 'AYdAOuv3f7UtkfJy2vGpjw2HQEWsE5VCWmlaFKYa';
+const access_key = 'sQG5BeaHcnvvqK4FI01A';
+const secret_key = 'mvNVjSac240XvnrK4qF39HpoMvvtMQMzUnnNHaRV';
 
 const S3 = new AWS.S3({
     endpoint : endpoint,
-    region : region,
+    region: region,
     credentials : {
         accessKeyId : access_key,
         secretAccessKey : secret_key,
-    }
+    },
+    apiVersion: '2006-03-01',
+    httpOptions : {
+        xhrWithCredentials : true,
+    },
+    sslEnabled : true,
 });
 
+AWS.config.update({region: 'REGION'});
 
-const bucket_name = 'woneyhoney1';
-const object_name = '푸리.JPG';
+const bucket_name = 'woneyhoney5';
+const object_name = 'ㅋㅋ.HEIC';
 const local_file_path = '../assets';
 
-
+var params = {
+  Bucket: bucket_name, /* required */
+  CORSConfiguration: { /* required */
+    CORSRules: [ /* required */
+      {
+        AllowedMethods: [ /* required */
+          'GET',
+          'PUT',
+          /* more items */
+        ],
+        AllowedOrigins: [ /* required */
+          'http://localhost:8081',
+          /* more items */
+        ],
+        AllowedHeaders: [
+          'Authorization',
+          /* more items */
+        ],
+        MaxAgeSeconds: '3000'
+      },
+      /* more items */
+    ]
+  },
+  ContentMD5: ''
+};
 
 
  export default {
@@ -142,29 +172,39 @@ const local_file_path = '../assets';
            console.log("=========================================");
            
         },
-        download() {
+        async download() {
              console.log("hello!");
-            S3.putBucketCors(corsParams, function(err, data) {
-                if (err) {
-                    // display error message
-                    console.log("Error", err);
-                } else {
-                    // update the displayed CORS config for the selected bucket
-                    console.log("Success", data);
-                }
-                });
+            // S3.putBucketCors(corsParams, function(err, data) {
+            //     if (err) {
+            //         // display error message
+            //         console.log("Error", err);
+            //     } else {
+            //         // update the displayed CORS config for the selected bucket
+            //         console.log("Success", data);
+            //     }
+            //     });
 
-            //  S3.getObject(
-            //      { Bucket: bucket_name, Key : object_name },
-            //      function(error, data){
-            //          if(error != null) {
-            //              alert("Failed to retrieve an object: " + error);
-            //          }
-            //          else {
-            //              alert("Loaded " + data.ContentLength + " bytes");
-            //          }
-            //      }
-            // );
+             S3.getObject(
+                 { Bucket: bucket_name, Key : object_name },
+                 function(error, data){
+                     if(error != null) {
+                         alert("Failed to retrieve an object: " + error);
+                     }
+                     else {
+                         alert("Loaded " + data.ContentLength + " bytes");
+                     }
+                 }
+            );
+
+            // await S3.putBucketCors(params, function(err, data) {
+            //     if (err) {
+            //         // display error message
+            //         console.log("Error", err);
+            //     } else {
+            //         // update the displayed CORS config for the selected bucket
+            //         console.log("Success", data);
+            //     }
+            //     });
         }
         
         
