@@ -30,9 +30,27 @@
         <img :src = "downloadUrl" v-if="downloadUrl != ''" style="width: 400px; height: 300px;"/>
         <AudioUpload v-if="audioUrl != ''" :value="audioUrl"/>
     </b-card-text>
-    <div v-for="i in imageCount">
+    <b-card-footer style="font-weight: bolder">프로젝트 작업</b-card-footer>
+    <b-form-file multiple
+                    v-model="problemContent"
+                    :state="Boolean(problemContent)"
+                    placeholder="Choose a file or drop it here..."
+                    drop-placeholder="Drop file here..."
+                    accept="audio/*,image/*,text/*"
+                    ></b-form-file>
         <br>
+        <br>
+
+    <div class = "collectionWork">
+        <span>{{this.problem.problemId}}</span>
+        <br>
+        <img v-if = "problemImageUrl != ''" :src= "problemImageUrl"/>
+        <AudioUpload v-if="problemAudioUrl != ''" :value = "problemAudioUrl"/>
+        <p v-if = "textData != ''">{{textData}}</p>
     </div>
+    <b-button size="lg" variant="warning" v-on:click="register" v-model ="createCollection">
+                <b-icon icon="upload"></b-icon> 등록
+        </b-button>
     <div class = "buttons">
         <b-button size="lg" variant="warning" v-on:click="upload" v-model ="createCollection">
                 <b-icon icon="upload"></b-icon> Upload
@@ -43,11 +61,15 @@
     </b-card>
     <br>
     <br>
+    <div class="overflow-auto" style="margin : auto;">
+        <b-pagination v-model="currentPage" :total-rows="problemList.length" per-page= 1></b-pagination>
+    </div>
     </div>
 </template>
 <script>
 import axios from 'axios';
 import AudioUpload from '../components/AudioUpload.vue';
+//import ClassificationWork from '../components/ClassificationWork.vue';
 var dataState = false; //데이터가 업로드 되었는지의 여부
 
 const endpoint = 'kr.object.ncloudstorage.com';
@@ -86,6 +108,7 @@ export default {
     components : {
         //ImageUpload
         AudioUpload,
+        //ClassificationWork,
     },
     data() {
         return {
@@ -97,24 +120,55 @@ export default {
             downloadUrl: '',
             audioUrl: '',
             problemList : [],
+            problemContent: [],
+            index: 0,
+            problemImageUrl: '',
+            problemAudioUrl :'',
+            textData: '',
+            problem: '',
+            currentPage : 1
+
         }
     },
     async created() {
         this.fetchData();
-        this.examplaDataDownload();
+        //this.examplaDataDownload();
     },
     watch : {
-        '$route' : 'fetchData'
+        '$route' : 'fetchData',
+        currentPage : async function(val){
+            console.log("plaeadsd");
+            this.problemImageUrl = '';
+            this.problemAudioUrl = '';
+            this.textData = '';
+            var problemDTO = await localStorage.getItem('problemList');
+            var problemList = JSON.parse(problemDTO);
+            this.problem = problemList[val -1];
+            var problemDataDTO = await localStorage.getItem('problemData');
+            var problemDataList = JSON.parse(problemDataDTO);
+            if(problemDataList[val -1].type.includes("image/")){
+                this.problemImageUrl = problemDataList[val -1].blob;
+            }
+            else if (problemDataList[val -1].type.includes("audio/")){
+                this.problemAudioUrl = problemDataList[val -1].blob;
+            }
+            else {
+                this.textData = problemDataList[val -1].blob;
+            }
+        }
     },
     beforeMount() {
             delete localStorage.exampleContent;
+            delete localStorage.problemList;
+            delete localStorage.problemData;
             window.addEventListener("beforeunload", this.preventNav); //웹페이지 닫을 때 일어나는거 
             this.$once("hook:beforeDestroy", () => {
             window.removeEventListener("beforeunload", this.preventNav);
         });
     },
     beforeRouteLeave(to, from, next) { //작업하고나서 나가려고 하면 이루어지는거
-
+        delete localStorage.problemList;
+        delete localStorage.problemData;
         if (dataState || this.createCollection) {
             if (!window.confirm("페이지를 벗어나면 작업이 저장되지 않습니다. 그래도 이동하시겠습니까?")) {
                 return;
@@ -132,84 +186,107 @@ export default {
             this.classNameList = JSON.parse(searchproject).classNameList;//this.$route.params.classList;
             console.log(this.project);
             this.bucketName = JSON.parse(searchproject).projectDto.bucketName;
-            var problemRes = await axios.get("/api/work/labelling", {
+            var exampleDataExist = await localStorage.getItem('problemList');
+            if(exampleDataExist == null){
+                var problemRes = await axios.get("/api/work/labelling", {
                 params: {
                     projectId : this.project.projectId,
                 }
             });
-            if(problemRes.headers.problems == "success"){
-                this.problemList = problemRes.data; 
-            }
-            else {
-                alert("문제를 가져오는데 실패하였습니다.");
-            }
-        },
-        async examplaDataDownload(){
-            var exampleData = await localStorage.getItem('exampleContent');
-            console.log(exampleData);
-            if(exampleData == null){
-                if(this.project.exampleContent.includes(".txt")){
-                    s3Client.get("/"+this.bucketName+"/"+this.project.exampleContent, {
-                        responseType: 'text',
-                    }).then((res) =>{
-                    var textExample = document.createElement('p');
-                    textExample.innerText = res.data;
-                    document.getElementById("exampleContent").appendChild(textExample);
-                    localStorage.exampleContent = res.data;
-                    }); 
+                if(problemRes.headers.problems == "success"){
+                    this.problemList = problemRes.data; 
+                    localStorage.problemList = JSON.stringify(problemRes.data); //가져와서 나중에 다운로드해서 데이터를 가져와서 저장할 수 있도록 
+                    console.log(problemRes.data);
                 }
                 else {
-                    s3Client.get("/"+this.bucketName+"/"+this.project.exampleContent, {
-                        responseType : 'blob',
-                    }).then((res) =>{
-                        var exampleFile = new File([res.data], this.project.exampleContent,{ type: res.headers['content-type'], lastModified : Date.now() } );
-                        const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
-                        if(res.data.type.includes("image/")){
-                            this.downloadUrl = url;
-                            console.log(res.data.type);
-                            var content = {
-                                type : res.data.type,
-                                file : exampleFile,
-                            }
-                            console.log(exampleFile);
-                            localStorage.exampleContent = JSON.stringify(content);
-                        }
-                        else{
-                            this.audioUrl = url;
-                            var content = {
-                                type : res.data.type,
-                                url : exampleFile,
-                            }
-                            localStorage.exampleContent = JSON.stringify(content);
-                        }
-                    });
+                    alert("문제를 가져오는데 실패하였습니다.");
                 }
             }
-            else {
-                var exampleLocal = await localStorage.getItem('exampleContent');
-                var exampleLocalDataType = JSON.parse(exampleLocal).type;
-                var exampleLocalData = JSON.parse(exampleLocal).url;
-                if(exampleLocalDataType.includes("image/")){ //예시데이터가 이미지인 경우
-                    this.downloadUrl = exampleLocalData;
-                }
-                else if(exampleLocalDataType.includes("audio/")){//예시데이터가 음성인 경우
-                    this.audioUrl = exampleLocalData;
-                }
-                else {//예시데이터가 텍스트인 경우
-                    var textExample = document.createElement('p');
-                    textExample.innerText = exampleLocalData;
-                    document.getElementById("exampleContent").appendChild(textExample);
-                }
-            }   
+            
+            
+            
         },
+        linkGen(pageNum) {
+            return pageNum === 1 ? '?' : `?page=${pageNum}`
+        },
+        register() {
+            console.log(this.problemContent);
+            var problemContentList = new Array();
+            for(let i = 0; i < 5; i++){
+                var problemBlob = {
+                    type : this.problemContent[i].type,
+                    blob : URL.createObjectURL(this.problemContent[i]),
+                }
+                problemContentList.push(problemBlob);
+            }
+            localStorage.problemData = JSON.stringify(problemContentList);
+        },
+        // async examplaDataDownload(){
+        //     var exampleData = await localStorage.getItem('exampleContent');
+        //     console.log(exampleData);
+        //     if(exampleData == null){
+        //         if(this.project.exampleContent.includes(".txt")){
+        //             s3Client.get("/"+this.bucketName+"/"+this.project.exampleContent, {
+        //                 responseType: 'text',
+        //             }).then((res) =>{
+        //             var textExample = document.createElement('p');
+        //             textExample.innerText = res.data;
+        //             document.getElementById("exampleContent").appendChild(textExample);
+        //             localStorage.exampleContent = res.data;
+        //             }); 
+        //         }
+        //         else {
+        //             s3Client.get("/"+this.bucketName+"/"+this.project.exampleContent, {
+        //                 responseType : 'blob',
+        //             }).then((res) =>{
+        //                 var exampleFile = new File([res.data], this.project.exampleContent,{ type: res.headers['content-type'], lastModified : Date.now() } );
+        //                 const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
+        //                 if(res.data.type.includes("image/")){
+        //                     this.downloadUrl = url;
+        //                     console.log(res.data.type);
+        //                     var content = {
+        //                         type : res.data.type,
+        //                         file : exampleFile,
+        //                     }
+        //                     console.log(exampleFile);
+        //                     localStorage.exampleContent = JSON.stringify(content);
+        //                 }
+        //                 else{
+        //                     this.audioUrl = url;
+        //                     var content = {
+        //                         type : res.data.type,
+        //                         url : exampleFile,
+        //                     }
+        //                     localStorage.exampleContent = JSON.stringify(content);
+        //                 }
+        //             });
+        //         }
+        //     }
+        //     else {
+        //         var exampleLocal = await localStorage.getItem('exampleContent');
+        //         var exampleLocalDataType = JSON.parse(exampleLocal).type;
+        //         var exampleLocalData = JSON.parse(exampleLocal).url;
+        //         if(exampleLocalDataType.includes("image/")){ //예시데이터가 이미지인 경우
+        //             this.downloadUrl = exampleLocalData;
+        //         }
+        //         else if(exampleLocalDataType.includes("audio/")){//예시데이터가 음성인 경우
+        //             this.audioUrl = exampleLocalData;
+        //         }
+        //         else {//예시데이터가 텍스트인 경우
+        //             var textExample = document.createElement('p');
+        //             textExample.innerText = exampleLocalData;
+        //             document.getElementById("exampleContent").appendChild(textExample);
+        //         }
+        //     }   
+        // },
         async problemDownload() {
 
         },
         preventNav(event) {
                 if (!dataState || this.createCollection) return;
                 event.preventDefault();
-                // Chrome requires returnValue to be set.
-                event.returnValue = "";
+                // Chrome requires returnval -1ue to be set.
+                event.returnvalue = "";
         },
         upload() { //formData 리스트!
             //var imageFormData = new Array(); 뭔가 formdata 리스트가 아니라 formdata에 append해서 보내는거 같다
