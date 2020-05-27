@@ -139,7 +139,16 @@ let day = today.getDay();  // 요일
                     break;
                   case "labelling" :
                     if(this.project.dataType == "boundingBox"){
-                      this.$router.push({name: 'ImageBoundingBox'});
+                      const boundingBoxProblemRes = await axios.get("/api/work/labelling", {
+                        params : {
+                          projectId : this.project.projectId,
+                        }
+                      });
+                      if(boundingBoxProblemRes.headers.problems == "success"){
+                          var boundingBoxProblem = boundingBoxProblemRes.data;
+                          console.log(boundingBoxProblem);
+                      }
+                      //this.$router.push({name: 'ImageBoundingBox'});
                       break;
                     }
                     else {

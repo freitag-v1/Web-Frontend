@@ -142,7 +142,7 @@ const requireAuth = async (to, from, next) => {
     beforeEnter: requireAuth
   },
   {
-    path:'/project/labelling/boundingBox/:idx',
+    path:'/project/labelling/boundingBox/:idx/problem/:idx',
     name: 'ImageBoundingBox',
     component: ImageBoundingBox,
     beforeEnter: requireAuth
