@@ -48,64 +48,41 @@
 import axios from 'axios';
 import VueCropper from 'vue-cropperjs';
 
-axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
 var ImageList = new Array();
 var dataState = false; //데이터가 업로드 되었는지의 여부
 
-
-const AWS = require('aws-sdk');
-const fs = require('fs');
-const endpoint = new AWS.Endpoint('https://kr.object.ncloudstorage.com');
+const endpoint = 'kr.object.ncloudstorage.com';
 const region = 'kr-standard';
 const access_key = 'sQG5BeaHcnvvqK4FI01A';
 const secret_key = 'mvNVjSac240XvnrK4qF39HpoMvvtMQMzUnnNHaRV';
 
-const S3 = new AWS.S3({
-    endpoint : endpoint,
-    region: region,
-    credentials : {
-        accessKeyId : access_key,
-        secretAccessKey : secret_key,
-    },
-    apiVersion: '2006-03-01',
-    httpOptions : {
-        xhrWithCredentials : true,
-    },
-    sslEnabled : true,
-});
+const v4 = require('aws-signature-v4');
 
-AWS.config.update({region: 'REGION'});
+var s3Client = axios.create();
 
-const bucket_name = 'woneyhoney5';
-const object_name = 'ㅋㅋ.HEIC';
+s3Client.interceptors.request.use(function (config) {
+        var timestamp = Date.now();
+        var headers = {};
+        headers['host'] = endpoint;
+        headers['x-amz-content-sha256'] = 'UNSIGNED-PAYLOAD';
+        headers['x-amz-date'] = new Date(timestamp).toISOString().replace(/[:\-]|\.\d{3}/g, "");
+
+        var canonicalRequest = v4.createCanonicalRequest('GET', config.url, {}, headers, 'UNSIGNED-PAYLOAD', true);
+        var stringToSign = v4.createStringToSign(timestamp, region, 's3', canonicalRequest);
+        var signature = v4.createSignature(secret_key, timestamp, region, 's3', stringToSign);
+        var authorization = 'AWS4-HMAC-SHA256 Credential=' + access_key + '/' +
+                        v4.createCredentialScope(timestamp, region, 's3') + ', SignedHeaders=' +
+                        v4.createSignedHeaders(headers) + ', Signature=' + signature;
+
+	config.url = '/object' + config.url;
+        config.headers['x-amz-content-sha256'] = headers['x-amz-content-sha256'];
+        config.headers['x-amz-date'] = headers['x-amz-date'];
+        config.headers['Authorization'] = authorization;
+
+        return config;
+    });
+
 const local_file_path = '../assets';
-
-var params = {
-  Bucket: bucket_name, /* required */
-  CORSConfiguration: { /* required */
-    CORSRules: [ /* required */
-      {
-        AllowedMethods: [ /* required */
-          'GET',
-          'PUT',
-          /* more items */
-        ],
-        AllowedOrigins: [ /* required */
-          'http://localhost:8081',
-          /* more items */
-        ],
-        AllowedHeaders: [
-          'Authorization',
-          /* more items */
-        ],
-        MaxAgeSeconds: '3000'
-      },
-      /* more items */
-    ]
-  },
-  ContentMD5: ''
-};
-
 
  export default {
     name: 'ImageCollection',
@@ -172,39 +149,11 @@ var params = {
            console.log("=========================================");
            
         },
-        async download() {
-             console.log("hello!");
-            // S3.putBucketCors(corsParams, function(err, data) {
-            //     if (err) {
-            //         // display error message
-            //         console.log("Error", err);
-            //     } else {
-            //         // update the displayed CORS config for the selected bucket
-            //         console.log("Success", data);
-            //     }
-            //     });
-
-             S3.getObject(
-                 { Bucket: bucket_name, Key : object_name },
-                 function(error, data){
-                     if(error != null) {
-                         alert("Failed to retrieve an object: " + error);
-                     }
-                     else {
-                         alert("Loaded " + data.ContentLength + " bytes");
-                     }
-                 }
-            );
-
-            // await S3.putBucketCors(params, function(err, data) {
-            //     if (err) {
-            //         // display error message
-            //         console.log("Error", err);
-            //     } else {
-            //         // update the displayed CORS config for the selected bucket
-            //         console.log("Success", data);
-            //     }
-            //     });
+        download() {
+            console.log("hello!");
+            s3Client.get("/wodnd9999992/wodnd9999991000x-1.jpg").then(res => {
+                console.log("hello!!!");
+            });
         }
         
         
