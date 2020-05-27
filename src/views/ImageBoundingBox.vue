@@ -37,6 +37,8 @@
         <b-button size="lg" variant="warning" v-on:click="download" v-model ="createCollection">
                 <b-icon icon="upload"></b-icon> download
         </b-button>
+        <img :src = "downloadUrl" v-if="downloadUrl != ''" style="width: 400px; height: 500px;"/>
+        <AudioUpload v-if="audioUrl != ''" :value="audioUrl"/>
     </div>
     <br>
     </b-card>
@@ -47,14 +49,15 @@
 <script>
 import axios from 'axios';
 import VueCropper from 'vue-cropperjs';
+import AudioUpload from '../components/AudioUpload.vue';
 
 var ImageList = new Array();
 var dataState = false; //데이터가 업로드 되었는지의 여부
 
 const endpoint = 'kr.object.ncloudstorage.com';
 const region = 'kr-standard';
-const access_key = 'sQG5BeaHcnvvqK4FI01A';
-const secret_key = 'mvNVjSac240XvnrK4qF39HpoMvvtMQMzUnnNHaRV';
+const access_key = 'InfcDU4FIzbmJ85y7trv';
+const secret_key = 'AYdAOuv3f7UtkfJy2vGpjw2HQEWsE5VCWmlaFKYa';
 
 const v4 = require('aws-signature-v4');
 
@@ -87,7 +90,8 @@ const local_file_path = '../assets';
  export default {
     name: 'ImageCollection',
     components : {
-        //ImageUpload,
+        //ImageUpload
+        AudioUpload,
     },
     data() {
         return {
@@ -95,11 +99,19 @@ const local_file_path = '../assets';
             classNameList: [],
             imageCount: 1,
             createCollection: false,
+            bucketName: '',
+            downloadUrl: '',
+            audioUrl: '',
+            
 
         }
     },
-    created() {
+    async created() {
         this.fetchData();
+        var searchproject = await localStorage.getItem('searchProject');//this.$route.params.project;
+        //console.log(JSON.parse(searchproject));
+        this.bucketName = JSON.parse(searchproject).projectDto.bucketName;
+
     },
     watch : {
         '$route' : 'fetchData'
@@ -151,9 +163,31 @@ const local_file_path = '../assets';
         },
         download() {
             console.log("hello!");
-            s3Client.get("/wodnd9999992/wodnd9999991000x-1.jpg").then(res => {
-                console.log("hello!!!");
-            });
+            var string = "안녕하세요.txt"
+            var subString = ".txt";
+            if(string.includes(subString)){
+                s3Client.get("/freitag/안녕하세요.txt", {
+                    responseType : 'text',
+                }).then(res => {
+                    console.log(res.data.type);
+                    console.log(res.data);
+                })
+            }
+            // s3Client.get("/freitag/안녕하세요.txt", {
+            //     responseType : 'blob',
+            // }).then(res => {
+            //     const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
+            //     console.log("hello!!!");
+            //     console.log(res.data.type);
+            //     if(res.data.type == "image/jpeg"){
+            //         this.downloadUrl = url;
+            //     }
+            //     else if(res.data.type == "audio/x-m4a"){
+            //         this.audioUrl = url;
+            //     }
+            //     console.log(url);
+                
+            //});
         }
         
         

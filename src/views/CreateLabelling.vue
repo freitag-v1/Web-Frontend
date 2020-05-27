@@ -51,8 +51,8 @@
                 hidden @change="onChangeImages"
                 accept="audio/*,image/*,text/*"
                 ></b-form-file>
-                <div class="mt-3">Selected file: {{ exampleContent ? exampleContent.name : '' }}</div>
-                <img id ="examplePreview" v-if="imageUrl != null" :src = "imageUrl"></img>
+                <div id = "select" class="mt-3">Selected file: {{ exampleContent ? exampleContent.name : '' }}</div>
+                <!--<img id ="examplePreview" v-if="imageUrl != null" :src = "imageUrl"></img>-->
                 <br>
                 <br>
             <p>프로젝트 설명</p>
@@ -227,6 +227,9 @@ export default {
                                 }
                                 console.log(labellingData);
                                 console.log(typeof(exampleDataRes.headers.projectid));
+                                if(this.labellingContent.length < 2){
+                                    alert("라벨링 데이터는 최소 20개 이상이어야합니다!")
+                                }
                                 const labellingDataRes = await axios.post("/api/project/upload/labelling",labellingData, {
                                     params :{
                                     projectId :exampleDataRes.headers.projectid,
@@ -259,7 +262,16 @@ export default {
         onChangeImages(e) { 
                 console.log(e.target.files);
                 const file = e.target.files[0];
-                this.imageUrl = URL.createObjectURL(file);
+                if(file.type.includes("image/")){
+                    var imageExample = document.createElement('img');
+                    var br = document.createElement('br');
+                    this.imageUrl = URL.createObjectURL(file);
+                    imageExample.setAttribute("src", this.imageUrl);
+                    imageExample.setAttribute("id","examplePreview");
+                    document.getElementById("select").appendChild(br);
+                    document.getElementById("select").appendChild(imageExample);
+                }
+                
         },
         addClass() {
             

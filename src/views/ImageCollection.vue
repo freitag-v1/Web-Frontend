@@ -23,7 +23,10 @@
     <b-card-footer style="font-weight: bolder">프로젝트 조건</b-card-footer>
     <b-card-text class ="content">{{project.conditionContent}}</b-card-text>
     <b-card-footer style="font-weight: bolder">프로젝트 예시 데이터</b-card-footer>
-    <b-card-text class ="content">{{project.exampleContent}}</b-card-text>
+    <b-card-text class ="content">
+        <br>
+        <img :src = "downloadUrl" v-if="downloadUrl != ''" style="width: 400px; height: 300px;"/>
+        <AudioUpload v-if="audioUrl != ''" :value="audioUrl"/></b-card-text>
     <!--<div v-for="i in imageCount">
         <ImageUpload v-bind:idx=i @registerImg="registerImageUrl"> </ImageUpload>
         <br>
@@ -65,6 +68,37 @@ import ImageUpload from '../components/ImageUpload.vue';
 var ImageList = new Array();
 var dataState = false; //데이터가 업로드 되었는지의 여부
 
+const endpoint = 'kr.object.ncloudstorage.com';
+const region = 'kr-standard';
+const access_key = '4WhQkGZPLH1sVg6cWLtK';
+const secret_key = 'xmKmQXfbYyyPuXyEw1KeDXE7CveACDQdWUPACtzP';
+
+const v4 = require('aws-signature-v4');
+
+var s3Client = axios.create();
+
+s3Client.interceptors.request.use(function (config) {
+        var timestamp = Date.now();
+        var headers = {};
+        headers['host'] = endpoint;
+        headers['x-amz-content-sha256'] = 'UNSIGNED-PAYLOAD';
+        headers['x-amz-date'] = new Date(timestamp).toISOString().replace(/[:\-]|\.\d{3}/g, "");
+
+        var canonicalRequest = v4.createCanonicalRequest('GET', config.url, {}, headers, 'UNSIGNED-PAYLOAD', true);
+        var stringToSign = v4.createStringToSign(timestamp, region, 's3', canonicalRequest);
+        var signature = v4.createSignature(secret_key, timestamp, region, 's3', stringToSign);
+        var authorization = 'AWS4-HMAC-SHA256 Credential=' + access_key + '/' +
+                        v4.createCredentialScope(timestamp, region, 's3') + ', SignedHeaders=' +
+                        v4.createSignedHeaders(headers) + ', Signature=' + signature;
+
+	config.url = '/object' + config.url;
+        config.headers['x-amz-content-sha256'] = headers['x-amz-content-sha256'];
+        config.headers['x-amz-date'] = headers['x-amz-date'];
+        config.headers['Authorization'] = authorization;
+
+        return config;
+    });
+
  export default {
     name: 'ImageCollection',
     components : {
@@ -77,16 +111,79 @@ var dataState = false; //데이터가 업로드 되었는지의 여부
             createCollection: false,
             imageContent: '',
             imageUrl : '',
+            downloadUrl: '',
+            audioUrl: '',
 
         }
     },
-    created() {
-        this.fetchData()
+    async created() {
+        this.fetchData();
+        var exampleData = await localStorage.getItem('exampleContent');
+        console.log(exampleData);
+        if(exampleData == null){
+            if(this.project.exampleContent.includes(".txt")){
+                s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
+                    responseType: 'text',
+                }).then((res) =>{
+                var textExample = document.createElement('p');
+                textExample.innerText = res.data;
+                document.getElementById("exampleContent").appendChild(textExample);
+                localStorage.exampleContent = res.data;
+                }); 
+            }
+            else {
+                s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
+                    responseType : 'blob',
+                }).then((res) =>{
+                    //var exampleFile = new File([res.data], this.project.exampleContent,{ type: res.headers['content-type'], lastModified : Date.now() } );
+                    const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
+                    if(res.data.type.includes("image/")){
+                        this.downloadUrl = url;
+                        console.log(res.data.type);
+                        var content = {
+                            type : res.data.type,
+                            url : url,
+                        }
+                        console.log(exampleFile);
+                        localStorage.exampleContent = JSON.stringify(content);
+                        //var local = localStorage.getItem('exampleContent');
+                        
+                        //console.log(JSON.parse(local).file);
+                    }
+                    else{
+                        this.audioUrl = url;
+                        var content = {
+                            type : res.data.type,
+                            url : url,
+                        }
+                        localStorage.exampleContent = JSON.stringify(content);
+                    }
+                });
+            }
+        }
+        else {
+            var exampleLocal = await localStorage.getItem('exampleContent');
+            var exampleLocalDataType = JSON.parse(exampleLocal).type;
+            var exampleLocalData = JSON.parse(exampleLocal).url;
+            console.log(newFile);
+            if(exampleLocalDataType.includes("image/")){ //예시데이터가 이미지인 경우
+                this.downloadUrl = exampleLocalData;
+            }
+            else if(exampleLocalDataType.includes("audio/")){//예시데이터가 음성인 경우
+                this.audioUrl = exampleLocalData;
+            }
+            else {//예시데이터가 텍스트인 경우
+                 var textExample = document.createElement('p');
+                textExample.innerText = exampleLocalData;
+                document.getElementById("exampleContent").appendChild(textExample);
+            }
+        }   
     },
     watch : {
         '$route' : 'fetchData'
     },
     beforeMount() {
+            delete localStorage.exampleContent;
             window.addEventListener("beforeunload", this.preventNav); //웹페이지 닫을 때 일어나는거 
             this.$once("hook:beforeDestroy", () => {
             window.removeEventListener("beforeunload", this.preventNav);
@@ -99,6 +196,7 @@ var dataState = false; //데이터가 업로드 되었는지의 여부
                 return;
             }
         }
+        delete localStorage.exampleContent;
         next();
     },
     methods : {

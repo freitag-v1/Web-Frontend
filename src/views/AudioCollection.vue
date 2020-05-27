@@ -24,28 +24,12 @@
     <b-card-footer style="font-weight: bolder">프로젝트 조건</b-card-footer>
     <b-card-text class ="content">{{project.conditionContent}}</b-card-text>
     <b-card-footer style="font-weight: bolder">프로젝트 예시 데이터</b-card-footer>
-    <b-card-text class ="content">{{project.exampleContent}}</b-card-text>
-     
-    <div v-for="i in audioCount">
-        
-        <b-form-file 
-                v-model="audioContent"
-                :state="Boolean(audioContent)"
-                placeholder="Choose a file or drop it here..."
-                drop-placeholder="Drop file here..."
-                hidden @change="onChangeAudios"
-                accept="audio/*"
-                ></b-form-file>
-                <div class="mt-3">Selected file: {{ audioContent ? audioContent.name : '' }}</div>
-        <!--<av-waveform v-if="audioUrl!=''" :audio-src = "audioUrl"></av-waveform>
-        <av-waveform v-if="trimmedAudioUrl!=''" :audio-src = "trimmedAudioUrl"></av-waveform>-->
+    <b-card-text class ="content">
         <AudioUpload v-if="audioUrl != ''" :value="audioUrl"></AudioUpload>
-        <br>
-        <p v-if="audioUrl!=''">Start Time   <input id="startTime" v-model="startTimeInput" placeholder="Start Time"/></p>
-        <p v-if="audioUrl!=''">End Time   <input id="endTime" v-model="endTimeInput" placeholder="End Time"/></p>
-        <br>
-        <b-button size="lg" variant="primary" v-on:click="audioCut">Cut</b-button>
-    </div>
+    </b-card-text>
+     <b-card-footer style="font-weight: bolder">프로젝트 작업</b-card-footer>
+     <br>
+        <AudioWork></AudioWork>
     <br>
     <div class = "buttons">
         <b-button size="lg" variant="primary" v-on:click="addImage">
@@ -66,6 +50,7 @@ import axios from 'axios';
 import VueCropper from 'vue-cropperjs';
 //import AudioVisual from 'vue-audio-visual';
 import AudioUpload from "../components/AudioUpload.vue";
+import AudioWork from "../components/AudioCollectionWork.vue";
 
 
 
@@ -74,11 +59,43 @@ var dataState = false; //데이터가 업로드 되었는지의 여부
 let audioMaker = require('audiomaker');
 let _audioMaker = new audioMaker();
 
+const endpoint = 'kr.object.ncloudstorage.com';
+const region = 'kr-standard';
+const access_key = '4WhQkGZPLH1sVg6cWLtK';
+const secret_key = 'xmKmQXfbYyyPuXyEw1KeDXE7CveACDQdWUPACtzP';
+
+const v4 = require('aws-signature-v4');
+
+var s3Client = axios.create();
+
+s3Client.interceptors.request.use(function (config) {
+        var timestamp = Date.now();
+        var headers = {};
+        headers['host'] = endpoint;
+        headers['x-amz-content-sha256'] = 'UNSIGNED-PAYLOAD';
+        headers['x-amz-date'] = new Date(timestamp).toISOString().replace(/[:\-]|\.\d{3}/g, "");
+
+        var canonicalRequest = v4.createCanonicalRequest('GET', config.url, {}, headers, 'UNSIGNED-PAYLOAD', true);
+        var stringToSign = v4.createStringToSign(timestamp, region, 's3', canonicalRequest);
+        var signature = v4.createSignature(secret_key, timestamp, region, 's3', stringToSign);
+        var authorization = 'AWS4-HMAC-SHA256 Credential=' + access_key + '/' +
+                        v4.createCredentialScope(timestamp, region, 's3') + ', SignedHeaders=' +
+                        v4.createSignedHeaders(headers) + ', Signature=' + signature;
+
+	config.url = '/object' + config.url;
+        config.headers['x-amz-content-sha256'] = headers['x-amz-content-sha256'];
+        config.headers['x-amz-date'] = headers['x-amz-date'];
+        config.headers['Authorization'] = authorization;
+
+        return config;
+    });
+
  export default {
     name: 'AudioCollection',
     components : {
         //AudioVisual
         AudioUpload,
+        AudioWork,
     },
     data() {
         return {
@@ -88,18 +105,22 @@ let _audioMaker = new audioMaker();
             createCollection: false,
             audioUrl: "",
             audioContent: '',
-            startTimeInput: 0,
-            endTimeInput: 0,
-            trimmedAudioUrl: "",
+            options: [
+                {item : 'upload', name : '음성 업로드'},
+                {item : 'record', name : '음성 녹음' }
+            ],
+            selected: 'upload'
         }
     },
-    created() {
-        this.fetchData()
+    async created() {
+        this.fetchData();
+        this.examplaDataDownload();
     },
     watch : {
         '$route' : 'fetchData'
     },
     beforeMount() {
+            delete localStorage.exampleContent;
             window.addEventListener("beforeunload", this.preventNav); //웹페이지 닫을 때 일어나는거 
             this.$once("hook:beforeDestroy", () => {
             window.removeEventListener("beforeunload", this.preventNav);
@@ -112,6 +133,7 @@ let _audioMaker = new audioMaker();
                 return;
             }
         }
+        delete localStorage.exampleContent;
         next();
     },
     methods : {
@@ -122,6 +144,31 @@ let _audioMaker = new audioMaker();
             this.project = JSON.parse(searchproject).projectDto;
             this.classNameList = JSON.parse(searchproject).classNameList;//this.$route.params.classList;
             console.log(this.project);
+        },
+        async examplaDataDownload(){
+            var exampleData = await localStorage.getItem('exampleContent');
+            console.log(exampleData);
+            if(exampleData == null){
+                    s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
+                        responseType : 'blob',
+                    }).then((res) =>{
+                        //var exampleFile = new File([res.data], this.project.exampleContent,{ type: res.headers['content-type'], lastModified : Date.now() } );
+                        const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
+                        console.log(url);
+                            this.audioUrl = url;
+                                var content = {
+                                    type : res.data.type,
+                                    url : url,
+                                }
+                            localStorage.exampleContent = JSON.stringify(content);
+                    });
+            }
+            else {
+                var exampleLocal = await localStorage.getItem('exampleContent');
+                var exampleLocalDataType = JSON.parse(exampleLocal).type;
+                var exampleLocalData = JSON.parse(exampleLocal).url;
+                this.audioUrl = exampleLocalData;
+            }   
         },
         ready() {
             this.$refs.mycom.seekTo(this.timeline)

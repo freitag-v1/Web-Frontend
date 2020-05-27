@@ -42,9 +42,6 @@
         </div>
         </b-list-group-item>
     </b-list-group>
-    <b-card-footer style="font-weight: bolder">프로젝트 예시 데이터</b-card-footer>
-    <br>
-    <b-card-text class ="content">{{project.exampleContent}}</b-card-text>
     <b-card-footer style="font-weight: bolder">프로젝트 진행 방법</b-card-footer>
     <br>
     <b-card-text class ="content">{{project.wayContent}}</b-card-text>
@@ -147,6 +144,10 @@ let day = today.getDay();  // 요일
                       if(boundingBoxProblemRes.headers.problems == "success"){
                           var boundingBoxProblem = boundingBoxProblemRes.data;
                           console.log(boundingBoxProblem);
+                          localStorage.problemList = JSON.stringify(boundingBoxProblem);
+                          this.$router.push({name: 'ImageBoundingBox', params : {
+                            idx: 0,
+                          }});
                       }
                       //this.$router.push({name: 'ImageBoundingBox'});
                       break;
