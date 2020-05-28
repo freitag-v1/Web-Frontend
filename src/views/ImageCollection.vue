@@ -7,6 +7,7 @@
   >
     <template v-slot:header>
       <h4 class="mb-0">이미지 수집 작업</h4>
+      <h5>*이미지 수집 작업은 주어진 수집 데이터 목록에 맞는 이미지를 업로드 하는 작업입니다.</h5>
     </template>
     <b-list-group flush>
       <b-list-group-item>프로젝트 이름 : {{" "+ project.projectName}}</b-list-group-item>
@@ -27,10 +28,7 @@
         <br>
         <img :src = "downloadUrl" v-if="downloadUrl != ''" style="width: 400px; height: 300px;"/>
         <AudioUpload v-if="audioUrl != ''" :value="audioUrl"/></b-card-text>
-    <!--<div v-for="i in imageCount">
-        <ImageUpload v-bind:idx=i @registerImg="registerImageUrl"> </ImageUpload>
-        <br>
-    </div>-->
+
     <b-card-footer style="font-weight: bolder">이미지 수집 데이터 업로드</b-card-footer>
     <b-form-file multiple 
                 v-model="imageContent"
@@ -101,12 +99,9 @@ s3Client.interceptors.request.use(function (config) {
 
  export default {
     name: 'ImageCollection',
-    components : {
-        //ImageUpload,
-    },
     data() {
         return {
-            project: null,
+            project: '',
             classNameList: [],
             createCollection: false,
             imageContent: '',
@@ -121,62 +116,46 @@ s3Client.interceptors.request.use(function (config) {
         var exampleData = await localStorage.getItem('exampleContent');
         console.log(exampleData);
         if(exampleData == null){
-            if(this.project.exampleContent.includes(".txt")){
-                s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
-                    responseType: 'text',
-                }).then((res) =>{
-                var textExample = document.createElement('p');
-                textExample.innerText = res.data;
-                document.getElementById("exampleContent").appendChild(textExample);
-                localStorage.exampleContent = res.data;
-                }); 
-            }
-            else {
+            // if(this.project.exampleContent.includes(".txt")){
+            //     s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
+            //         responseType: 'text',
+            //     }).then((res) =>{
+            //     var textExample = document.createElement('p');
+            //     textExample.innerText = res.data;
+            //     document.getElementById("exampleContent").appendChild(textExample);
+            //     localStorage.exampleContent = res.data;
+            //     }); 
+            // }
+            // else { // 이미지 데이터에 대해서만 처리를 한다 
                 s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
                     responseType : 'blob',
                 }).then((res) =>{
-                    //var exampleFile = new File([res.data], this.project.exampleContent,{ type: res.headers['content-type'], lastModified : Date.now() } );
                     const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
-                    if(res.data.type.includes("image/")){
-                        this.downloadUrl = url;
-                        console.log(res.data.type);
-                        var content = {
-                            type : res.data.type,
-                            url : url,
-                        }
-                        console.log(exampleFile);
-                        localStorage.exampleContent = JSON.stringify(content);
-                        //var local = localStorage.getItem('exampleContent');
-                        
-                        //console.log(JSON.parse(local).file);
+                    this.downloadUrl = url;
+                    var content = {
+                        type : res.data.type,
+                        url : url,
                     }
-                    else{
-                        this.audioUrl = url;
-                        var content = {
-                            type : res.data.type,
-                            url : url,
-                        }
-                        localStorage.exampleContent = JSON.stringify(content);
-                    }
+                    localStorage.exampleContent = JSON.stringify(content);
+
                 });
-            }
+            
         }
         else {
             var exampleLocal = await localStorage.getItem('exampleContent');
             var exampleLocalDataType = JSON.parse(exampleLocal).type;
             var exampleLocalData = JSON.parse(exampleLocal).url;
-            console.log(newFile);
-            if(exampleLocalDataType.includes("image/")){ //예시데이터가 이미지인 경우
-                this.downloadUrl = exampleLocalData;
-            }
-            else if(exampleLocalDataType.includes("audio/")){//예시데이터가 음성인 경우
-                this.audioUrl = exampleLocalData;
-            }
-            else {//예시데이터가 텍스트인 경우
-                 var textExample = document.createElement('p');
-                textExample.innerText = exampleLocalData;
-                document.getElementById("exampleContent").appendChild(textExample);
-            }
+             //예시데이터가 이미지인 경우
+            this.downloadUrl = exampleLocalData;
+            
+            // else if(exampleLocalDataType.includes("audio/")){//예시데이터가 음성인 경우
+            //     this.audioUrl = exampleLocalData;
+            // }
+            // else {//예시데이터가 텍스트인 경우
+            //      var textExample = document.createElement('p');
+            //     textExample.innerText = exampleLocalData;
+            //     document.getElementById("exampleContent").appendChild(textExample);
+            // }
         }   
     },
     watch : {
@@ -191,7 +170,7 @@ s3Client.interceptors.request.use(function (config) {
     },
     beforeRouteLeave(to, from, next) { //작업하고나서 나가려고 하면 이루어지는거
 
-        if (dataState || this.createCollection) {
+        if (dataState || !this.createCollection) {
             if (!window.confirm("페이지를 벗어나면 작업이 저장되지 않습니다. 그래도 이동하시겠습니까?")) {
                 return;
             }
@@ -212,8 +191,7 @@ s3Client.interceptors.request.use(function (config) {
             console.log(e.target.files);
             const file = e.target.files[0];
             this.imageUrl = URL.createObjectURL(file);    
-            //this.$refs.cropper.replace(this.imageUrl);
-            //this.cropImg="";
+            
         },
         preventNav(event) {
                 if (!dataState || this.createCollection) return;
@@ -223,28 +201,37 @@ s3Client.interceptors.request.use(function (config) {
         },
         async upload() { //formData 리스트!
             //var imageFormData = new Array(); 뭔가 formdata 리스트가 아니라 formdata에 append해서 보내는거 같다
-        
+        this.createCollection = true;
         let imgUrl = new FormData();
            for(var uploadImageFile of this.imageContent){
                imgUrl.append('files', uploadImageFile);
-               //imageFormData.push(imgUrl);
+              
            }
            console.log(imgUrl);//여기서 데이터 보내면 된다
            console.log("=========================================");
            axios.defaults.headers.common['bucketName'] = this.project.bucketName;
-           const collectionWorkRes = await axios.post("/api/work/collection", imgUrl, {
+           axios.defaults.headers.common['projectId'] = this.project.projectId;
+           await axios.post("/api/work/collection", imgUrl, {
                params: {
                    projectId : this.project.projectId,
+                   // 파라미터로 class를 보내야한다. 
                }
+            }).then((collectionWorkRes) => {
+                if(collectionWorkRes.headers.upload == "success"){
+                    alert("수집 작업이 완료되었습니다!");
+                    this.$router.push("/");
+                }
+                else {
+                    alert("수집 작업이 실패하였습니다. 다시 시도해주세요!");
+                    //location.reload();
+                }
+            })
+            .catch(function(error){
+                if(error.response){
+                    alert("수집 작업이 실패하였습니다. 다시 시도해주세요!");
+                }
             });
-           if(collectionWorkRes.headers.upload == "success"){
-               alert("수집 작업이 완료되었습니다!");
-               this.$router.push("/");
-           }
-           else {
-               alert("수집 작업이 실패하였습니다. 다시 시도해주세요!");
-               //location.reload();
-           }
+           
            
         },
         registerImageUrl(data) { //index를 저장을 해서 기존에 올린 사진을 수정하는 경우 추가되지 않고 변경해야해서 props로 index 주고 받고 해서 변경

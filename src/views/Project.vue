@@ -14,13 +14,6 @@
             shadow
           >
           <div>
-            <!--<b-form-select v-model="selectedProject" class="mb-3">
-              <b-form-select-option-group label="프로젝트 종류">
-                <b-form-select-option :value="'Labelling'">라벨링 프로젝트</b-form-select-option>
-                <b-form-select-option :value="'Collection'">수집 프로젝트</b-form-select-option>
-                </b-form-select-option-group>
-              </b-form-select-option-group>
-            </b-form-select>-->
             <br>
             <b-form-group label="난이도 별 검색" v-if="selectedProject!=''"  style="font-size: 15px;">
             <b-form-checkbox-group id="checkbox-group-2" v-model="selectedLevel"  name="flavour-2">
@@ -130,11 +123,10 @@ export default {
 
   },
   async created(){    
-      this.fetchData();
-    this.loginStatus = await localStorage.getItem('loginState');
-      var projectType = await localStorage.getItem('projectList');
-      console.log(JSON.parse(projectType).projectType);
-      this.selectedProject = JSON.parse(projectType).projectType;
+        this.fetchData();
+        this.loginStatus = await localStorage.getItem('loginState');
+        var projectType = await localStorage.getItem('projectList');
+        this.selectedProject = JSON.parse(projectType).projectType;
   },
   watch: {
       '$route' : 'fetchData'
@@ -146,7 +138,6 @@ export default {
     },
     methods : {
         moveProject(detailItem){
-            console.log(detailItem);
              // 자세히 보고싶은 프로젝트를 보여줄 수 있도록
             localStorage.searchProject = JSON.stringify(detailItem); 
             this.$router.push({name: 'ProjectDetail', params : {
@@ -155,10 +146,8 @@ export default {
         },
         async fetchData () {
             var projectListParams = await localStorage.getItem('projectList');
-            console.log(JSON.parse(projectListParams));
             //라벨링 작업 프로젝트 
             if(JSON.parse(projectListParams).projectType == "Labelling") {
-                console.log(JSON.parse(projectListParams).difficulty, JSON.parse(projectListParams).workType, JSON.parse(projectListParams).subject);
                 await axios.get("/api/project/list", {
                     params : {
                         workType : 'labelling',
@@ -170,7 +159,6 @@ export default {
                     .then(projectListRes => {
                         if(projectListRes.headers.search == "success"){
                             this.projectList = projectListRes.data;
-                            console.log(projectListRes.data);
                         }
                         else {
                             alert("검색한 프로젝트가 존재하지 않습니다.");
@@ -186,7 +174,6 @@ export default {
             }
             //수집 프로젝트 리스트 
                 if(JSON.parse(projectListParams).projectType == "Collection") {
-                    console.log(JSON.parse(projectListParams).difficulty, JSON.parse(projectListParams).dataType, JSON.parse(projectListParams).subject);
                     const projectListRes = await axios.get("/api/project/list", {
                     params : {
                         workType : 'collection',
@@ -197,8 +184,7 @@ export default {
                     })
                     .then(projectListRes => {
                         if(projectListRes.headers.search == "success"){
-                        this.projectList = projectListRes.data;
-                        console.log(projectListRes.data);
+                            this.projectList = projectListRes.data;
                         }
                         else {
                             alert("검색한 프로젝트가 존재하지 않습니다.");
@@ -242,8 +228,8 @@ export default {
 @import url(//fonts.googleapis.com/earlyaccess/jejugothic.css);
 
 #my-table {
-    max-width: 1300px;
     margin: auto;
+    width : 1300px;
 }
 #projectLogo {
     width: 250px;

@@ -42,11 +42,15 @@
         <br>
 
     <div class = "collectionWork">
-        <span>{{this.problem.problemId}}</span>
+        <h4>{{currentPage + "번째 작업"}}</h4>
+        <span>{{ "문제 번호: " +this.problem.problemId}}</span>
         <br>
-        <img v-if = "problemImageUrl != ''" :src= "problemImageUrl"/>
+        <br>
+        <img id = "problemImage" v-if = "problemImageUrl != ''" :src= "problemImageUrl"/>
         <AudioUpload v-if="problemAudioUrl != ''" :value = "problemAudioUrl"/>
         <p v-if = "textData != ''">{{textData}}</p>
+        <br>
+        <h4>{{currentPage + "번째 문제 : "}}</h4>
     </div>
     <b-button size="lg" variant="warning" v-on:click="register" v-model ="createCollection">
                 <b-icon icon="upload"></b-icon> 등록
@@ -62,7 +66,7 @@
     <br>
     <br>
     <div class="overflow-auto" style="margin : auto;">
-        <b-pagination v-model="currentPage" :total-rows="problemList.length" per-page= 1></b-pagination>
+        <b-pagination id="pagination" v-model="currentPage" :total-rows="problemList.length" per-page= 1></b-pagination>
     </div>
     </div>
 </template>
@@ -211,6 +215,8 @@ export default {
         },
         register() {
             console.log(this.problemContent);
+            //여기서 원래 s3Client.get("/"+this.bucketname+"/"+this.problemList[i].object_name)
+            //이런 식으로 해서 bucket에 접근해서 데이터를 가져올 수 있도록 <- 원래 미리 해놔야한다 fetchData에서 해야한다. 
             var problemContentList = new Array();
             for(let i = 0; i < 5; i++){
                 var problemBlob = {
@@ -316,3 +322,16 @@ export default {
     }
 }
 </script>
+<style>
+.overflow-auto{
+    display: table; 
+    margin-left: auto; 
+    margin-right: auto;
+}
+#problemImage{
+    width: auto;
+    height : auto;
+    max-width: 600px;
+    max-height: 400px;
+}
+</style>

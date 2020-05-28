@@ -13,6 +13,8 @@ import 'vue-phone-number-input/dist/vue-phone-number-input.css';
 import VueCropper from 'vue-cropperjs';
 import 'cropperjs/dist/cropper.css';
 //import AudioVisual from 'vue-audio-visual';
+import VueAudioRecorder from 'vue-audio-recorder';
+
 
 
 
@@ -22,6 +24,7 @@ Vue.use(BootstrapVue)
 Vue.use(BootstrapVueIcons)
 Vue.use(VueSession)
 Vue.use(VueCookies)
+Vue.use(VueAudioRecorder)
 //Vue.use(AudioVisual)
 
 Vue.config.productionTip = false

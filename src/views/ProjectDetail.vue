@@ -97,7 +97,7 @@ let day = today.getDay();  // 요일
     name: 'ProjectDetail',
     data() {
         return {
-            project : null,
+            project : '',
             status: null,
             classNameList:[],
             agreements: [{content : '작업 정보', purpose: '프로젝트 진행 & 포인트 지급', period: '1년'}],
