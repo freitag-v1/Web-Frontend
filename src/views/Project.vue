@@ -63,8 +63,8 @@
             small
             >
             <template v-slot:cell(projectDto.show_details)="row">
-                <b-button style="width: 230px; "v-on:click="moveProject(row.item)" class="mr-2">
-                    {{ row.item.projectDto.projectName }}
+                <b-button style="width: 300px;"v-on:click="moveProject(row.item)" class="mr-2">
+                   {{ row.item.projectDto.projectName }}
                 </b-button>
             </template>
             <template v-slot:cell(projectDto.dataType)="data">

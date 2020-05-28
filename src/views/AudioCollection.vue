@@ -31,14 +31,40 @@
      <br>
      <b-card-footer style="font-weight: bolder">음성 업로드</b-card-footer>
         <br>
+        <div>
+            <b-form-radio-group
+            v-model="selected"
+            :options="options"
+            class="option"
+            value-field="item"
+            text-field="name"
+            ></b-form-radio-group>
+            <div class="mt-3">Selected: <strong>{{ selected }}</strong></div>    
+        </div>
+            <div class = "registeredImage" v-for="name in audioNameList">
+                <br>
+                <h4 v-if = "name.class == selected">< 이전에 등록된 이미지 이름 ></h4>
+                <div v-if = "name.class == selected" v-for="index, value in name.name">
+                    <p> {{ value+1 + ". " + index }}</p>
+
+                </div>    
+            </div>
+        <br>
+        
         <b-form-file multiple
                 v-model="audioContent"
                 :state="Boolean(audioContent)"
                 placeholder="Choose a file or drop it here..."
                 drop-placeholder="Drop file here..."
+                hidden @change="onChangeAudios"
                 accept="audio/*"
                 ></b-form-file>
-                <div class="mt-3">Selected file: {{ audioContent ? audioContent.name : '' }}</div>
+                <br>
+                <p v-if="audioPreUrl !=''">{{ "업로드 데이터 " + audioContent[0].name + "의 preview" }} </p>
+                <AudioUpload v-if="audioPreUrl !=''" :value = "audioPreUrl"/>
+                <br>
+                <div class="mt-3" v-for = "name, index in audioContent">
+                Selected file: {{ index + 1 + "." + name ? name.name : '' }}</div>
         <br>
         <b-card-footer style="font-weight: bolder">음성 녹음</b-card-footer>
         <br>
@@ -56,11 +82,11 @@
             
     <br>
     <div class = "buttons">
-        <b-button size="lg" variant="primary">
-                Register
+        <b-button variant="warning" v-on:click="upload" v-model ="createCollection">
+                <b-icon icon="upload"></b-icon> 음성 등록
         </b-button>
-        <b-button size="lg" variant="warning" v-on:click="upload" v-model ="createCollection">
-                <b-icon icon="upload"></b-icon> Upload
+        <b-button variant="warning" v-on:click="endWork" v-model ="createCollection">
+                <b-icon icon="upload"></b-icon> 작업 완료
         </b-button>
     </div>
     <br>
@@ -76,7 +102,7 @@ import AudioUpload from "../components/AudioUpload.vue";
 import AudioWork from "../components/AudioCollectionWork.vue";
 import VueAudioRecorder from 'vue-audio-recorder'
 
-var ImageList = new Array();
+var AudioByClassList = new Array();
 var dataState = false; //데이터가 업로드 되었는지의 여부
 let audioMaker = require('audiomaker');
 let _audioMaker = new audioMaker();
@@ -128,6 +154,11 @@ s3Client.interceptors.request.use(function (config) {
             audioRecordList : [],
             removedRecordList : [],
             audioUrl: '',
+            options: [],
+            selected : '',
+            audioPreUrl: '',
+            audioNameList: [],
+
         }
     },
     async created() {
@@ -143,7 +174,7 @@ s3Client.interceptors.request.use(function (config) {
     },
     beforeRouteLeave(to, from, next) { //작업하고나서 나가려고 하면 이루어지는거
 
-        if (dataState || !this.createCollection) {
+        if (this.audioNameList != null &&  !this.createCollection) {
             if (!window.confirm("페이지를 벗어나면 작업이 저장되지 않습니다. 그래도 이동하시겠습니까?")) {
                 return;
             }
@@ -159,6 +190,18 @@ s3Client.interceptors.request.use(function (config) {
             this.project = JSON.parse(searchproject).projectDto;
             this.classNameList = JSON.parse(searchproject).classNameList;//this.$route.params.classList;
             console.log(this.project);
+            var optionDataList = new Array();
+            for(let i = 0 ; i < this.classNameList.length; i++){
+                var optionData = {
+                    name : this.classNameList[i].className,
+                    item : this.classNameList[i].className,
+                }
+                optionDataList.push(optionData);
+               
+            }
+            this.options = optionDataList;
+            this.selected = this.classNameList[0].className;
+
         },
         async examplaDataDownload(){
             // var exampleData = await localStorage.getItem('exampleContent');
@@ -191,11 +234,11 @@ s3Client.interceptors.request.use(function (config) {
         onChangeAudios(e) {
             console.log(e.target.files);
             const file = e.target.files[0];
-            this.audioUrl = URL.createObjectURL(file);
-            console.log(this.audioUrl);
+            this.audioPreUrl = URL.createObjectURL(file);
+            console.log(this.audioPreUrl);
         },
         preventNav(event) {
-                if (!dataState || this.createCollection) return;
+                if (AudioByClassList == null || this.createCollection) return;
                 event.preventDefault();
                 // Chrome requires returnValue to be set.
                 event.returnValue = "";
@@ -211,45 +254,102 @@ s3Client.interceptors.request.use(function (config) {
         },
         async upload() { //formData 리스트!
             //var imageFormData = new Array(); 뭔가 formdata 리스트가 아니라 formdata에 append해서 보내는거 같다
-        this.createCollection = true;
+        
         var userId = await localStorage.getItem('userId');
+        var nameList = new Array();
         let audioData = new FormData();
+        //업로드 데이터
+        if(this.audioContent != null){
            for(var uploadAudioFile of this.audioContent){
                audioData.append('files', uploadAudioFile);
+               nameList.push(uploadAudioFile.name);
                //imageFormData.push(imgUrl);
+           }
+        }
+          //녹음한 데이터 
+           if(this.audioRecordList != null){
+                for(let i = 0; i < this.audioRecordList.length; i++){ //삭제된 오디오 녹음 파일 삭제
+                    console.log(this.audioRecordList[i].url);
+                    if(this.audioRecordList[i].url == null){
+                        this.audioRecordList.splice(i,1);
+                    }
+               }
+                //중복 제거 
+                const notDuplicatedRecord = new Set(this.audioRecordList);
+                this.audioRecordList = Array.from(notDuplicatedRecord);
+                for(let i = 0; i < this.audioRecordList.length; i++){
+                    const file = new File([this.audioRecordList[i].url],userId+i+"_"+this.project.projectId+Date.now(), {type: 'audio/mp3', 
+                            lastModified: Date.now()});
+                    audioData.append('files', file);
+                    nameList.push(file.name+".mp3");
+                }
            }
            console.log("=========================================");
            console.log(this.audioRecordList);
-           for(let i = 0; i < this.audioRecordList.length; i++){ //삭제된 오디오 녹음 파일 삭제
-                console.log("helllo");
-                console.log(this.audioRecordList[i].url);
-               if(this.audioRecordList[i].url == null){
-                   this.audioRecordList.splice(i,1);
-               }
-               
-               
-           }
-           for(let i = 0; i < this.audioRecordList.length; i++){
-               const file = new File([this.audioRecordList[i].url],userId+i+"_"+this.project.projectId, {type: 'audio/mp3', 
-                    lastModified: Date.now()});
-               audioData.append('files', file);
-           }
-           axios.defaults.headers.common['bucketName'] = this.project.bucketName;
-           const collectionWorkRes = await axios.post("/api/work/collection", audioData, {
-               params: {
-                   projectId : this.project.projectId,
-               }
-            });
-           if(collectionWorkRes.headers.upload == "success"){
-               alert("수집 작업이 완료되었습니다!");
-               this.$router.push("/");
-           }
-           else {
-               alert("수집 작업이 실패하였습니다. 다시 시도해주세요!");
-               //location.reload();
-           }
+           var audioByClass = {
+                class : this.selected,
+                audioUrl : audioData,
+            }
+            var audioName = {
+                name: nameList,
+                class : this.selected,
+            }
+            var duplicatedIndex = -1;
+            for(let i = 0; i < AudioByClassList.length; i++){
+                console.log(this.selected);
+                if(AudioByClassList[i].class == this.selected){
+                    console.log("hello",i);
+                    duplicatedIndex = i;
+                }
+            }
+            if(duplicatedIndex != -1){
+                //ImageByClassList.splice(duplicatedIndex,1);
+                AudioByClassList[duplicatedIndex] = audioByClass;
+                this.audioNameList[duplicatedIndex] = audioName;
+                //duplicatedIndex = 0;
+            }
+            else {
+                AudioByClassList.push(audioByClass);
+                this.audioNameList.push(audioName);
+            }
+            duplicatedIndex = -1;
            
         },
+        async endWork(){
+            var successCount = 0;
+            this.createCollection = true;
+            axios.defaults.headers.common['bucketName'] = this.project.bucketName;
+            axios.defaults.headers.common['projectId'] = this.project.projectId;
+            for(let i  = 0; i < AudioByClassList.length; i++){
+                    await axios.post("/api/work/collection", AudioByClassList[i].audioUrl, {
+                        params: {
+                            projectId : 5,
+                            //class : ImageByClassList[i].class,
+                            // 파라미터로 class를 보내야한다. 
+                        }
+                    }).then((collectionWorkRes) => {
+                        if(collectionWorkRes.headers.upload == "success"){
+                            successCount++;
+                        }
+                        else {
+                            alert("수집 작업이 실패하였습니다. 다시 시도해주세요!");
+                            this.$router.go(-1);
+                            //location.reload();
+                        }
+                    })
+                    .catch(function(error){
+                        if(error.response){
+                            alert("수집 작업이 실패하였습니다. 다시 시도해주세요!");
+                            this.$router.go(-1);
+                        }
+                })
+            }
+            if(successCount == AudioByClassList.length){
+                alert("수집 작업이 완료되었습니다!");
+                this.$router.push("/");
+            }
+            
+        }
 
 
     }

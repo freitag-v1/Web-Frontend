@@ -10,26 +10,6 @@
       <br>
       <p>*분류 작업은 주어진 데이터를 주어진 라벨링 클래스를 보고 적합한 것을 선택하여 분류하는 작업입니다</p>
     </template>
-    <b-list-group flush>
-      <b-list-group-item>프로젝트 이름 : {{" "+ project.projectName}}</b-list-group-item>
-      <b-list-group-item>프로젝트 의뢰자 : {{" " + project.userId}}</b-list-group-item>
-      <b-list-group-item><프로젝트 수집 데이터 목록>
-        <div v-for="classname, index in classNameList">
-            <br>
-            {{index+1+". "+classname.className}}
-        </div>
-        </b-list-group-item>
-    </b-list-group>
-    <b-card-footer style="font-weight: bolder">프로젝트 진행 방법</b-card-footer>
-    <b-card-text class ="content">{{project.wayContent}}</b-card-text>
-    <b-card-footer style="font-weight: bolder">프로젝트 조건</b-card-footer>
-    <b-card-text class ="content">{{project.conditionContent}}</b-card-text>
-    <b-card-footer style="font-weight: bolder">프로젝트 예시 데이터</b-card-footer>
-    <b-card-text id = "exampleContent"class="content"> 
-        <br>
-        <img :src = "downloadUrl" v-if="downloadUrl != ''" style="width: 400px; height: 300px;"/>
-        <AudioUpload v-if="audioUrl != ''" :value="audioUrl"/>
-    </b-card-text>
     <b-card-footer style="font-weight: bolder">프로젝트 작업</b-card-footer>
     <b-form-file multiple
                     v-model="problemContent"
@@ -65,8 +45,8 @@
     </b-card>
     <br>
     <br>
-    <div class="overflow-auto" style="margin : auto;">
-        <b-pagination id="pagination" v-model="currentPage" :total-rows="problemList.length" per-page= 1></b-pagination>
+    <div class="overflow-auto" style=margin : auto;">
+        <b-pagination id="pagination" v-model="currentPage" :total-rows="problemList".length" per-page= 1></b-pagination>
     </div>
     </div>
 </template>
@@ -116,13 +96,9 @@ export default {
     },
     data() {
         return {
-            project: null,
-            classNameList: [],
             imageCount: 1,
             createCollection: false,
             bucketName: '',
-            downloadUrl: '',
-            audioUrl: '',
             problemList : [],
             problemContent: [],
             index: 0,
@@ -162,7 +138,6 @@ export default {
         }
     },
     beforeMount() {
-            delete localStorage.exampleContent;
             delete localStorage.problemList;
             delete localStorage.problemData;
             window.addEventListener("beforeunload", this.preventNav); //웹페이지 닫을 때 일어나는거 
@@ -183,14 +158,6 @@ export default {
     },
     methods : {
         async fetchData() {
-            var searchproject = await localStorage.getItem('searchProject');//this.$route.params.project;
-            console.log(JSON.parse(searchproject));
-
-            this.project = JSON.parse(searchproject).projectDto;
-            this.classNameList = JSON.parse(searchproject).classNameList;//this.$route.params.classList;
-            console.log(this.project);
-            this.bucketName = JSON.parse(searchproject).projectDto.bucketName;
-            var exampleDataExist = await localStorage.getItem('problemList');
             if(exampleDataExist == null){
                 var problemRes = await axios.get("/api/work/labelling", {
                 params: {
@@ -306,19 +273,6 @@ export default {
            console.log("=========================================");
            
         },
-        download() {
-            console.log("hello!");
-            var string = "안녕하세요.txt"
-            var subString = ".txt";
-            // if(string.includes(subString)){
-            //     s3Client.get("/freitag/안녕하세요.txt", {
-            //         responseType : 'text',
-            //     }).then(res => {
-            //         console.log(res.data.type);
-            //         console.log(res.data);
-            //     })
-            // }
-        }
     }
 }
 </script>

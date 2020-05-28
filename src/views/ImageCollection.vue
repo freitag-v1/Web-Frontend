@@ -30,6 +30,28 @@
         <AudioUpload v-if="audioUrl != ''" :value="audioUrl"/></b-card-text>
 
     <b-card-footer style="font-weight: bolder">이미지 수집 데이터 업로드</b-card-footer>
+        <br>
+        <h5>*이미지 등록 버튼을 눌러야 작업이 완료가 됩니다! 꼭 버튼을 눌러주세요!</h5>
+        <div>
+            <b-form-radio-group
+            v-model="selected"
+            :options="options"
+            class="option"
+            value-field="item"
+            text-field="name"
+            ></b-form-radio-group>
+            <div class="mt-3">Selected: <strong>{{ selected }}</strong></div>
+        </div>
+        <br>
+            <div class = "registeredImage" v-for="name in imageNameList">
+                <br>
+                <h4 v-if = "name.class == selected">< 이전에 등록된 이미지 이름 ></h4>
+                <div v-if = "name.class == selected" v-for="index, value in name.name">
+                    <p> {{ value+1 + ". " + index }}</p>
+
+                </div>    
+            </div>
+        <br>
     <b-form-file multiple 
                 v-model="imageContent"
                 :state="Boolean(imageContent)"
@@ -44,11 +66,14 @@
                 <div class="mt-3"  v-for = "name, index in imageContent">
                     Selected file: {{ index + 1 + "." + name ? name.name : '' }}
                 </div>
-                
                 <br>
+
     <div class = "buttons">
-        <b-button size="lg" variant="warning" v-on:click="upload" v-model ="createCollection">
-                <b-icon icon="upload"></b-icon> Upload
+        <b-button variant="warning" v-on:click="upload" v-model ="createCollection">
+                <b-icon icon="upload"></b-icon> 이미지 등록
+        </b-button>
+        <b-button variant="warning" v-on:click="endWork" v-model ="createCollection">
+                <b-icon icon="upload"></b-icon> 작업 완료
         </b-button>
     </div>
     <br>
@@ -64,6 +89,7 @@ import ImageUpload from '../components/ImageUpload.vue';
 
 
 var ImageList = new Array();
+var ImageByClassList = new Array();
 var dataState = false; //데이터가 업로드 되었는지의 여부
 
 const endpoint = 'kr.object.ncloudstorage.com';
@@ -108,7 +134,9 @@ s3Client.interceptors.request.use(function (config) {
             imageUrl : '',
             downloadUrl: '',
             audioUrl: '',
-
+            options: [],
+            selected : '',
+            imageNameList: [],
         }
     },
     async created() {
@@ -127,18 +155,18 @@ s3Client.interceptors.request.use(function (config) {
             //     }); 
             // }
             // else { // 이미지 데이터에 대해서만 처리를 한다 
-                s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
-                    responseType : 'blob',
-                }).then((res) =>{
-                    const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
-                    this.downloadUrl = url;
-                    var content = {
-                        type : res.data.type,
-                        url : url,
-                    }
-                    localStorage.exampleContent = JSON.stringify(content);
+                // s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
+                //     responseType : 'blob',
+                // }).then((res) =>{
+                //     const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
+                //     this.downloadUrl = url;
+                //     var content = {
+                //         type : res.data.type,
+                //         url : url,
+                //     }
+                //     localStorage.exampleContent = JSON.stringify(content);
 
-                });
+                // });
             
         }
         else {
@@ -159,7 +187,11 @@ s3Client.interceptors.request.use(function (config) {
         }   
     },
     watch : {
-        '$route' : 'fetchData'
+        '$route' : 'fetchData',
+        // selected: function(val) {
+        //     this.imageContent = null;
+            
+        // }
     },
     beforeMount() {
             delete localStorage.exampleContent;
@@ -170,7 +202,7 @@ s3Client.interceptors.request.use(function (config) {
     },
     beforeRouteLeave(to, from, next) { //작업하고나서 나가려고 하면 이루어지는거
 
-        if (dataState || !this.createCollection) {
+        if (ImageByClassList != null && !this.createCollection) {
             if (!window.confirm("페이지를 벗어나면 작업이 저장되지 않습니다. 그래도 이동하시겠습니까?")) {
                 return;
             }
@@ -185,6 +217,18 @@ s3Client.interceptors.request.use(function (config) {
 
             this.project = JSON.parse(searchproject).projectDto;
             this.classNameList = JSON.parse(searchproject).classNameList;//this.$route.params.classList;
+            var optionDataList = new Array();
+            for(let i = 0 ; i < this.classNameList.length; i++){
+                var optionData = {
+                    name : this.classNameList[i].className,
+                    item : this.classNameList[i].className,
+                }
+                optionDataList.push(optionData);
+               
+            }
+            this.options = optionDataList;
+            this.selected = this.classNameList[0].className;
+            console.log(this.options);
             console.log(this.project);
         },
         onChangeImages(e) {
@@ -194,63 +238,107 @@ s3Client.interceptors.request.use(function (config) {
             
         },
         preventNav(event) {
-                if (!dataState || this.createCollection) return;
+                if (ImageByClassList == null || this.createCollection) return;
                 event.preventDefault();
                 // Chrome requires returnValue to be set.
                 event.returnValue = "";
         },
-        async upload() { //formData 리스트!
+        upload() { //formData 리스트!
             //var imageFormData = new Array(); 뭔가 formdata 리스트가 아니라 formdata에 append해서 보내는거 같다
-        this.createCollection = true;
-        let imgUrl = new FormData();
-           for(var uploadImageFile of this.imageContent){
-               imgUrl.append('files', uploadImageFile);
-              
-           }
-           console.log(imgUrl);//여기서 데이터 보내면 된다
-           console.log("=========================================");
-           axios.defaults.headers.common['bucketName'] = this.project.bucketName;
-           axios.defaults.headers.common['projectId'] = this.project.projectId;
-           await axios.post("/api/work/collection", imgUrl, {
-               params: {
-                   projectId : this.project.projectId,
-                   // 파라미터로 class를 보내야한다. 
-               }
-            }).then((collectionWorkRes) => {
-                if(collectionWorkRes.headers.upload == "success"){
-                    alert("수집 작업이 완료되었습니다!");
-                    this.$router.push("/");
+            
+            let imgUrl = new FormData();
+            var nameList = new Array();
+            for(var uploadImageFile of this.imageContent){
+                imgUrl.append('files', uploadImageFile);
+                nameList.push(uploadImageFile.name);
+            }
+            var imageName = {
+                name: nameList,
+                class : this.selected,
+            }
+            var imageByClass = {
+                class : this.selected,
+                imgUrl : imgUrl,
+            }
+            var duplicatedIndex = -1;
+            for(let i = 0; i < ImageByClassList.length; i++){
+                console.log(this.selected);
+                if(ImageByClassList[i].class == this.selected){
+                    console.log("hello",i);
+                    duplicatedIndex = i;
                 }
-                else {
-                    alert("수집 작업이 실패하였습니다. 다시 시도해주세요!");
-                    //location.reload();
-                }
-            })
-            .catch(function(error){
-                if(error.response){
-                    alert("수집 작업이 실패하였습니다. 다시 시도해주세요!");
-                }
-            });
-           
+            }
+            if(duplicatedIndex != -1){
+                //ImageByClassList.splice(duplicatedIndex,1);
+                ImageByClassList[duplicatedIndex] = imageByClass;
+                this.imageNameList[duplicatedIndex] = imageName;
+                //duplicatedIndex = 0;
+            }
+            else {
+                ImageByClassList.push(imageByClass);
+                this.imageNameList.push(imageName);
+            }
+            duplicatedIndex = -1;
+            console.log(imgUrl);//여기서 데이터 보내면 된다
+            console.log(ImageByClassList);
+            console.log("===================name===================");
+            console.log(this.imageNameList);
+            console.log("======================================");
+            
+
            
         },
-        registerImageUrl(data) { //index를 저장을 해서 기존에 올린 사진을 수정하는 경우 추가되지 않고 변경해야해서 props로 index 주고 받고 해서 변경
-                if(data != null) {
-                    dataState = true;
-                }
-                let i = data.index -1;
-                let url  = data.url;
-                if(ImageList[i] == null){
-                    ImageList.push(url);
-                }
-                else {
-                    ImageList.splice(i,1,url);
+        async endWork(){
+            var successCount = 0;
+            this.createCollection = true;
+            axios.defaults.headers.common['bucketName'] = this.project.bucketName;
+            axios.defaults.headers.common['projectId'] = this.project.projectId;
+            for(let i  = 0; i < ImageByClassList.length; i++){
+                    await axios.post("/api/work/collection", ImageByClassList[i].imgUrl, {
+                        params: {
+                            projectId : 1,
+                            //class : ImageByClassList[i].class,
+                            // 파라미터로 class를 보내야한다. 
+                        }
+                    }).then((collectionWorkRes) => {
+                        if(collectionWorkRes.headers.upload == "success"){
+                            successCount++;
+                            //alert("수집 작업이 완료되었습니다!");
+                        
+                        }
+                        else {
+                            alert("수집 작업이 실패하였습니다. 다시 시도해주세요!");
+                            //location.reload();
+                        }
+                    })
+                    .catch(function(error){
+                        if(error.response){
+                            alert("수집 작업이 실패하였습니다. 다시 시도해주세요!");
+                        }
+                })
+            }
+            if(successCount == ImageByClassList.length){
+                alert("수집 작업이 완료되었습니다!");
+                this.$router.push("/");
+            }
+        },
+        // registerImageUrl(data) { //index를 저장을 해서 기존에 올린 사진을 수정하는 경우 추가되지 않고 변경해야해서 props로 index 주고 받고 해서 변경
+        //         if(data != null) {
+        //             dataState = true;
+        //         }
+        //         let i = data.index -1;
+        //         let url  = data.url;
+        //         if(ImageList[i] == null){
+        //             ImageList.push(url);
+        //         }
+        //         else {
+        //             ImageList.splice(i,1,url);
 
-                }
-                alert("등록완료!");
-                console.log(ImageList);
+        //         }
+        //         alert("등록완료!");
+        //         console.log(ImageList);
         
-        }
+        // }
 
 
     }
@@ -283,7 +371,10 @@ s3Client.interceptors.request.use(function (config) {
 }
 .buttons button{
     margin: 5px;
-    width: 150px;
+    width: 200px;
 }
-
+.option{
+    max-width : 200px;
+    margin: auto;
+}
 </style>

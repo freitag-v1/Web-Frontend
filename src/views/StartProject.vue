@@ -31,7 +31,7 @@ export default {
             var params = {'projectType': 'Labelling','workType' : "",
                  'difficulty': -1,'subject': ""};
             localStorage.projectList = JSON.stringify(params);
-            this.$router.push({name : "Project"});
+            this.$router.push({name : "StartLabelling"});
         },
         // boundingBoxProject: function() {
         //   var params = {'projectType': 'Labelling','workType' : "boundingBox",

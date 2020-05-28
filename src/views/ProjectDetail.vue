@@ -181,7 +181,7 @@ let day = today.getDay();  // 요일
 }
 #startButton {
     margin :auto;
-    width: 250px;
+    width: 400px;
     height: 70px;
     font-size: 20px;
 }

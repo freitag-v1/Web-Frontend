@@ -22,6 +22,7 @@ import Classification from '../views/Classification.vue'
 import StartProject  from '../views/StartProject.vue'
 import CompleteProject  from '../views/CompleteProject.vue'
 import RequestProject  from '../views/RequestProject.vue'
+import StartLabelling  from '../views/StartLabellingProject.vue'
 
 Vue.use(VueRouter)
 
@@ -176,7 +177,13 @@ const requireAuth = async (to, from, next) => {
     name : 'RequestProject',
     component : RequestProject,
     beforeEnter: requireAuth,
-  }
+  },
+  {
+    path: '/project/startLabelling',
+    name : 'StartLabelling',
+    component : StartLabelling,
+    beforeEnter: requireAuth,
+  },
 
 
 ]
