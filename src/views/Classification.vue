@@ -147,7 +147,9 @@ export default {
                 this.problemImageUrl = this.problemContentList[val -1].blob;
             }
             else if (this.problemContentList[val -1].type.includes("audio/")){
+                
                 this.problemAudioUrl = this.problemContentList[val -1].blob;
+                console.log(this.problemAudioUrl);
             }
             else {
                 this.textData = this.problemContentList[val -1].blob;
@@ -214,17 +216,9 @@ export default {
                     }).then(res => {
                         console.log(res);
                         const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
-                        if(res.headers['content-type'].includes("audio/")){
-                            var problemBlob = {
-                                type : res.headers['content-type'],
-                                blob : res.data,
-                            }
-                        }
-                        else {
-                            var problemBlob = {
+                        var problemBlob = {
                                 type : res.headers['content-type'],
                                 blob : url,
-                            }
                         }
                         this.problemContentList.push(problemBlob);
                     });
