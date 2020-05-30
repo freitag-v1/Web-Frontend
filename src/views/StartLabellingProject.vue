@@ -22,7 +22,11 @@ export default {
         //   var params = {'projectType': 'Collection','dataType' : "",
         //         'difficulty': -1,'subject': ""};
         //   localStorage.projectList = JSON.stringify(params);
-          this.$router.push({name : "Classification"});
+          alert("3초 뒤에 분류 작업이 시작이 됩니다.");
+          setTimeout(()=> {       
+              this.$router.push({name : "Classification"});
+            },3000);  
+          
         },
         boundingBoxProject: function() {
             var params = {'projectType': 'Labelling','workType' : "boundingBox",

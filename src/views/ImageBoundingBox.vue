@@ -106,6 +106,9 @@ const local_file_path = '../assets';
 
         }
     },
+    async beforeCreate() {
+      axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
+    },
     async created() {
         this.fetchData();
         var searchproject = await localStorage.getItem('searchProject');//this.$route.params.project;

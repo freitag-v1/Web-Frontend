@@ -62,6 +62,7 @@ export default {
                 this.value += 20;
             }, 1000);
             setTimeout(()=> {
+                console.log(this.projectId);
                 const pointPayRes = axios.get("/api/project/point/payment", {
                     params : {
                         projectId : this.projectId,

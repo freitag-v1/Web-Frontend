@@ -10,14 +10,10 @@
       <br>
       <p>*분류 작업은 주어진 데이터를 주어진 라벨링 클래스를 보고 적합한 것을 선택하여 분류하는 작업입니다</p>
     </template>
+    <br>
     <b-card-footer style="font-weight: bolder">프로젝트 작업</b-card-footer>
-    <b-form-file multiple
-                    v-model="problemContent"
-                    :state="Boolean(problemContent)"
-                    placeholder="Choose a file or drop it here..."
-                    drop-placeholder="Drop file here..."
-                    accept="audio/*,image/*,text/*"
-                    ></b-form-file>
+    <br>
+    <h4 style="color : tomato;">*분류 문제마다 작업 결과를 등록해야 분류 작업이 완료됩니다!</h4>
         <br>
         <br>
 
@@ -26,18 +22,32 @@
         <span>{{ "문제 번호: " +this.problem.problemId}}</span>
         <br>
         <br>
+        <h4>{{currentPage + "번째 문제 : 데이터에 해당하는 클래스를 선택하시면 됩니다."}}</h4>
+        <br>
+        <br>
         <img id = "problemImage" v-if = "problemImageUrl != ''" :src= "problemImageUrl"/>
         <AudioUpload v-if="problemAudioUrl != ''" :value = "problemAudioUrl"/>
         <p v-if = "textData != ''">{{textData}}</p>
         <br>
-        <h4>{{currentPage + "번째 문제 : "}}</h4>
+        
     </div>
-    <b-button size="lg" variant="warning" v-on:click="register" v-model ="createCollection">
-                <b-icon icon="upload"></b-icon> 등록
-        </b-button>
+    <br>
+    <br>
+    <h5><데이터 클래스></h5>
+    <br>
+    <b-form-radio-group
+            v-model="selected"
+            :options="options"
+            class="option"
+            value-field="item"
+            text-field="name"
+            ></b-form-radio-group>
     <div class = "buttons">
-        <b-button size="lg" variant="warning" v-on:click="upload" v-model ="createCollection">
-                <b-icon icon="upload"></b-icon> Upload
+        <b-button  variant="warning" v-on:click="upload" v-model ="createCollection">
+                <b-icon icon="upload"></b-icon> 작업 완료
+        </b-button>
+        <b-button id = "workRegister" variant="warning" v-on:click="register" v-model ="createCollection">
+                <b-icon icon="upload"></b-icon> 작업 결과 등록
         </b-button>
         
     </div>
@@ -45,8 +55,8 @@
     </b-card>
     <br>
     <br>
-    <div class="overflow-auto" style=margin : auto;">
-        <b-pagination id="pagination" v-model="currentPage" :total-rows="problemList".length" per-page= 1></b-pagination>
+    <div class="overflow-auto" style="margin : auto;">
+        <b-pagination id="pagination" v-model="currentPage" :total-rows="problemList.length" per-page= 1></b-pagination>
     </div>
     </div>
 </template>
@@ -62,7 +72,7 @@ const access_key = '4WhQkGZPLH1sVg6cWLtK';
 const secret_key = 'xmKmQXfbYyyPuXyEw1KeDXE7CveACDQdWUPACtzP';
 
 const v4 = require('aws-signature-v4');
-
+var AnswerList = new Map();
 var s3Client = axios.create();
 
 s3Client.interceptors.request.use(function (config) {
@@ -106,36 +116,54 @@ export default {
             problemAudioUrl :'',
             textData: '',
             problem: '',
-            currentPage : 1
+            currentPage : 1,
+            problemContentList: [],
+            selected: '',
+            options: [],
+            currentProblem: '',
+            historyId: '',
 
         }
     },
+    async beforeCreate() {
+        axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
+    },
     async created() {
         this.fetchData();
+        //this.initialData();
         //this.examplaDataDownload();
     },
     watch : {
         '$route' : 'fetchData',
-        currentPage : async function(val){
-            console.log("plaeadsd");
+        currentPage : async function(val){ //변할 때마다 문제 달리 보여지도록
+            //console.log("plaeadsd");
             this.problemImageUrl = '';
             this.problemAudioUrl = '';
             this.textData = '';
+            this.currentProblem = '';
             var problemDTO = await localStorage.getItem('problemList');
             var problemList = JSON.parse(problemDTO);
-            this.problem = problemList[val -1];
-            var problemDataDTO = await localStorage.getItem('problemData');
-            var problemDataList = JSON.parse(problemDataDTO);
-            if(problemDataList[val -1].type.includes("image/")){
-                this.problemImageUrl = problemDataList[val -1].blob;
+            this.problem = problemList[val -1].problemDto;
+            if(this.problemContentList[val -1].type.includes("image/")){
+                this.problemImageUrl = this.problemContentList[val -1].blob;
             }
-            else if (problemDataList[val -1].type.includes("audio/")){
-                this.problemAudioUrl = problemDataList[val -1].blob;
+            else if (this.problemContentList[val -1].type.includes("audio/")){
+                this.problemAudioUrl = this.problemContentList[val -1].blob;
             }
             else {
-                this.textData = problemDataList[val -1].blob;
+                this.textData = this.problemContentList[val -1].blob;
             }
+            
+            this.options = [];
+            for(let i = 0; i < this.problemList[val -1].classNameList.length; i++){
+                var option = { item : this.problemList[val -1].classNameList[i].className, name : this.problemList[val -1].classNameList[i].className };
+                this.options.push(option);
+            }
+            var option = { item : 'x', name : '없음'};
+                this.options.push(option);
         }
+
+        
     },
     beforeMount() {
             delete localStorage.problemList;
@@ -148,7 +176,7 @@ export default {
     beforeRouteLeave(to, from, next) { //작업하고나서 나가려고 하면 이루어지는거
         delete localStorage.problemList;
         delete localStorage.problemData;
-        if (dataState || this.createCollection) {
+        if (this.AnswerList != null && this.createCollection) {
             if (!window.confirm("페이지를 벗어나면 작업이 저장되지 않습니다. 그래도 이동하시겠습니까?")) {
                 return;
             }
@@ -158,42 +186,72 @@ export default {
     },
     methods : {
         async fetchData() {
-            if(exampleDataExist == null){
-                var problemRes = await axios.get("/api/work/labelling", {
-                params: {
-                    projectId : this.project.projectId,
+            axios.defaults.headers.common['dataType'] = 'classification';
+                await axios.get("/api/work/start").then((problemRes) => {
+                    if(problemRes.headers.problems == "success"){
+                        this.historyId = problemRes.headers.workhistory;
+                        this.problemList = problemRes.data; 
+                        this.problem = this.problemList[0].problemDto;
+                        localStorage.problemList = JSON.stringify(problemRes.data); //가져와서 나중에 다운로드해서 데이터를 가져와서 저장할 수 있도록 
+                        console.log(problemRes.data);
+                    }
+                    else {
+                        alert("문제를 가져오는데 실패하였습니다.");
+                    }
+                })
+                .catch(function(error) {
+                    if(error.response){
+                        alert("생성된 분류 작업이 없습니다!");
+                    }
+                })
+                //var problemContentList = new Array();
+                
+                for(let i = 0; i < this.problemList.length; i++){
+                    console.log("hello", this.problemList.length);
+                    await s3Client.get("/"+this.problemList[i].problemDto.bucketName+"/"+this.problemList[i].problemDto.objectName, {
+                        responseType: 'blob'
+                    }).then(res => {
+                        console.log(res);
+                        const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
+                        var problemBlob = {
+                            type : res.headers['content-type'],
+                            blob : url,
+                        }
+                        this.problemContentList.push(problemBlob);
+                    });
+                    
                 }
-            });
-                if(problemRes.headers.problems == "success"){
-                    this.problemList = problemRes.data; 
-                    localStorage.problemList = JSON.stringify(problemRes.data); //가져와서 나중에 다운로드해서 데이터를 가져와서 저장할 수 있도록 
-                    console.log(problemRes.data);
-                }
-                else {
-                    alert("문제를 가져오는데 실패하였습니다.");
-                }
-            }
-            
-            
-            
+                console.log(this.problemContentList);
+                await this.initialData();
+               
+                
+            //localStorage.problemData = JSON.stringify(problemContentList);
+                
+                
+
         },
-        linkGen(pageNum) {
-            return pageNum === 1 ? '?' : `?page=${pageNum}`
+        initialData () {
+            if(this.problemContentList[0].type.includes("image/")){
+                        this.problemImageUrl = this.problemContentList[0].blob;
+                    }
+                    else if (this.problemContentList[0].type.includes("audio/")){
+                        this.problemAudioUrl = this.problemContentList[0].blob;
+                    }
+                    else {
+                        this.textData = this.problemContentList[0].blob;
+                    }
+                    for(let i = 0; i < this.problemList[0].classNameList.length; i++){
+                        var option = { item : this.problemList[0].classNameList[i].className, name : this.problemList[0].classNameList[i].className };
+                        this.options.push(option);
+                    }
+                    var option = { item : 'x', name : '없음'};
+                    this.options.push(option);
+                
         },
         register() {
-            console.log(this.problemContent);
-            //여기서 원래 s3Client.get("/"+this.bucketname+"/"+this.problemList[i].object_name)
-            //이런 식으로 해서 bucket에 접근해서 데이터를 가져올 수 있도록 <- 원래 미리 해놔야한다 fetchData에서 해야한다. 
-            var problemContentList = new Array();
-            for(let i = 0; i < 5; i++){
-                var problemBlob = {
-                    type : this.problemContent[i].type,
-                    blob : URL.createObjectURL(this.problemContent[i]),
-                }
-                problemContentList.push(problemBlob);
-            }
-            localStorage.problemData = JSON.stringify(problemContentList);
-        },
+            AnswerList.set(this.problemList[this.currentPage - 1].problemDto.problemId, this.selected);
+            console.log(AnswerList); 
+        },    
         // async examplaDataDownload(){
         //     var exampleData = await localStorage.getItem('exampleContent');
         //     console.log(exampleData);
@@ -252,25 +310,30 @@ export default {
         //         }
         //     }   
         // },
-        async problemDownload() {
-
-        },
+    
         preventNav(event) {
-                if (!dataState || this.createCollection) return;
+                if (AnswerList == null || this.createCollection) return;
                 event.preventDefault();
                 // Chrome requires returnval -1ue to be set.
                 event.returnvalue = "";
         },
-        upload() { //formData 리스트!
+        async upload() { //formData 리스트!
             //var imageFormData = new Array(); 뭔가 formdata 리스트가 아니라 formdata에 append해서 보내는거 같다
-        this.createCollection = true;
-        let imgUrl = new FormData();
-           for(var uploadImageFile of ImageList){
-               imgUrl.append('file', uploadImageFile);
-               //imageFormData.push(imgUrl);
-           }
-           console.log(imgUrl);//여기서 데이터 보내면 된다
-           console.log("=========================================");
+            this.createCollection = true;
+            if(AnswerList.size < this.problemList.length){
+                alert("결과가 등록되지 않은 문제가 있습니다! 한 문제라도 빠짐없이 결과를 작성해야 합니다!")
+            }
+            axios.defaults.headers.common['historyId'] = this.historyId;
+            await axios.post("/api/work/labelling", AnswerList).then(res => {
+                if(res.headers.answer == "success"){
+                    alert("분류 작업이 완료되었습니다!");
+                    this.$router.push("/");
+                }
+                else {
+                    alert("분류 작업이 실패하였습니다!");
+                }
+            })
+        
            
         },
     }
@@ -287,5 +350,8 @@ export default {
     height : auto;
     max-width: 600px;
     max-height: 400px;
+}
+#workRegister {
+    width: 300px;
 }
 </style>

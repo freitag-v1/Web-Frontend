@@ -139,6 +139,9 @@ s3Client.interceptors.request.use(function (config) {
             imageNameList: [],
         }
     },
+    async beforeCreate() {
+      axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
+    },
     async created() {
         this.fetchData();
         var exampleData = await localStorage.getItem('exampleContent');
@@ -296,8 +299,7 @@ s3Client.interceptors.request.use(function (config) {
             for(let i  = 0; i < ImageByClassList.length; i++){
                     await axios.post("/api/work/collection", ImageByClassList[i].imgUrl, {
                         params: {
-                            projectId : 1,
-                            //class : ImageByClassList[i].class,
+                            className : ImageByClassList[i].class,
                             // 파라미터로 class를 보내야한다. 
                         }
                     }).then((collectionWorkRes) => {

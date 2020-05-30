@@ -149,7 +149,7 @@ const requireAuth = async (to, from, next) => {
     beforeEnter: requireAuth
   },
   {
-    path:'/project/labelling/classification/:idx',
+    path:'/project/labelling/classification',
     name: 'Classification',
     component: Classification,
     beforeEnter: requireAuth

@@ -161,6 +161,9 @@ s3Client.interceptors.request.use(function (config) {
 
         }
     },
+    async beforeCreate() {
+      axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
+    },
     async created() {
         this.fetchData();
         this.examplaDataDownload();
@@ -185,11 +188,9 @@ s3Client.interceptors.request.use(function (config) {
     methods : {
         async fetchData() {
             var searchproject = await localStorage.getItem('searchProject');//this.$route.params.project;
-            console.log(JSON.parse(searchproject));
 
             this.project = JSON.parse(searchproject).projectDto;
             this.classNameList = JSON.parse(searchproject).classNameList;//this.$route.params.classList;
-            console.log(this.project);
             var optionDataList = new Array();
             for(let i = 0 ; i < this.classNameList.length; i++){
                 var optionData = {
@@ -278,7 +279,7 @@ s3Client.interceptors.request.use(function (config) {
                 const notDuplicatedRecord = new Set(this.audioRecordList);
                 this.audioRecordList = Array.from(notDuplicatedRecord);
                 for(let i = 0; i < this.audioRecordList.length; i++){
-                    const file = new File([this.audioRecordList[i].url],userId+i+"_"+this.project.projectId+Date.now(), {type: 'audio/mp3', 
+                    const file = new File([this.audioRecordList[i].url],userId+i+"_"+this.project.projectId+Date.now()+".mp3", {type: 'audio/mp3', 
                             lastModified: Date.now()});
                     audioData.append('files', file);
                     nameList.push(file.name+".mp3");
@@ -323,8 +324,7 @@ s3Client.interceptors.request.use(function (config) {
             for(let i  = 0; i < AudioByClassList.length; i++){
                     await axios.post("/api/work/collection", AudioByClassList[i].audioUrl, {
                         params: {
-                            projectId : 5,
-                            //class : ImageByClassList[i].class,
+                            className : AudioByClassList[i].class,
                             // 파라미터로 class를 보내야한다. 
                         }
                     }).then((collectionWorkRes) => {

@@ -241,7 +241,7 @@ export default {
                                             params : {
                                                 point: 50000,
                                                 projectName : this.name,
-                                                projectId : labellingDataRes.headers.projectid,
+                                                projectId : exampleDataRes.headers.projectid,
                                             }});
                                     }
                                     else {
@@ -253,7 +253,7 @@ export default {
 
                     }
                   else {
-                        alert("수집 프로젝트 생성 실패");
+                        alert("라벨링 프로젝트 생성 실패");
                     }
 
             }
