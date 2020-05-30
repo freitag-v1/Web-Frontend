@@ -142,6 +142,12 @@ s3Client.interceptors.request.use(function (config) {
     async beforeCreate() {
       axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
     },
+    watch: {
+        selected : function(val){
+            this.imageContent = '';
+            this.imageUrl = '';
+        }
+    },
     async created() {
         this.fetchData();
         var exampleData = await localStorage.getItem('exampleContent');

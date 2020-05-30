@@ -4,7 +4,7 @@
         <h1>{{'< '+ userId + "님의 작업 시작 >"}}</h1>
         <img id="collection" v-on:click=" collectionProject" src = "../assets/collectionProject.png"/>
         <img id="labelling" v-on:click="labellingProject" src = "../assets/labellingProject.png"/>
-        <img id="collection_labelling"  src = "../assets/collectionandlabelling.png"/>
+        <!--<img id="collection_labelling"  src = "../assets/collectionandlabelling.png"/>-->
     </div>
 
 </template>

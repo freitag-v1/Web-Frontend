@@ -5,7 +5,7 @@
     <h1>{{'< '+ userId + "님의 작업 의뢰 >"}}</h1>
       <img id="collection" v-on:click="createCollection" src = "../assets/collectionProject.png"/>
       <img id="labelling" v-on:click="createLabelling" src = "../assets/labellingProject.png"/>
-      <img id="collection_labelling"  src = "../assets/collectionandlabelling.png"/>
+      <!--<img id="collection_labelling"  src = "../assets/collectionandlabelling.png"/>-->
   </div>
 </template>
 <script>
@@ -41,7 +41,7 @@ export default {
     width: 450px;
     height: 310px;
     float : left;
-    margin-left: 100px;
+    margin-left: 450px;
     margin-right: 160px;
     margin-top : 75px;
 }
@@ -49,7 +49,6 @@ export default {
     width: 430px;
     height: 280px;
     float : left;
-    margin-right: 180px;
     margin-top : 100px;
 }
 #collection_labelling{

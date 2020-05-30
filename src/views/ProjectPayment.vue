@@ -1,7 +1,7 @@
 <template>
     <div id="projectPayment"> 
     <br>
-    <h1 id="projectCost">{{projectName+" 프로젝트의 기본 비용은 "+cost+"원 입니다."}}</h1>
+    <h1 id="projectCost">{{projectName+" 작업의 기본 비용은 "+cost+"원 입니다."}}</h1>
     <p id = "progressMSG" v-if="pointPay">결제 진행 중입니다.</p>
      <b-progress id ="paymentProgress" v-if="pointPay" :value="value" :max="max" show-progress animated></b-progress>
     <p id = "paymentMSG" v-if="!pointPaySuccess">포인트가 부족하여 결제를 실패하였습니다. 계좌이체로 결제를 진행해주세요! </p>

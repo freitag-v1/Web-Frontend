@@ -168,6 +168,13 @@ s3Client.interceptors.request.use(function (config) {
         this.fetchData();
         this.examplaDataDownload();
     },
+    watch : {
+        selected : function(val) {
+            console.log("hello!");
+            this.audioContent = '';
+            this.audioPreUrl = '';
+        }
+    },
     beforeMount() {
             delete localStorage.exampleContent;
             window.addEventListener("beforeunload", this.preventNav); //웹페이지 닫을 때 일어나는거 
@@ -279,10 +286,10 @@ s3Client.interceptors.request.use(function (config) {
                 const notDuplicatedRecord = new Set(this.audioRecordList);
                 this.audioRecordList = Array.from(notDuplicatedRecord);
                 for(let i = 0; i < this.audioRecordList.length; i++){
-                    const file = new File([this.audioRecordList[i].url],userId+i+"_"+this.project.projectId+Date.now()+".mp3", {type: 'audio/mp3', 
+                    const file = new File([this.audioRecordList[i].url],userId+i+"_"+this.project.projectId+Date.now()+".m4a", {type: 'audio/mp4a-latm', 
                             lastModified: Date.now()});
                     audioData.append('files', file);
-                    nameList.push(file.name+".mp3");
+                    nameList.push(file.name);
                 }
            }
            console.log("=========================================");

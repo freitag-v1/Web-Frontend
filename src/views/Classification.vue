@@ -35,13 +35,11 @@
     <br>
     <h5><데이터 클래스></h5>
     <br>
-    <b-form-radio-group
+    <b-form-checkbox-group
             v-model="selected"
             :options="options"
             class="option"
-            value-field="item"
-            text-field="name"
-            ></b-form-radio-group>
+            ></b-form-checkbox-group>
     <div class = "buttons">
         <b-button  variant="warning" v-on:click="upload" v-model ="createCollection">
                 <b-icon icon="upload"></b-icon> 작업 완료
@@ -141,6 +139,7 @@ export default {
             this.problemAudioUrl = '';
             this.textData = '';
             this.currentProblem = '';
+            this.selected = [];
             var problemDTO = await localStorage.getItem('problemList');
             var problemList = JSON.parse(problemDTO);
             this.problem = problemList[val -1].problemDto;
@@ -156,10 +155,10 @@ export default {
             
             this.options = [];
             for(let i = 0; i < this.problemList[val -1].classNameList.length; i++){
-                var option = { item : this.problemList[val -1].classNameList[i].className, name : this.problemList[val -1].classNameList[i].className };
+                var option = { value : this.problemList[val -1].classNameList[i].className, text : this.problemList[val -1].classNameList[i].className };
                 this.options.push(option);
             }
-            var option = { item : 'x', name : '없음'};
+            var option = { value : '없음', text : '없음'};
                 this.options.push(option);
         }
 
@@ -197,11 +196,13 @@ export default {
                     }
                     else {
                         alert("문제를 가져오는데 실패하였습니다.");
+                        //this.router.go(-1);
                     }
                 })
                 .catch(function(error) {
                     if(error.response){
                         alert("생성된 분류 작업이 없습니다!");
+                        //this.router.go(-1);
                     }
                 })
                 //var problemContentList = new Array();
@@ -241,16 +242,36 @@ export default {
                         this.textData = this.problemContentList[0].blob;
                     }
                     for(let i = 0; i < this.problemList[0].classNameList.length; i++){
-                        var option = { item : this.problemList[0].classNameList[i].className, name : this.problemList[0].classNameList[i].className };
+                        var option = { value : this.problemList[0].classNameList[i].className, text : this.problemList[0].classNameList[i].className };
                         this.options.push(option);
                     }
-                    var option = { item : 'x', name : '없음'};
+                    var option = { value : 'x', text : '없음'};
                     this.options.push(option);
                 
         },
         register() {
-            AnswerList.set(this.problemList[this.currentPage - 1].problemDto.problemId, this.selected);
+            var selected = "";
+            console.log(typeof(this.selected));
+            if(this.selected.length > 1){
+                for(let i = 0 ; i < this.selected.length - 1; i++){
+                    selected = selected + this.selected[i] + "&";
+                }
+                selected = selected + this.selected[this.selected.length - 1];
+            }
+            else {
+                selected = this.selected[0];
+            }
+
+            
+            
+            console.log("===========");
+            console.log(this.selected);
+            console.log(selected)
+            console.log(typeof(this.problemList[this.currentPage - 1].problemDto.problemId));
+            var problemId = this.problemList[this.currentPage - 1].problemDto.problemId;
+            AnswerList.set(problemId.toString(), selected);
             console.log(AnswerList); 
+            
         },    
         // async examplaDataDownload(){
         //     var exampleData = await localStorage.getItem('exampleContent');
@@ -320,19 +341,26 @@ export default {
         async upload() { //formData 리스트!
             //var imageFormData = new Array(); 뭔가 formdata 리스트가 아니라 formdata에 append해서 보내는거 같다
             this.createCollection = true;
+
             if(AnswerList.size < this.problemList.length){
                 alert("결과가 등록되지 않은 문제가 있습니다! 한 문제라도 빠짐없이 결과를 작성해야 합니다!")
             }
-            axios.defaults.headers.common['historyId'] = this.historyId;
-            await axios.post("/api/work/labelling", AnswerList).then(res => {
-                if(res.headers.answer == "success"){
-                    alert("분류 작업이 완료되었습니다!");
-                    this.$router.push("/");
-                }
-                else {
-                    alert("분류 작업이 실패하였습니다!");
-                }
-            })
+            else {
+                axios.defaults.headers.common['historyId'] = this.historyId;
+                var Answer = Object.fromEntries(AnswerList);
+                console.log(Answer);
+                await axios.post("/api/work/labelling", Answer).then(res => {
+                    if(res.headers.answer == "success"){
+                        alert("분류 작업이 완료되었습니다!");
+                        AnswerList.clear();
+                        this.$router.push("/");
+                    }
+                    else {
+                        alert("분류 작업이 실패하였습니다!");
+                        AnswerList.clear();
+                    }
+                })
+            }
         
            
         },

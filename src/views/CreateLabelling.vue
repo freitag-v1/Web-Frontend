@@ -239,7 +239,7 @@ export default {
                                             alert("라벨링 프로젝트 생성 완료!");
                                             this.$router.push({name: "ProjectPayment", 
                                             params : {
-                                                point: 50000,
+                                                point: labellingDataRes.headers.cost,
                                                 projectName : this.name,
                                                 projectId : exampleDataRes.headers.projectid,
                                             }});

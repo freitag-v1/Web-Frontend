@@ -171,7 +171,7 @@
     },
     methods: {
       preventNav(event) {
-                if (!this.isEditing) return;
+                if (!this.isEditing || signUpSuccess == "success") return;
                 event.preventDefault();
                 // Chrome requires returnValue to be set.
                 event.returnValue = "";
@@ -194,7 +194,7 @@
           }
           else {
             //console.log(typeof(this.userId),typeof(this.userPassword), typeof(this.userEmail),typeof(this.userName), typeof(this.userAffiliation),typeof(this.userPhonenumber));
-        const userDataRes = await axios.get("/api/signup",  
+        const userDataRes = await axios.post("/api/signup",  
         { params: {
             userId : this.userId,
             userPassword: this.userPassword,
@@ -214,12 +214,14 @@
             }
             else {
                alert("아이디가 중복됩니다. 다시 입력해주세요!");
+               this.isEditing = false;
               location.reload();
             }
         })
         .catch(function(error) {
             if(error.response){
                 alert("아이디가 중복됩니다. 다시 입력해주세요!");
+                this.isEditing = false;
             location.reload();
         }
         });
