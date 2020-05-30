@@ -5,7 +5,7 @@
             <img id="createLabelLogo" src = "../assets/createlabelingLogo.png"/>
             <b-card-text>
             <b-form v-if="show">
-               <b-form-group id="inputName" label="Project Name:" label-for="input-2">
+               <b-form-group id="inputName" label="작업 이름" label-for="input-2">
                     <b-form-input
                     id="input-2"
                     v-model="name"
@@ -18,8 +18,7 @@
                 
             </b-form-select>
             <br>
-            <br>
-                <p>프로젝트 라벨링 작업 종류 선택</p>
+                <p>라벨링 작업 타입 선택</p>
                 <b-form-select v-model="selectedWork" class="workTypeForm">
                 <b-form-select-option-group label="작업 종류">
                     <b-form-select-option :value="'boundingBox'">이미지 바운딩 박스</b-form-select-option>
@@ -28,11 +27,11 @@
                 </b-form-select>
             <br>
             <br>
-            <p>프로젝트 주제</p>
+            <p>작업 주제</p>
             <b-form-input size="sm" class="inputSubject" placeholder="Subject" v-model="subject" ></b-form-input>
             <br>
             <br>
-            <p>원하는 라벨링 클래스</p>
+            <p>라벨링 타입</p>
             <b-button variant="light" class="addClassButton" v-on:click="addClass">
                     Add <b-icon icon="plus" aria-hidden="true"></b-icon>
             </b-button>
@@ -55,7 +54,7 @@
                 <!--<img id ="examplePreview" v-if="imageUrl != null" :src = "imageUrl"></img>-->
                 <br>
                 <br>
-            <p>프로젝트 설명</p>
+            <p>작업 설명</p>
             <b-form-input  id="description" placeholder="description" v-model="description" ></b-form-input>
             <br>
             <br>

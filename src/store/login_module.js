@@ -51,6 +51,10 @@ export default new Vuex.Store({
                     var authorities = res.data.authorities;
                     commit('LOGIN',{token, authorities,userId}) //로그인 성공시 session id랑 authorities이거 넘겨주는
                     alert("로그인 완료!");
+                    var reward = res.headers.reward;
+                    if(reward == 'true'){
+                        alert("출석 보상으로 100 포인트를 지급받았습니다!");
+                    }
                     setTimeout(()=> {
                         
                         window.location.reload();

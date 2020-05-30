@@ -38,18 +38,18 @@ export default {
     height : 100px;
 }
 #collection {
-    width: 450px;
-    height: 310px;
+    width: 500px;
+    height: 280px;
     float : left;
-    margin-left: 450px;
+    margin-left: 400px;
     margin-right: 160px;
     margin-top : 75px;
 }
 #labelling {
-    width: 430px;
-    height: 280px;
+    width: 500px;
+    height: 300px;
     float : left;
-    margin-top : 100px;
+    margin-top : 60px;
 }
 #collection_labelling{
     width: 490px;

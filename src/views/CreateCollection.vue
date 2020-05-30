@@ -15,7 +15,7 @@
                 </b-form-group>
                 </b-form>
                 <br>
-                <p>프로젝트 수집 데이터 종류 선택</p>
+                <p>수집 데이터 타입</p>
                  <b-form-select v-model="selectedData" class="dataTypeForm">
                     <b-form-select-option-group label="데이터 타입">
                         <b-form-select-option :value="'image'">이미지</b-form-select-option>
@@ -25,7 +25,7 @@
             </b-form-select>
             <br>
             <br>
-            <p>프로젝트 주제</p>
+            <p>작업 주제</p>
             <b-form-input size="sm" class="inputSubject" placeholder="Subject" v-model="subject" ></b-form-input>
             <br>
             <br>
@@ -44,7 +44,7 @@
             <br>
             <br>
             <p>예시 데이터 업로드</p>
-            <p v-if="selectedData == 'text'">텍스트 데이터 프로젝트인 경우 아래에 글을 작성하시거나 텍스트 파일을 업로드 해주세요!</p>
+            <p v-if="selectedData == 'text'">텍스트 데이터 수집인 경우 아래에 글을 작성하시거나 텍스트 파일을 업로드 해주세요!</p>
             <b-form-input id="inputExample" v-if="selectedData == 'text'"  placeholder="예시 데이터를 작성해주세요." v-model="exampleTextContent" ></b-form-input>
             <br>
             <b-form-file 
@@ -59,7 +59,7 @@
                 <img id ="examplePreview" v-if="imageUrl && this.selectedData == 'image'" :src = "imageUrl"></img>
             <br>
             <br>
-            <p>프로젝트 설명</p>
+            <p>작업 설명</p>
             <b-form-input  id="description" placeholder="description" v-model="description" ></b-form-input>
             <br>
             <br>
