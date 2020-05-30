@@ -214,9 +214,17 @@ export default {
                     }).then(res => {
                         console.log(res);
                         const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
-                        var problemBlob = {
-                            type : res.headers['content-type'],
-                            blob : url,
+                        if(res.headers['content-type'].includes("audio/")){
+                            var problemBlob = {
+                                type : res.headers['content-type'],
+                                blob : res.data,
+                            }
+                        }
+                        else {
+                            var problemBlob = {
+                                type : res.headers['content-type'],
+                                blob : url,
+                            }
                         }
                         this.problemContentList.push(problemBlob);
                     });
