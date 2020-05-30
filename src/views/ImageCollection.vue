@@ -10,20 +10,20 @@
       <h5>*이미지 수집 작업은 주어진 수집 데이터 목록에 맞는 이미지를 업로드 하는 작업입니다.</h5>
     </template>
     <b-list-group flush>
-      <b-list-group-item>프로젝트 이름 : {{" "+ project.projectName}}</b-list-group-item>
-      <b-list-group-item>프로젝트 의뢰자 : {{" " + project.userId}}</b-list-group-item>
-      <b-list-group-item><프로젝트 수집 데이터 목록>
+      <b-list-group-item>작업 이름 : {{" "+ project.projectName}}</b-list-group-item>
+      <b-list-group-item>작업 의뢰자 : {{" " + project.userId}}</b-list-group-item>
+      <b-list-group-item><수집 데이터 목록>
         <div v-for="classname, index in classNameList">
             <br>
             {{index+1+". "+classname.className}}
         </div>
         </b-list-group-item>
     </b-list-group>
-    <b-card-footer style="font-weight: bolder">프로젝트 진행 방법</b-card-footer>
+    <b-card-footer style="font-weight: bolder">작업 진행 방법</b-card-footer>
     <b-card-text class ="content">{{project.wayContent}}</b-card-text>
-    <b-card-footer style="font-weight: bolder">프로젝트 조건</b-card-footer>
+    <b-card-footer style="font-weight: bolder">작업 조건</b-card-footer>
     <b-card-text class ="content">{{project.conditionContent}}</b-card-text>
-    <b-card-footer style="font-weight: bolder">프로젝트 예시 데이터</b-card-footer>
+    <b-card-footer style="font-weight: bolder">작업 예시 데이터</b-card-footer>
     <b-card-text class ="content">
         <br>
         <img :src = "downloadUrl" v-if="downloadUrl != ''" style="width: 400px; height: 300px;"/>

@@ -11,20 +11,20 @@
       <h5>*음성 수집 작업은 주어진 수집 데이터 목록에 해당하는 음성을 업로드하는 작업입니다</h5>
     </template>
     <b-list-group flush>
-      <b-list-group-item>프로젝트 이름 : {{" "+ project.projectName}}</b-list-group-item>
-      <b-list-group-item>프로젝트 의뢰자 : {{" " + project.userId}}</b-list-group-item>
-      <b-list-group-item><프로젝트 수집 데이터 목록>
+      <b-list-group-item>작업 이름 : {{" "+ project.projectName}}</b-list-group-item>
+      <b-list-group-item>작업 의뢰자 : {{" " + project.userId}}</b-list-group-item>
+      <b-list-group-item><수집 데이터 목록>
         <div v-for="classname, index in classNameList">
             <br>
             {{index+1+". "+classname.className}}
         </div>
         </b-list-group-item>
     </b-list-group>
-    <b-card-footer style="font-weight: bolder">프로젝트 진행 방법</b-card-footer>
+    <b-card-footer style="font-weight: bolder">작업 진행 방법</b-card-footer>
     <b-card-text class ="content">{{project.wayContent}}</b-card-text>
-    <b-card-footer style="font-weight: bolder">프로젝트 조건</b-card-footer>
+    <b-card-footer style="font-weight: bolder">작업 조건</b-card-footer>
     <b-card-text class ="content">{{project.conditionContent}}</b-card-text>
-    <b-card-footer style="font-weight: bolder">프로젝트 예시 데이터</b-card-footer>
+    <b-card-footer style="font-weight: bolder">예시 데이터</b-card-footer>
     <b-card-text class ="content">
         <AudioUpload v-if="audioUrl != ''" :value="audioUrl"></AudioUpload>
     </b-card-text>
@@ -43,7 +43,7 @@
         </div>
             <div class = "registeredImage" v-for="name in audioNameList">
                 <br>
-                <h4 v-if = "name.class == selected">< 이전에 등록된 이미지 이름 ></h4>
+                <h4 v-if = "name.class == selected">< 이전에 등록된 음성 이름 ></h4>
                 <div v-if = "name.class == selected" v-for="index, value in name.name">
                     <p> {{ value+1 + ". " + index }}</p>
 
@@ -166,11 +166,10 @@ s3Client.interceptors.request.use(function (config) {
     },
     async created() {
         this.fetchData();
-        this.examplaDataDownload();
+        //this.examplaDataDownload();
     },
     watch : {
         selected : function(val) {
-            console.log("hello!");
             this.audioContent = '';
             this.audioPreUrl = '';
         }
@@ -183,7 +182,7 @@ s3Client.interceptors.request.use(function (config) {
         });
     },
     beforeRouteLeave(to, from, next) { //작업하고나서 나가려고 하면 이루어지는거
-
+        delete localStorage.exampleContent;
         if (this.audioNameList != null &&  !this.createCollection) {
             if (!window.confirm("페이지를 벗어나면 작업이 저장되지 않습니다. 그래도 이동하시겠습니까?")) {
                 return;
@@ -195,8 +194,9 @@ s3Client.interceptors.request.use(function (config) {
     methods : {
         async fetchData() {
             var searchproject = await localStorage.getItem('searchProject');//this.$route.params.project;
-
+            
             this.project = JSON.parse(searchproject).projectDto;
+            console.log(this.project);
             this.classNameList = JSON.parse(searchproject).classNameList;//this.$route.params.classList;
             var optionDataList = new Array();
             for(let i = 0 ; i < this.classNameList.length; i++){
@@ -209,13 +209,9 @@ s3Client.interceptors.request.use(function (config) {
             }
             this.options = optionDataList;
             this.selected = this.classNameList[0].className;
-
-        },
-        async examplaDataDownload(){
-            var exampleData = await localStorage.getItem('exampleContent');
-            console.log(exampleData);
-            if(exampleData == null){
-                    s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
+            console.log(this.project);
+                console.log(this.project.bucketName, this.project.exampleContent);
+                await s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
                         responseType : 'blob',
                     }).then((res) =>{
                         //var exampleFile = new File([res.data], this.project.exampleContent,{ type: res.headers['content-type'], lastModified : Date.now() } );
@@ -226,16 +222,20 @@ s3Client.interceptors.request.use(function (config) {
                                     type : res.data.type,
                                     url : url,
                                 }
-                            localStorage.exampleContent = JSON.stringify(content);
+                            //localStorage.exampleContent = JSON.stringify(content);
                     });
-            }
-            else {
-                var exampleLocal = await localStorage.getItem('exampleContent');
-                var exampleLocalDataType = JSON.parse(exampleLocal).type;
-                var exampleLocalData = JSON.parse(exampleLocal).url;
-                this.audioUrl = exampleLocalData;
-            }   
+
         },
+        // async examplaDataDownload(){
+                
+            
+        //     // else {
+        //     //     var exampleLocal = await localStorage.getItem('exampleContent');
+        //     //     var exampleLocalDataType = JSON.parse(exampleLocal).type;
+        //     //     var exampleLocalData = JSON.parse(exampleLocal).url;
+        //     //     this.audioUrl = exampleLocalData;
+        //     // }   
+        // },
         ready() {
             this.$refs.mycom.seekTo(this.timeline)
         },

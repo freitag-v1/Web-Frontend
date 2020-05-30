@@ -6,20 +6,20 @@
         no-body
   >
     <template v-slot:header>
-      <h4 class="mb-0">프로젝트 상세 페이지</h4>
+      <h4 class="mb-0">작업 상세 페이지</h4>
     </template>
 
     <b-card-body>
       <b-card-title>{{ project.projectName }}</b-card-title>
       <b-card-text v-if="project.workType =='collection'">
-        프로젝트 데이터 종류: 
+        작업 데이터 종류: 
         <b-icon icon="image" v-if="project.dataType == 'image'" variant="success"></b-icon>
         <b-icon icon="mic-fill" v-if="project.dataType == 'audio'" variant="primary"></b-icon>
         <b-icon icon="blockquote-left" v-if="project.dataType == 'text'" variant="warning"></b-icon>
         {{" " +project.dataType}}
       </b-card-text>
        <b-card-text v-if="project.workType !='collection'">
-        프로젝트 작업 종류: <!--Image Bounding Box를 boundingBox로 나중에 바꿔야 한다.-->
+        작업 종류: <!--Image Bounding Box를 boundingBox로 나중에 바꿔야 한다.-->
         <b-icon icon="bounding-box" v-if="project.workType == 'Image Bounding Box'" variant="info"></b-icon>
         <b-icon icon="columns-gap" v-if="project.workType == 'classification'" variant="warning"></b-icon>
         {{" " +project.workType}}
@@ -27,37 +27,36 @@
     </b-card-body>
 
     <b-list-group flush>
-      <b-list-group-item>프로젝트 주제 : {{" "+ project.subject}}</b-list-group-item>
-      <b-list-group-item>프로젝트 의뢰자 : {{" " + project.userId}}</b-list-group-item>
-      <b-list-group-item v-if="project.workType =='collection'"><프로젝트 수집 데이터 목록>
+      <b-list-group-item>작업 주제 : {{" "+ project.subject}}</b-list-group-item>
+      <b-list-group-item>작업 의뢰자 : {{" " + project.userId}}</b-list-group-item>
+      <b-list-group-item v-if="project.workType =='collection'"><수집 데이터 목록>
         <div v-for="classname, index in classNameList">
             <br>
             {{index+1+". "+classname.className}}
         </div>
         </b-list-group-item>
-        <b-list-group-item v-if="project.workType!='collection'"><프로젝트 라벨링 데이터 목록>
+        <b-list-group-item v-if="project.workType!='collection'"><라벨링 데이터 목록>
         <div v-for="classname, index in classNameList">
             <br>
             {{index+1+". "+ classname.className}}
         </div>
         </b-list-group-item>
     </b-list-group>
-    <b-card-footer style="font-weight: bolder">프로젝트 진행 방법</b-card-footer>
+    <b-card-footer style="font-weight: bolder">작업 진행 방법</b-card-footer>
     <br>
     <b-card-text class ="content">{{project.wayContent}}</b-card-text>
-    <b-card-footer style="font-weight: bolder">프로젝트 조건</b-card-footer>
+    <b-card-footer style="font-weight: bolder">작업 조건</b-card-footer>
     <br>
     <b-card-text id="exampleContent">{{project.conditionContent}}</b-card-text>
       <br>
-        <img :src = "downloadUrl" v-if="downloadUrl != ''" style="width: 400px; height: 300px;"/>
-        <AudioUpload v-if="audioUrl != ''" :value="audioUrl"/></b-card-text>
+        
     <br>
     <b-card-footer style="font-weight: bolder">작업 정보 수집 동의</b-card-footer>
     <br>
     <br>
     <b-card class="agreement">
         <b-card-title>정보 수집 이용 동의</b-card-title>
-        <p>프로젝트 진행 시 작업자가 제공하는 음성, 텍스트, 이미지 등 작업 정보를 수집 및 처리합니다.</p>
+        <p>작업 진행 시 작업자가 제공하는 음성, 텍스트, 이미지 등 작업 정보를 수집 및 처리합니다.</p>
         <br>
         <b-table striped hover :items="agreements" :fields="fields"></b-table>
         <br>
@@ -130,6 +129,8 @@ s3Client.interceptors.request.use(function (config) {
     data() {
         return {
             project : '',
+            audioUrl: '',
+            downloadUrl: '',
             status: null,
             classNameList:[],
             agreements: [{content : '작업 정보', purpose: '프로젝트 진행 & 포인트 지급', period: '1년'}],
@@ -144,41 +145,41 @@ s3Client.interceptors.request.use(function (config) {
         this.project = JSON.parse(searchproject).projectDto;
         this.classNameList = JSON.parse(searchproject).classNameList;//this.$route.params.classList;
         console.log("======================="+this.classNameList[0]);
-        this.exampleDownload();
+        //this.exampleDownload();
     },
     methods : {
-      async exampleDownload() {
-          if(this.project.exampleContent.includes(".txt")){
-                s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
-                    responseType: 'text',
-                }).then((res) =>{
-                  var textExample = document.createElement('p');
-                  textExample.innerText = res.data;
-                  document.getElementById("exampleContent").appendChild(textExample);
-                  localStorage.exampleContent = res.data;
-                }); 
-            }
-            else { 
-                  s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
-                    responseType: 'blob',
-                }).then((res) => {
-                    var exampleFile = new File([res.data], this.project.exampleContent,{ type: res.headers['content-type'], lastModified : Date.now() } );
-                    const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
-                    var content = {
-                          type : res.data.type,
-                          file : exampleFile,
-                        }
-                    localStorage.exampleContent = JSON.stringify(content);
-                    if(this.project.exampleContent.includes("image/")){
-                       this.downloadUrl = url;
-                    }
-                    else {
-                       this.audioUrl = url;
-                    }
-                });
+      // async exampleDownload() {
+      //     if(this.project.exampleContent.includes(".txt")){
+      //           s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
+      //               responseType: 'text',
+      //           }).then((res) =>{
+      //             var textExample = document.createElement('p');
+      //             textExample.innerText = res.data;
+      //             document.getElementById("exampleContent").appendChild(textExample);
+      //             localStorage.exampleContent = res.data;
+      //           }); 
+      //       }
+      //       else { 
+      //             s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
+      //               responseType: 'blob',
+      //           }).then((res) => {
+      //               var exampleFile = new File([res.data], this.project.exampleContent,{ type: res.headers['content-type'], lastModified : Date.now() } );
+      //               const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
+      //               var content = {
+      //                     type : res.data.type,
+      //                     file : exampleFile,
+      //                   }
+      //               localStorage.exampleContent = JSON.stringify(content);
+      //               if(this.project.exampleContent.includes("image/")){
+      //                  this.downloadUrl = url;
+      //               }
+      //               else {
+      //                  this.audioUrl = url;
+      //               }
+      //           });
 
-            }
-      },
+      //       }
+      // },
         async startProject() {
             if(this.status ==  "비동의" || this.status == null){
                 alert("동의하지 않은 경우 프로젝트를 진행할 수 없습니다!");

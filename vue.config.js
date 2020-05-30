@@ -3,12 +3,9 @@ module.exports = {
 	disableHostCheck: true,
         proxy: {
             '/api' : {
-                target: 'http://wodnd999999.iptime.org:8080',
+                target: 'http://localhost:9000',
                 ws: true,
                 changeOrigin: true,
-                pathRewrite: {
-                    '^/api':''
-		}
             },
 	    '/object' : {
                 target: 'http://kr.object.ncloudstorage.com',
