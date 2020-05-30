@@ -51,9 +51,10 @@ export default {
         const paymentRes = await axios.get('/api/project/account/payment');  
       },
       async fetchData() {
-          this.projectCost = await localStorage.getItem('projectCost'); //스토리지에서 가져오고 
-          delete localStorage.projectCost; //얻었으니까 지운다 
+          this.projectCost = this.$route.params.cost; //스토리지에서 가져오고 
+         
           this.projectName = this.$route.params.name;
+
       }
     
     

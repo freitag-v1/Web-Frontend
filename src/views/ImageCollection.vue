@@ -27,7 +27,7 @@
     <b-card-text class ="content">
         <br>
         <img :src = "downloadUrl" v-if="downloadUrl != ''" style="width: 400px; height: 300px;"/>
-        <AudioUpload v-if="audioUrl != ''" :value="audioUrl"/></b-card-text>
+        </b-card-text>
 
     <b-card-footer style="font-weight: bolder">이미지 수집 데이터 업로드</b-card-footer>
         <br>
@@ -143,16 +143,20 @@ s3Client.interceptors.request.use(function (config) {
       axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
     },
     watch: {
+        '$route' : 'fetchData',
         selected : function(val){
+            
             this.imageContent = '';
             this.imageUrl = '';
         }
     },
     async created() {
         this.fetchData();
-        var exampleData = await localStorage.getItem('exampleContent');
-        console.log(exampleData);
-        if(exampleData == null){
+    
+        
+        // var exampleData = await localStorage.getItem('exampleContent');
+        // console.log(exampleData);
+        // if(exampleData == null){
             // if(this.project.exampleContent.includes(".txt")){
             //     s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
             //         responseType: 'text',
@@ -164,26 +168,17 @@ s3Client.interceptors.request.use(function (config) {
             //     }); 
             // }
             // else { // 이미지 데이터에 대해서만 처리를 한다 
-                // s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
-                //     responseType : 'blob',
-                // }).then((res) =>{
-                //     const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
-                //     this.downloadUrl = url;
-                //     var content = {
-                //         type : res.data.type,
-                //         url : url,
-                //     }
-                //     localStorage.exampleContent = JSON.stringify(content);
+                // 
 
                 // });
             
-        }
-        else {
-            var exampleLocal = await localStorage.getItem('exampleContent');
-            var exampleLocalDataType = JSON.parse(exampleLocal).type;
-            var exampleLocalData = JSON.parse(exampleLocal).url;
-             //예시데이터가 이미지인 경우
-            this.downloadUrl = exampleLocalData;
+        // }
+        // else {
+        //     var exampleLocal = await localStorage.getItem('exampleContent');
+        //     var exampleLocalDataType = JSON.parse(exampleLocal).type;
+        //     var exampleLocalData = JSON.parse(exampleLocal).url;
+        //      //예시데이터가 이미지인 경우
+        //     this.downloadUrl = exampleLocalData;
             
             // else if(exampleLocalDataType.includes("audio/")){//예시데이터가 음성인 경우
             //     this.audioUrl = exampleLocalData;
@@ -193,14 +188,7 @@ s3Client.interceptors.request.use(function (config) {
             //     textExample.innerText = exampleLocalData;
             //     document.getElementById("exampleContent").appendChild(textExample);
             // }
-        }   
-    },
-    watch : {
-        '$route' : 'fetchData',
-        // selected: function(val) {
-        //     this.imageContent = null;
-            
-        // }
+          
     },
     beforeMount() {
             delete localStorage.exampleContent;
@@ -220,6 +208,32 @@ s3Client.interceptors.request.use(function (config) {
         next();
     },
     methods : {
+        async examplaDataDownload(){
+            var exampleData = await localStorage.getItem('exampleContent');
+            console.log(exampleData);
+            if(exampleData == null){
+                    s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
+                        responseType : 'blob',
+                    }).then((res) =>{
+                        var exampleFile = new File([res.data], this.project.exampleContent,{ type: res.headers['content-type'], lastModified : Date.now() } );
+                        const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
+                        console.log(url);
+                            this.downloadUrl = url;
+                                var content = {
+                                    type : res.data.type,
+                                    file : exampleFile,
+                                }
+                            localStorage.exampleContent = JSON.stringify(content);
+                    });
+            }
+            else {
+                var exampleLocal = await localStorage.getItem('exampleContent');
+                var exampleLocalDataType = JSON.parse(exampleLocal).type;
+                var exampleLocalData = JSON.parse(exampleLocal).file;
+
+                this.downloadUrl = URL.createObjectURL(exampleLocalData);
+            }   
+        },
         async fetchData() {
             var searchproject = await localStorage.getItem('searchProject');//this.$route.params.project;
             console.log(JSON.parse(searchproject));
@@ -239,6 +253,13 @@ s3Client.interceptors.request.use(function (config) {
             this.selected = this.classNameList[0].className;
             console.log(this.options);
             console.log(this.project);
+            await s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
+                    responseType: 'blob',
+                }).then((res) => {
+                    const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
+                    console.log(url);
+                    this.downloadUrl = url;
+                });
         },
         onChangeImages(e) {
             console.log(e.target.files);

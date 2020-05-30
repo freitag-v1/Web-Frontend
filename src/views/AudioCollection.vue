@@ -212,29 +212,29 @@ s3Client.interceptors.request.use(function (config) {
 
         },
         async examplaDataDownload(){
-            // var exampleData = await localStorage.getItem('exampleContent');
-            // console.log(exampleData);
-            // if(exampleData == null){
-            //         s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
-            //             responseType : 'blob',
-            //         }).then((res) =>{
-            //             //var exampleFile = new File([res.data], this.project.exampleContent,{ type: res.headers['content-type'], lastModified : Date.now() } );
-            //             const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
-            //             console.log(url);
-            //                 this.audioUrl = url;
-            //                     var content = {
-            //                         type : res.data.type,
-            //                         url : url,
-            //                     }
-            //                 localStorage.exampleContent = JSON.stringify(content);
-            //         });
-            // }
-            // else {
-            //     var exampleLocal = await localStorage.getItem('exampleContent');
-            //     var exampleLocalDataType = JSON.parse(exampleLocal).type;
-            //     var exampleLocalData = JSON.parse(exampleLocal).url;
-            //     this.audioUrl = exampleLocalData;
-            // }   
+            var exampleData = await localStorage.getItem('exampleContent');
+            console.log(exampleData);
+            if(exampleData == null){
+                    s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
+                        responseType : 'blob',
+                    }).then((res) =>{
+                        //var exampleFile = new File([res.data], this.project.exampleContent,{ type: res.headers['content-type'], lastModified : Date.now() } );
+                        const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
+                        console.log(url);
+                            this.audioUrl = url;
+                                var content = {
+                                    type : res.data.type,
+                                    url : url,
+                                }
+                            localStorage.exampleContent = JSON.stringify(content);
+                    });
+            }
+            else {
+                var exampleLocal = await localStorage.getItem('exampleContent');
+                var exampleLocalDataType = JSON.parse(exampleLocal).type;
+                var exampleLocalData = JSON.parse(exampleLocal).url;
+                this.audioUrl = exampleLocalData;
+            }   
         },
         ready() {
             this.$refs.mycom.seekTo(this.timeline)

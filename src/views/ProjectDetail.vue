@@ -47,8 +47,10 @@
     <b-card-text class ="content">{{project.wayContent}}</b-card-text>
     <b-card-footer style="font-weight: bolder">프로젝트 조건</b-card-footer>
     <br>
-    <b-card-text class ="content">{{project.conditionContent}}</b-card-text>
-    <!-- 프로젝트 생성 시 업로드한 예시 데이터를 -->
+    <b-card-text id="exampleContent">{{project.conditionContent}}</b-card-text>
+      <br>
+        <img :src = "downloadUrl" v-if="downloadUrl != ''" style="width: 400px; height: 300px;"/>
+        <AudioUpload v-if="audioUrl != ''" :value="audioUrl"/></b-card-text>
     <br>
     <b-card-footer style="font-weight: bolder">작업 정보 수집 동의</b-card-footer>
     <br>
@@ -93,6 +95,36 @@ let year = today.getFullYear();
 let month = today.getMonth() + 1;  // 월
 let todayDate = today.getDate();  // 날짜
 let day = today.getDay();  // 요일
+const endpoint = 'kr.object.ncloudstorage.com';
+const region = 'kr-standard';
+const access_key = '4WhQkGZPLH1sVg6cWLtK';
+const secret_key = 'xmKmQXfbYyyPuXyEw1KeDXE7CveACDQdWUPACtzP';
+
+const v4 = require('aws-signature-v4');
+
+var s3Client = axios.create();
+
+s3Client.interceptors.request.use(function (config) {
+        var timestamp = Date.now();
+        var headers = {};
+        headers['host'] = endpoint;
+        headers['x-amz-content-sha256'] = 'UNSIGNED-PAYLOAD';
+        headers['x-amz-date'] = new Date(timestamp).toISOString().replace(/[:\-]|\.\d{3}/g, "");
+
+        var canonicalRequest = v4.createCanonicalRequest('GET', config.url, {}, headers, 'UNSIGNED-PAYLOAD', true);
+        var stringToSign = v4.createStringToSign(timestamp, region, 's3', canonicalRequest);
+        var signature = v4.createSignature(secret_key, timestamp, region, 's3', stringToSign);
+        var authorization = 'AWS4-HMAC-SHA256 Credential=' + access_key + '/' +
+                        v4.createCredentialScope(timestamp, region, 's3') + ', SignedHeaders=' +
+                        v4.createSignedHeaders(headers) + ', Signature=' + signature;
+
+	config.url = '/object' + config.url;
+        config.headers['x-amz-content-sha256'] = headers['x-amz-content-sha256'];
+        config.headers['x-amz-date'] = headers['x-amz-date'];
+        config.headers['Authorization'] = authorization;
+
+        return config;
+    });
   export default {
     name: 'ProjectDetail',
     data() {
@@ -112,8 +144,41 @@ let day = today.getDay();  // 요일
         this.project = JSON.parse(searchproject).projectDto;
         this.classNameList = JSON.parse(searchproject).classNameList;//this.$route.params.classList;
         console.log("======================="+this.classNameList[0]);
+        this.exampleDownload();
     },
     methods : {
+      async exampleDownload() {
+          if(this.project.exampleContent.includes(".txt")){
+                s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
+                    responseType: 'text',
+                }).then((res) =>{
+                  var textExample = document.createElement('p');
+                  textExample.innerText = res.data;
+                  document.getElementById("exampleContent").appendChild(textExample);
+                  localStorage.exampleContent = res.data;
+                }); 
+            }
+            else { 
+                  s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
+                    responseType: 'blob',
+                }).then((res) => {
+                    var exampleFile = new File([res.data], this.project.exampleContent,{ type: res.headers['content-type'], lastModified : Date.now() } );
+                    const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
+                    var content = {
+                          type : res.data.type,
+                          file : exampleFile,
+                        }
+                    localStorage.exampleContent = JSON.stringify(content);
+                    if(this.project.exampleContent.includes("image/")){
+                       this.downloadUrl = url;
+                    }
+                    else {
+                       this.audioUrl = url;
+                    }
+                });
+
+            }
+      },
         async startProject() {
             if(this.status ==  "비동의" || this.status == null){
                 alert("동의하지 않은 경우 프로젝트를 진행할 수 없습니다!");

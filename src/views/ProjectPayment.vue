@@ -12,6 +12,7 @@
 <script>
 import axios from 'axios';
 var pointPaySuccess = '';
+var accountSuccess = '';
 export default {
   name: 'ProjectPayment',
     data() {
@@ -47,7 +48,7 @@ export default {
     },
     methods: {
         preventNav(event) {
-                if(pointPaySuccess == "success") return ;
+                if(pointPaySuccess == "success" || accountSuccess == true) return ;
                 event.preventDefault();
                 // Chrome requires returnValue to be set.
                 event.returnValue = "";
@@ -83,6 +84,7 @@ export default {
                 },6000);   
         },
         accountPay() {  
+            accountSuccess = true;
             this.$router.push({name : "AccountPayment", params : {
                 cost : this.cost,
                 name : this.projectName,
