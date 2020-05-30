@@ -194,7 +194,7 @@
           }
           else {
             //console.log(typeof(this.userId),typeof(this.userPassword), typeof(this.userEmail),typeof(this.userName), typeof(this.userAffiliation),typeof(this.userPhonenumber));
-        const userDataRes = await axios.post("/api/signup",  
+        const userDataRes = await axios.post("/api/signup", "",
         { params: {
             userId : this.userId,
             userPassword: this.userPassword,
@@ -203,8 +203,8 @@
             userAffiliation : this.userAffiliation,
             userPhone : this.userPhonenumber,
         }}).then(res => { //여기서 response header 가져와서 
-            signUpSuccess = res.headers.update;
-            if(res.headers.update == "success"){
+            signUpSuccess = res.headers.signup;
+            if(res.headers.signup == "success"){
               setTimeout(()=> {
               localStorage.bankState = res.headers.state;
               this.$router.push("/signup/account");
