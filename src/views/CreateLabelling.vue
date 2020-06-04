@@ -5,12 +5,12 @@
             <img id="createLabelLogo" src = "../assets/createlabelingLogo.png"/>
             <b-card-text>
             <b-form v-if="show">
-               <b-form-group id="inputName" label="작업 이름" label-for="input-2">
+               <b-form-group id="inputName" label="작업명:" label-for="input-2">
                     <b-form-input
                     id="input-2"
                     v-model="name"
                     required
-                    placeholder="Enter Project Name"
+                    placeholder="작업 이름을 입력해주세요"
                     ></b-form-input>
                 </b-form-group>
                 </b-form>
@@ -18,7 +18,7 @@
                 
             </b-form-select>
             <br>
-                <p>라벨링 작업 타입 선택</p>
+                <p>라벨링 작업 타입</p>
                 <b-form-select v-model="selectedWork" class="workTypeForm">
                 <b-form-select-option-group label="작업 종류">
                     <b-form-select-option :value="'boundingBox'">이미지 바운딩 박스</b-form-select-option>
@@ -27,11 +27,25 @@
                 </b-form-select>
             <br>
             <br>
-            <p>작업 주제</p>
-            <b-form-input size="sm" class="inputSubject" placeholder="Subject" v-model="subject" ></b-form-input>
+            <p>예시 데이터 업로드</p>
+            <b-form-file
+                v-model="exampleContent"
+                :state="Boolean(exampleContent)"
+                placeholder="Choose a file or drop it here..."
+                drop-placeholder="Drop file here..."
+                hidden @change="onChangeFile"
+                accept="audio/*,image/*,text/*"
+                ></b-form-file>
+                <div id = "select" class="mt-3">선택된 파일: {{ exampleContent ? exampleContent.name : '' }}</div>
+                    <img id ="examplePreview" v-if="imageUrl != null" :src = "imageUrl"></img>
+                    <AudioUpload id="audioPreview" v-if="audioUrl != null" :value="audioUrl"/>
+                <br>
+                <br>
+            <p>라벨링 작업 주제</p>
+            <b-form-input size="sm" class="inputSubject" placeholder="주제" v-model="subject" ></b-form-input>
             <br>
             <br>
-            <p>라벨링 타입</p>
+            <p>라벨링 데이터 라벨</p>
             <b-button variant="light" class="addClassButton" v-on:click="addClass">
                     Add <b-icon icon="plus" aria-hidden="true"></b-icon>
             </b-button>
@@ -41,21 +55,8 @@
                 </div>
             <br>
             <br>
-            <p>예시 데이터 업로드</p>
-            <b-form-file
-                v-model="exampleContent"
-                :state="Boolean(exampleContent)"
-                placeholder="Choose a file or drop it here..."
-                drop-placeholder="Drop file here..."
-                hidden @change="onChangeImages"
-                accept="audio/*,image/*,text/*"
-                ></b-form-file>
-                <div id = "select" class="mt-3">Selected file: {{ exampleContent ? exampleContent.name : '' }}</div>
-                <!--<img id ="examplePreview" v-if="imageUrl != null" :src = "imageUrl"></img>-->
-                <br>
-                <br>
-            <p>작업 설명</p>
-            <b-form-input  id="description" placeholder="description" v-model="description" ></b-form-input>
+            <p>라벨링 작업 설명</p>
+            <b-form-input  id="description" placeholder="라벨링 작업 설명을 입력해주세요." v-model="description" ></b-form-input>
             <br>
             <br>
             <p>라벨링 방법 작성</p>
@@ -75,16 +76,17 @@
                     drop-placeholder="Drop file here..."
                     accept="audio/*,image/*,text/*"
                     ></b-form-file>
-                    <div class="mt-3" v-for="file in labellingContent">Selected file: {{ file ? file.name : '' }}</div>
+                    <div class="mt-3" v-for="file in labellingContent">선택된 파일: {{ file ? file.name : '' }}</div>
                 </b-card-text>
 
-            <b-button id ="createButton" variant="outline-info" v-on:click ="createProject">Create</b-button>
+            <b-button id ="createProjectButton" variant="outline-info" v-on:click ="createProject">작업 생성</b-button>
         </b-card>
     </div>
     </div>
 </template>
 <script>
 import axios from 'axios';
+import AudioUpload from '../components/AudioUpload.vue';
 
 var createSuccess = '';
 export default {
@@ -102,7 +104,11 @@ export default {
             selectedWork: null,
             labellingContent: null,
             dataClass: [{name : '라벨링 데이터'}],
+            audioUrl: null,
         }
+    },
+    components : {
+      AudioUpload,
     },
     async beforeCreate() {
       axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
@@ -258,17 +264,16 @@ export default {
             }
             
         },
-        onChangeImages(e) { 
+        onChangeFile(e) { 
+                this.imageUrl = null;
+                this.audioUrl = null;
                 console.log(e.target.files);
                 const file = e.target.files[0];
                 if(file.type.includes("image/")){
-                    var imageExample = document.createElement('img');
-                    var br = document.createElement('br');
                     this.imageUrl = URL.createObjectURL(file);
-                    imageExample.setAttribute("src", this.imageUrl);
-                    imageExample.setAttribute("id","examplePreview");
-                    document.getElementById("select").appendChild(br);
-                    document.getElementById("select").appendChild(imageExample);
+                }
+                else {
+                    this.audioUrl = URL.createObjectURL(file);
                 }
                 
         },
@@ -314,12 +319,10 @@ export default {
     width : 300px;
     height : 300px;
 }
-#createButton{
+#createProjectButton{
     width: 200px;
     height: 60px;
-    font-family: 'Arial', sans-serif;
     font-size: 20px;
-    text-transform: uppercase;
     letter-spacing: 2.5px;
     font-weight: 500;
     color: #000;
@@ -332,7 +335,7 @@ export default {
     outline: none;
 
 }
-#createButton:hover {
+#createProjectButton:hover {
     background-color: #28adfc;
     box-shadow: 0px 15px 20px rgba(40, 173,252, 0.4);
     color: #fff;

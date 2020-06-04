@@ -4,7 +4,7 @@
         {{ currentTime }}/{{ getDuration }}
     </span>
   <div class ="waveform">
-    <div id="wave" style="width: 500px;"></div>
+    <div id="wave" style=" width: 500px;"></div>
         <br>
         <div id= "wave-timeline"></div>
         <br>
@@ -14,9 +14,9 @@
     </div>
     <br>
     <br>
-    <button v-on:click="play">Play</button>
-<button v-on:click="wavesurfer.pause()">Pause</button>
-<button v-on:click="wavesurfer.stop()">Stop</button>
+    <button v-on:click="play">재생</button>
+<button v-on:click="wavesurfer.pause()">일시정지</button>
+<button v-on:click="wavesurfer.stop()">정지</button>
 <br>
   </div>
     
@@ -234,4 +234,5 @@ function secondaryLabelInterval(pxPerSec) {
     margin-left: auto; 
     margin-right: auto;
 }
+
 </style>

@@ -1,50 +1,52 @@
 <template>
     <div class = "mypage">
     <img id = "myPagelogo" src="../assets/mypageLogo.jpg"/>
-    <b-button id = "firstToggle" v-b-toggle.collapse-1 variant="outline-info">개인정보 수정</b-button>
+    <b-button id = "firstToggle" v-b-modal.modal-1 variant="outline-primary">개인정보 수정</b-button>
     <div class = "information">
     <b-card
     no-body
-    style="width: 700px;"
+    style="width: 1300px; height: 500px;"
     class = "userInfo"
-  >
+    :img-src="require('../assets/userLogo.jpg')"
+    img-alt="Card image" 
+    img-left
+
+  > 
+  
     <b-card-body id="userInfoBody">
-      <b-card-title id="userName">{{user.userName + "'s Profile"}}</b-card-title>
-      <b-avatar id ="profilePicture" src="https://placekitten.com/300/300" size="6rem" style="margin-top: 20px;"></b-avatar>
+    <b-card-title id="userName">{{user.userName + "님의 프로필"}}</b-card-title>
+      <b-list-group flush>
+        <b-list-group-item >작업자 레벨:
+        <p id="userLevel">Starter</p>
+        </b-list-group-item>
+        <b-list-group-item id="userPoint">
+        <img id = "pointLogo" src ="../assets/point.jpg">
+        {{"포인트 :"+ userPoint}}</b-list-group-item>
+      </b-list-group>
       <div class = "userDetail">
       <br>
-      <b-card-text style="text-align: right;">
-        {{"Email: " + user.userEmail}}
+      <b-card-text style="text-align: center;">
+        {{"이메일: " + user.userEmail}}
         <br>
         <br>
-        {{"Phone Number: " + user.userPhone}}
+        {{"휴대전화: " + user.userPhone}}
         <br>
         <br>
-        {{"Affiliation: " + user.userAffiliation}}
+        {{"소속 기관: " + user.userAffiliation}}
       </b-card-text>
-      
+      <br>
+      <button class="card-link" id ="pointExchange" v-on:click ="moveExchangePage">포인트 환전</button>
       </div>
     </b-card-body>
-    <b-list-group flush>
-      <b-list-group-item >Your Level:
-      <p id="userLevel">Starter</p>
-      </b-list-group-item>
-      <b-list-group-item id="userPoint">
-      <img id = "pointLogo" src ="../assets/point.jpg">
-      {{"포인트 :"+ userPoint}}</b-list-group-item>
-    </b-list-group>
-    <b-card-body>
-      <button class="card-link" id ="pointExchange" v-on:click ="moveExchangePage">포인트 환전</button>
-    </b-card-body>
+    
   </b-card>
   </div>
 
 </b-card-group>
        
-        <b-collapse id="collapse-1" class="check">
-            <b-card class = "passwordCheck">
+        <b-modal id="modal-1" class="check" title="비밀번호 확인" style ="font-family:'Jeju Gothic', sans-serif;" hide-footer>
             <b-form @submit.stop.prevent>
-                <label for="text-password">Your Password: </label> <!--password validation 여기서 해줌  -->
+                <label for="text-password">비밀번호 입력: </label> <!--password validation 여기서 해줌  -->
                 <b-input v-model= "userPassword" type="password" id="first-text-password"></b-input>
               <b-form-invalid-feedback :state="userPasswordValidation">
               개인정보 수정을 위해서 비밀번호 확인이 필요합니다. 
@@ -53,9 +55,9 @@
               확인이 완료되었습니다. 수정이 가능합니다.
               </b-form-valid-feedback>
                 </b-form>
-                <b-button id="modifybutton" v-if="userPasswordValidation" v-on:click ="modifyInfo" variant="outline-info">Modify</b-button><!--v-if해서 비밀번호 맞으면 보여주도록-->
-            </b-card>
-        </b-collapse>
+                <b-button id="modifybutton" v-if="userPasswordValidation" v-on:click ="modifyInfo" variant="outline-primary">Modify</b-button><!--v-if해서 비밀번호 맞으면 보여주도록-->
+        </b-modal>
+        
         
     </div>
 </template>
@@ -164,10 +166,6 @@ export default {
   font-family: fantasy;
   font-size: 20px;
   font-weight: bold;
-}
-
-.passwordCheck{
-  width : 350px;
 }
 #pointExchange {
   width : 150px;

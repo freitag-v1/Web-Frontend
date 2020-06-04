@@ -1,20 +1,16 @@
 <template>
   <div class="login">
         <form class="form-signin">
-            <h2 class="form-signin-heading">Please login</h2>
-            <input id ="email" v-model ="userId" type="text" class="form-control" name="username" placeholder="Email Address" required="" autofocus=""/>
+            <h2 class="form-signin-heading">로그인</h2>
+            <input id ="email" v-model ="userId" type="text" class="form-control" name="username" placeholder="아이디를 입력해주세요." required="" autofocus=""/>
             <br>
-            <input id ="pwd" v-model="password" type="password" class="form-control" name="password" placeholder="Password" required=""/> 
-            <br>
-            <label class="checkbox">
-            <br>
-            <input type="checkbox" value="remember-me" id="rememberMe" name="rememberMe"> Remember me</label>
+            <input id ="pwd" v-model="password" type="password" class="form-control" name="password" placeholder="비밀번호를 입력해주세요." required=""/> 
             <br>
             <br>
     <div class = "signButton">
-      <b-button pill v-on:click = "login" id="login" variant="outline-primary">Login</b-button>
+      <b-button pill v-on:click = "login" id="login" variant="outline-primary">로그인</b-button>
 
-      <b-button pill id ="signupbutton" href="signup" variant="outline-primary">Register</b-button>
+      <b-button pill id ="signupbutton" href="signup" variant="outline-primary">회원가입</b-button>
       </div>
     </form>
   </div>

@@ -43,8 +43,8 @@
               </b-form-select-option-group>
             </b-form-select>
             <br>
-            <p v-if="selectedProject != ''"  style="font-size: 15px;">주제 별 검색</p>
-            <b-form-input size="sm" style="width: 200px; margin: auto;"class="mb-3" placeholder="Search" v-model="selectedSubject" v-if="selectedProject != ''"></b-form-input>
+            <p v-if="selectedProject == 'Collection'"  style="font-size: 15px;">주제 별 검색</p>
+                <b-form-input v-if="selectedProject == 'Collection'" size="sm" style="width: 200px; margin: auto;"class="mb-3" placeholder="Search" v-model="selectedSubject"></b-form-input>
           <br>
           <br>
           <b-button  v-b-toggle.sidebar-backdrop class="searchButton" v-on:click ="search" variant="outline-primary">Search</b-button>
@@ -63,7 +63,7 @@
             small
             >
             <template v-slot:cell(projectDto.show_details)="row">
-                <b-button style="width: 300px;"v-on:click="moveProject(row.item)" class="mr-2">
+                <b-button id="showDetail" v-on:click="moveProject(row.item)" class="mr-2">
                    {{ row.item.projectDto.projectName }}
                 </b-button>
             </template>
@@ -102,8 +102,8 @@ export default {
       return {
           projectList: '',
           loginStatus: '',
-          fields: [{key : 'projectDto.projectName', label: '프로젝트 이름'},{key : 'projectDto.userId', label: '의뢰자'}, {key:'projectDto.workType', label: 'Work Type'},
-          {key : 'projectDto.dataType', label: 'Data Type'},{ key: 'projectDto.show_details', label: 'Show Detatils'}],
+          fields: [{key : 'projectDto.projectName', label: '프로젝트 이름'},{key : 'projectDto.userId', label: '의뢰자'}, {key:'projectDto.workType', label: '작업 종류'},
+          {key : 'projectDto.dataType', label: '데이터 종류'},{ key: 'projectDto.show_details', label: '상세정보 보기'}],
           workType:'',
           dataType:'',
           perPage : 10,
@@ -274,6 +274,16 @@ export default {
   outline: none;
   font-family:"Verdana";
   margin-top: 100px;
+}
+#showDetail{
+      height      : auto;
+      line-height : auto;
+      text-align  : center;
+      width       : auto;
+      border      : 0px;
+      padding-left:10px;
+      padding-right:10px;
+      min-width:100px;
 }
 
 

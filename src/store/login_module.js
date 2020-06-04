@@ -58,7 +58,7 @@ export default new Vuex.Store({
                     setTimeout(()=> {
                         
                         window.location.reload();
-                    },2000);  
+                    },500);  
                     router.push("/");
                 })
                 .catch(function(error) {

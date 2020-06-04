@@ -8,19 +8,19 @@
   >
     <template v-slot:header>
       <h4 class="mb-0">음성 수집 작업</h4>
-      <h5>*음성 수집 작업은 주어진 수집 데이터 목록에 해당하는 음성을 업로드하는 작업입니다</h5>
+      <h5>*음성 수집 작업은 주어진 수집 데이터 라벨에 해당하는 음성을 업로드하는 작업입니다</h5>
     </template>
     <b-list-group flush>
       <b-list-group-item>작업 이름 : {{" "+ project.projectName}}</b-list-group-item>
       <b-list-group-item>작업 의뢰자 : {{" " + project.userId}}</b-list-group-item>
-      <b-list-group-item><수집 데이터 목록>
+      <b-list-group-item><데이터 라벨 목록>
         <div v-for="classname, index in classNameList">
             <br>
             {{index+1+". "+classname.className}}
         </div>
         </b-list-group-item>
     </b-list-group>
-    <b-card-footer style="font-weight: bolder">작업 진행 방법</b-card-footer>
+    <b-card-footer style="font-weight: bolder">작업 방법</b-card-footer>
     <b-card-text class ="content">{{project.wayContent}}</b-card-text>
     <b-card-footer style="font-weight: bolder">작업 조건</b-card-footer>
     <b-card-text class ="content">{{project.conditionContent}}</b-card-text>
@@ -39,7 +39,7 @@
             value-field="item"
             text-field="name"
             ></b-form-radio-group>
-            <div class="mt-3">Selected: <strong>{{ selected }}</strong></div>    
+            <div class="mt-3">선택된 라벨: <strong>{{ selected }}</strong></div>    
         </div>
             <div class = "registeredImage" v-for="name in audioNameList">
                 <br>

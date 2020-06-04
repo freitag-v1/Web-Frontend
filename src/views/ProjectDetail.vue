@@ -1,6 +1,6 @@
 <template>
     <div class = "projectDetail">
-    <img src = "../assets/projectDetail.png">
+    <img src = "../assets/projectDetail.png" style="width: 300px; height: 70px;">
       <b-card
         class = "detailCard"
         no-body
@@ -20,34 +20,28 @@
       </b-card-text>
        <b-card-text v-if="project.workType !='collection'">
         작업 종류: <!--Image Bounding Box를 boundingBox로 나중에 바꿔야 한다.-->
-        <b-icon icon="bounding-box" v-if="project.workType == 'Image Bounding Box'" variant="info"></b-icon>
-        <b-icon icon="columns-gap" v-if="project.workType == 'classification'" variant="warning"></b-icon>
-        {{" " +project.workType}}
+        <b-icon icon="bounding-box" v-if="project.dataType == 'boundingBox'" variant="info"></b-icon>
+        <!--<b-icon icon="columns-gap" v-if="project.dataType == 'classification'" variant="warning"></b-icon>-->
+        {{" 이미지 바운딩 박스"}}
       </b-card-text>
     </b-card-body>
 
     <b-list-group flush>
       <b-list-group-item>작업 주제 : {{" "+ project.subject}}</b-list-group-item>
       <b-list-group-item>작업 의뢰자 : {{" " + project.userId}}</b-list-group-item>
-      <b-list-group-item v-if="project.workType =='collection'"><수집 데이터 목록>
+      <b-list-group-item><데이터 라벨 목록>
         <div v-for="classname, index in classNameList">
             <br>
             {{index+1+". "+classname.className}}
         </div>
         </b-list-group-item>
-        <b-list-group-item v-if="project.workType!='collection'"><라벨링 데이터 목록>
-        <div v-for="classname, index in classNameList">
-            <br>
-            {{index+1+". "+ classname.className}}
-        </div>
-        </b-list-group-item>
     </b-list-group>
-    <b-card-footer style="font-weight: bolder">작업 진행 방법</b-card-footer>
+    <b-card-footer style="font-weight: bolder">작업 방법</b-card-footer>
     <br>
     <b-card-text class ="content">{{project.wayContent}}</b-card-text>
     <b-card-footer style="font-weight: bolder">작업 조건</b-card-footer>
     <br>
-    <b-card-text id="exampleContent">{{project.conditionContent}}</b-card-text>
+    <b-card-text class="content">{{project.conditionContent}}</b-card-text>
       <br>
         
     <br>

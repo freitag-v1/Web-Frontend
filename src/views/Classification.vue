@@ -1,5 +1,5 @@
 <template>
-    <div class ="imageCollection">
+    <div class ="classification">
         <img src = "../assets/classification.png">
         <b-card
         class = "workCard"
@@ -8,10 +8,10 @@
     <template v-slot:header>
       <h4 class="mb-0">분류 작업</h4>
       <br>
-      <p>*분류 작업은 주어진 데이터를 주어진 라벨링 클래스를 보고 적합한 것을 선택하여 분류하는 작업입니다</p>
+      <p>*분류 작업은 주어진 데이터를 보고 해당하는 라벨을 선택하여 분류하는 작업입니다</p>
     </template>
     <br>
-    <b-card-footer style="font-weight: bolder">프로젝트 작업</b-card-footer>
+    <b-card-footer style="font-weight: bolder">분류 작업</b-card-footer>
     <br>
     <h4 style="color : tomato;">*분류 문제마다 작업 결과를 등록해야 분류 작업이 완료됩니다!</h4>
         <br>
@@ -22,9 +22,10 @@
         <span>{{ "문제 번호: " +this.problem.problemId}}</span>
         <br>
         <br>
-        <h4>{{currentPage + "번째 문제 : 데이터에 해당하는 클래스를 선택하시면 됩니다."}}</h4>
+        <h4>{{currentPage + "번째 문제 : 데이터에 해당하는 라벨을 선택하시면 됩니다."}}</h4>
         <br>
         <br>
+        <h5 v-if = "currentPage == 4 || currentPage == 5">{{currentPage + "번째 문제는 교차검증 문제입니다. (현재 교차검증 참여자 수 : 12명)"}}</h5>
         <img id = "problemImage" v-if = "problemImageUrl != ''" :src= "problemImageUrl"/>
         <AudioUpload v-if="problemAudioUrl != ''" :value = "problemAudioUrl"/>
         <p v-if = "textData != ''">{{textData}}</p>
@@ -33,7 +34,7 @@
     </div>
     <br>
     <br>
-    <h5><데이터 클래스></h5>
+    <h5><데이터 라벨></h5>
     <br>
     <b-form-checkbox-group
             v-model="selected"

@@ -55,4 +55,18 @@ export default {
     height : 370px;
     margin-top : 30px;
 }
+#classification:hover {
+    background-color: #28adfc;
+    box-shadow: 0px 15px 20px rgba(40, 173,252, 0.4);
+    color: #fff;
+    transform: translateY(-7px);
+    border-radius: 8px;
+}
+#bounding:hover {
+    background-color: #28adfc;
+    box-shadow: 0px 15px 20px rgba(40, 173,252, 0.4);
+    color: #fff;
+    transform: translateY(-7px);
+    border-radius: 8px;
+}
 </style>

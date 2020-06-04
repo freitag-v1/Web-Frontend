@@ -1,6 +1,6 @@
 <template>
     <div class = "pointExchange">
-    <img id="exchangeLogo"  src = "../assets/pointExchange.png"/>
+    <img id="exchangeLogo" style="width: 400px; height: 100px;" src = "../assets/pointExchange.png"/>
     <br>
         <b-card
     no-body
@@ -8,7 +8,7 @@
     class = "point"
   >
     <b-card-body id="userInfoBody">
-      <b-card-title id="userName" style="font-size: 30px;">{{userName + "'s Point"}}</b-card-title>
+      <b-card-title id="userName" style="font-size: 30px;">{{userName + "님의 보유 포인트"}}</b-card-title>
       <div class = "userDetail">
       <b-card-text style="font-size: 20px; text-align:center;">
             <img id = "pointLogo" src ="../assets/point.jpg">

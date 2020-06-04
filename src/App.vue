@@ -22,13 +22,13 @@
          
         <b-nav-item id = "userIcon" v-if="loginStatus"><b-icon  icon="person" variant="primary"></b-icon> {{userId + "님"}}</b-nav-item>
         <b-nav-item-dropdown  v-if="loginStatus" text="작업 기록" right>
-          <b-dropdown-item href="/project/request">의뢰 작업 목록</b-dropdown-item>
-          <b-dropdown-item href="/project/complete">완료 작업 목록</b-dropdown-item>
+          <b-dropdown-item href="/project/request">의뢰한 작업 목록</b-dropdown-item>
+          <b-dropdown-item href="/project/complete">완료한 작업 목록</b-dropdown-item>
         </b-nav-item-dropdown>
-        <b-nav-item href="/mypage" v-if="loginStatus" >Profile </b-nav-item> 
-        <b-nav-item v-on:click = "logout" v-if="loginStatus">Sign Out</b-nav-item>
-        <b-nav-item href="/login" v-if="!loginStatus">Sign In | </b-nav-item>
-        <b-nav-item href="/signup"  v-if="!loginStatus">Sign Up</b-nav-item>
+        <b-nav-item href="/mypage" v-if="loginStatus" >사용자 정보 조회 </b-nav-item> 
+        <b-nav-item v-on:click = "logout" v-if="loginStatus">로그아웃</b-nav-item>
+        <b-nav-item href="/login" v-if="!loginStatus">로그인 | </b-nav-item>
+        <b-nav-item href="/signup"  v-if="!loginStatus">회원가입</b-nav-item>
       </b-navbar-nav>
     </b-collapse>
   </b-navbar>
@@ -37,8 +37,17 @@
   </div>
 </template>
 <script>
+const options = {
+  transformAssetUrls: {
+    video: ['src', 'poster'],
+    source: 'src',
+    img: 'src',
+    image: 'xlink:href'
+  }
+}
   export default {
   name: 'App',
+  
   data() {
     return {
       loginStatus: '',

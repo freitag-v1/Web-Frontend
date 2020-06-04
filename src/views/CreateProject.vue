@@ -2,7 +2,8 @@
     <div id="createProject"> 
     <br>
      
-    <h1>{{'< '+ userId + "님의 작업 의뢰 >"}}</h1>
+    <h2>{{'< '+ userId + "님의 작업 의뢰 페이지 >"}}</h2>
+    <h3>*이 페이지는 의뢰자가 방구석수집가에게 의뢰하고자 하는 작업을 생성하는 공간입니다.</h3>
       <img id="collection" v-on:click="createCollection" src = "../assets/collectionProject.png"/>
       <img id="labelling" v-on:click="createLabelling" src = "../assets/labellingProject.png"/>
       <!--<img id="collection_labelling"  src = "../assets/collectionandlabelling.png"/>-->

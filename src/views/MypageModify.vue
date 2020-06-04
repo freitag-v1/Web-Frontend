@@ -1,60 +1,60 @@
 <template>
 
     <div class = "signUpForm" style ="overflow:auto">
-     <b-card no-body class="overflow-hidden" >
+     <b-card no-body class="overflow-hidden" style="height: auto;">
          <b-row no-gutters>
       <b-col md="6">
         <b-card-img src="https://picsum.photos/400/400/?image=20" alt="Image" class="rounded-0"></b-card-img>
       </b-col>
        <b-col md="6">
-        <b-card-body title="Modify Information">
+        <b-card-body title="개인 정보 수정">
     <b-form v-if="show">
       <b-form-group
         id="input-group-1"
         label-for="input-1"
-        description="We'll never share your email with anyone else."
+        description="수정을 원하는 정보를 수정하면 됩니다."
       >
 
       </b-form-group>
-      <b-form-group id="input-group-2" label="Your Name:" label-for="input-2">
+      <b-form-group id="input-group-2" label="성함:" label-for="input-2">
         <b-form-input
           id="input-2"
           v-model="userName"
           required
-          placeholder="Enter name"
+          placeholder="성함을 입력하세요."
         ></b-form-input>
       </b-form-group>
 
-     <b-form-group id="input-group-3" label="Your Email:" label-for="input-3">
+     <b-form-group id="input-group-3" label="이메일:" label-for="input-3">
       <b-form-input
           id="input-3"
           v-model="userEmail"
           type="email"
           required
-          placeholder="Enter email"
+          placeholder="이메일을 입력하세요."
         ></b-form-input>
       <b-form-invalid-feedback :state="userEmailValidation">
-        Email format must be xxxx@xx.com
+        이메일 형식 :  xxxx@xx.com
       </b-form-invalid-feedback>
       <b-form-valid-feedback :state="userEmailValidation">
         Looks Good.
       </b-form-valid-feedback>
       </b-form-group>
 
-      <b-form-group id="input-group-4" label="Your Affiliation:" label-for="input-4">
+      <b-form-group id="input-group-4" label="소속 기관:" label-for="input-4">
         <b-form-input
           id="input-4"
           v-model="userAffiliation"
           required
-          placeholder="Enter Affiliation"
+          placeholder="소속 기관을 입력하세요."
         ></b-form-input>
       </b-form-group>
       </b-form-group>
-      <p>Your PhoneNumber</p>
+      <p>휴대전화 번호 </p>
       <VuePhoneNumberInput v-model="userPhonenumber" />
       <br/>
       <b-button class="button" v-on:click = "accountAuthentication" variant="outline-primary">계좌 변경</b-button>
-      <b-button class="button" v-on:click = "modify" variant="outline-primary">Save</b-button>
+      <b-button class="button" v-on:click = "modify" variant="outline-primary">저장</b-button>
       <br/>
       
     </b-form>
@@ -106,16 +106,16 @@ var modifySuccess = '';
         });
     },
     beforeRouteLeave(to, from, next) {
-        if (this.isEditing || modifySuccess != "success") {
+        if (this.isEditing && modifySuccess != "success") {
             if (!window.confirm("저장하지 않고 이동하시겠습니까?")) {
-                return;
+                return
             }
         }
         next();
     },
     watch : {
       userEmail : function(data) {
-            this.isEditing = true;
+            this.isEditing = true
             
         },
       userAffiliation : function(data) {

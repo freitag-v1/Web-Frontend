@@ -1,6 +1,6 @@
 <template>
     <div class = "completeProject">
-        <h1>{{userId + "님의 의뢰한 작업 목록"}}</h1>
+        <h2>{{userId + "님의 의뢰한 작업 목록"}}</h2>
     </div>
 </template>
 <script>
