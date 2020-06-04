@@ -23,6 +23,7 @@ import StartProject  from '../views/StartProject.vue'
 import CompleteProject  from '../views/CompleteProject.vue'
 import RequestProject  from '../views/RequestProject.vue'
 import StartLabelling  from '../views/StartLabellingProject.vue'
+import RequestProjectDetail  from '../views/RequestProjectDetail.vue'
 
 Vue.use(VueRouter)
 
@@ -182,6 +183,12 @@ const requireAuth = async (to, from, next) => {
     path: '/project/startLabelling',
     name : 'StartLabelling',
     component : StartLabelling,
+    beforeEnter: requireAuth,
+  },
+  {
+    path: '/project/request/:idx/information',
+    name : 'RequestProjectDetail',
+    component : RequestProjectDetail,
     beforeEnter: requireAuth,
   },
 

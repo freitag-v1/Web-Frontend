@@ -15,17 +15,14 @@
     <br>
     <h4 style="color : tomato;">*분류 문제마다 작업 결과를 등록해야 분류 작업이 완료됩니다!</h4>
         <br>
-        <br>
-
     <div class = "collectionWork">
-        <h4>{{currentPage + "번째 작업"}}</h4>
+        <h4>{{"< "+currentPage + "번째 작업 >"}}</h4>
         <span>{{ "문제 번호: " +this.problem.problemId}}</span>
         <br>
         <br>
         <h4>{{currentPage + "번째 문제 : 데이터에 해당하는 라벨을 선택하시면 됩니다."}}</h4>
         <br>
         <br>
-        <h5 v-if = "currentPage == 4 || currentPage == 5">{{currentPage + "번째 문제는 교차검증 문제입니다. (현재 교차검증 참여자 수 : 12명)"}}</h5>
         <img id = "problemImage" v-if = "problemImageUrl != ''" :src= "problemImageUrl"/>
         <AudioUpload v-if="problemAudioUrl != ''" :value = "problemAudioUrl"/>
         <p v-if = "textData != ''">{{textData}}</p>
@@ -42,11 +39,11 @@
             class="option"
             ></b-form-checkbox-group>
     <div class = "buttons">
-        <b-button  variant="warning" v-on:click="upload" v-model ="createCollection">
-                <b-icon icon="upload"></b-icon> 작업 완료
-        </b-button>
         <b-button id = "workRegister" variant="warning" v-on:click="register" v-model ="createCollection">
                 <b-icon icon="upload"></b-icon> 작업 결과 등록
+        </b-button>
+        <b-button variant="warning" v-on:click="upload" v-if= "currentPage == 5" v-model ="createCollection">
+                <b-icon icon="upload"></b-icon> 작업 완료
         </b-button>
         
     </div>
@@ -55,7 +52,14 @@
     <br>
     <br>
     <div class="overflow-auto" style="margin : auto;">
-        <b-pagination id="pagination" v-model="currentPage" :total-rows="problemList.length" per-page= 1></b-pagination>
+        <b-pagination id="pagination"
+         v-model="currentPage"
+          :total-rows="problemList.length"
+            per-page= 1
+            first-text="First"
+            prev-text="Prev"
+            next-text="Next"
+            last-text="Last"></b-pagination>
     </div>
     </div>
 </template>
@@ -121,6 +125,7 @@ export default {
             options: [],
             currentProblem: '',
             historyId: '',
+            
 
         }
     },
@@ -383,6 +388,6 @@ export default {
     max-height: 400px;
 }
 #workRegister {
-    width: 300px;
+    width: 200px;
 }
 </style>

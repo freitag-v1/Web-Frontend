@@ -71,11 +71,16 @@ export default {
         
 
     },
+    computed: {
+      rows() {
+        return this.requestProjectList.length;
+      }
+    },
     methods : {
         moveProject(detailItem){
              // 자세히 보고싶은 프로젝트를 보여줄 수 있도록
             localStorage.searchProject = JSON.stringify(detailItem); 
-            this.$router.push({name: 'ProjectDetail', params : {
+            this.$router.push({name: 'RequestProjectDetail', params : {
                 idx : detailItem.projectDto.projectId,
             }});
         },

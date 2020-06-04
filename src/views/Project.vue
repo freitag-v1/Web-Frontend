@@ -73,6 +73,10 @@
                 <p class = "data" v-else-if="data.value == 'text'"><b-icon icon="blockquote-left" variant="warning"></b-icon> 텍스트</p>
                 <p class = "data" v-else><b-icon icon="tag" color="#e83e8c"></b-icon> 라벨링</p>
             </template>
+            <template v-slot:cell(projectDto.workType)="data">
+                <p class = "data" v-if="data.value == 'collection'">수집</p>
+                <p class = "data" v-else-if="data.value == 'labelling'">라벨링</p>
+            </template>
             
             </b-table>
             <br>

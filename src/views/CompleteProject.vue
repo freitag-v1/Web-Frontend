@@ -12,11 +12,18 @@
             @row-dbclicked="moveProject"
             small
             >
-            <template v-slot:cell(projectDto.dataType)="data">
-                <p class = "data" v-if="data.value == 'image'"><b-icon icon="image" variant="success"></b-icon> 이미지</p>
+            <template v-slot:cell(projectDataType)="data">
+                <p class = "data" v-if="data.value == 'image'"><b-icon icon="image" variant="info"></b-icon> 이미지</p>
                 <p class = "data" v-else-if="data.value == 'audio'"><b-icon icon="mic-fill" variant="primary"></b-icon> 음성</p>
                 <p class = "data" v-else-if="data.value == 'text'"><b-icon icon="blockquote-left" variant="warning"></b-icon> 텍스트</p>
                 <p class = "data" v-else><b-icon icon="tag" color="#e83e8c"></b-icon> 라벨링</p>
+            </template>
+            <template v-slot:cell(projectWorkType)="data">
+                <p class = "data" v-if="data.value == 'collection'">수집</p>
+                <p class = "data" v-else-if="data.value == 'labelling'">라벨링</p>
+            </template>
+            <template v-slot:cell(projectStatus)="data">
+                <b-icon icon="chevron-double-right" variant="warning"></b-icon> {{data.value}}
             </template>
             
             </b-table>
@@ -48,7 +55,7 @@ export default {
             currentPage : 1,
             perPage : 10,
             fields: [{key : 'projectName', label: '프로젝트 이름'},{key : 'problemId', label: '문제 번호'},{key : 'projectRequester', label: '작업 의뢰자'}, {key:'projectWorkType', label: '작업 종류'},
-          {key : 'projectDataType', label: '데이터 종류'}],
+          {key : 'projectDataType', label: '데이터 종류'}, {key: 'projectStatus', label : '진행 상태'}] ,
         }
     },
     async created() {
