@@ -20,9 +20,13 @@
         </b-list-group-item>
     </b-list-group>
     <b-card-footer style="font-weight: bolder">작업 방법</b-card-footer>
+    <br>
     <b-card-text class ="content">{{project.wayContent}}</b-card-text>
+    <br>
     <b-card-footer style="font-weight: bolder">작업 조건</b-card-footer>
+    <br>
     <b-card-text class ="content">{{project.conditionContent}}</b-card-text>
+    <br>
     <b-card-footer style="font-weight: bolder">작업 예시 데이터</b-card-footer>
     <b-card-text class ="content">
         <br>
@@ -71,10 +75,10 @@
                 <br>
 
     <div class = "buttons">
-        <b-button variant="warning" v-on:click="upload" v-model ="createCollection">
+        <b-button variant="warning"v-on:click="upload" v-model ="createCollection">
                 <b-icon icon="upload"></b-icon> 이미지 등록
         </b-button>
-        <b-button variant="warning" v-on:click="endWork" v-model ="createCollection">
+        <b-button variant="warning"  v-on:click="endWork" v-model ="createCollection">
                 <b-icon icon="upload"></b-icon> 작업 완료
         </b-button>
     </div>
@@ -378,7 +382,7 @@ s3Client.interceptors.request.use(function (config) {
 </script>
 <style>
 #imageCollectionLogo {
-    width: 400px;
+    width: 380px;
     height: 100px;
 }
 .workCard {

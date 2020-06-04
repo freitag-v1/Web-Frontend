@@ -1,8 +1,10 @@
 <template>
     <div class = "startLabelling">
-        <h1>{{'< '+ userId + "님의 라벨링 작업 시작 >"}}</h1>
+    <br>
+        <h2>{{'< '+ userId + "님의 라벨링 작업 시작 >"}}</h2>
+        <h4>*이 페이지는 작업자가 방구석수집가에서 제공되는 이미지 바운딩 박스 혹은 분류 작업을 진행하는 공간입니다.</h4>
         <img id = "classification" v-on:click="classificationProject" src = "../assets/classificationLogo.png"/>
-        <img id = "bounding" v-on:click="boundingBoxProject" src = "../assets/imageBoundingBoxLogo.png"/>
+        <img id = "bounding" v-on:click="boundingBoxProject" src = "../assets/imageBoundingBox.png"/>
     </div>
 </template>
 <script>
@@ -47,13 +49,13 @@ export default {
 <style>
 #classification{
     width: 550px;
-    height : 340px;
+    height : 400px;
+    margin-top : 67px;
 }
 #bounding{
     margin-left : 100px;
-    width : 550px;
-    height : 370px;
-    margin-top : 30px;
+    width : 570px;
+    height : 380px;
 }
 #classification:hover {
     background-color: #28adfc;

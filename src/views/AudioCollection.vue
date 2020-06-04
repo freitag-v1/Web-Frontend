@@ -1,7 +1,7 @@
 <template>
     
-    <div class ="imageCollection">
-        <img src = "../assets/audioCollection.png">
+    <div class ="audioCollection">
+        <img id = "audioCollectionLogo"src = "../assets/audioCollection.png">
         <b-card
         class = "workCard"
         no-body
@@ -20,17 +20,23 @@
         </div>
         </b-list-group-item>
     </b-list-group>
-    <b-card-footer style="font-weight: bolder">작업 방법</b-card-footer>
+    <b-card-footer style="font-weight: bolder; padding: 10px;">작업 방법</b-card-footer>
+    <br>
     <b-card-text class ="content">{{project.wayContent}}</b-card-text>
-    <b-card-footer style="font-weight: bolder">작업 조건</b-card-footer>
+    <br>
+    <b-card-footer style="font-weight: bolder; padding: 10px;">작업 조건</b-card-footer>
+    <br>
     <b-card-text class ="content">{{project.conditionContent}}</b-card-text>
-    <b-card-footer style="font-weight: bolder">예시 데이터</b-card-footer>
+    <br>
+    <b-card-footer style="font-weight: bolder; padding: 10px;">예시 데이터</b-card-footer>
+    <br>
     <b-card-text class ="content">
         <AudioUpload v-if="audioUrl != ''" :value="audioUrl"></AudioUpload>
     </b-card-text>
      <br>
      <b-card-footer style="font-weight: bolder">음성 업로드</b-card-footer>
         <br>
+        <h5>*음성 등록 버튼을 눌러야 작업이 완료가 됩니다! 꼭 버튼을 눌러주세요!</h5>
         <div>
             <b-form-radio-group
             v-model="selected"
@@ -97,9 +103,7 @@
 </template>
 <script>
 import axios from 'axios';
-import VueCropper from 'vue-cropperjs';
 import AudioUpload from "../components/AudioUpload.vue";
-import AudioWork from "../components/AudioCollectionWork.vue";
 import VueAudioRecorder from 'vue-audio-recorder'
 
 var AudioByClassList = new Array();
@@ -364,9 +368,9 @@ s3Client.interceptors.request.use(function (config) {
  }
 </script>
 <style>
-#imageCollectionLogo {
-    width: 400px;
-    height: 100px;
+#audioCollectionLogo {
+    width: 350px;
+    height: 110px;
 }
 .workCard {
     max-width: 1000px;

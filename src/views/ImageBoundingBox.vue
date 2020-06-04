@@ -1,6 +1,6 @@
 <template>
     <div class ="imageBoundingBox">
-        <img id = "imageBoxLogo" src = "../assets/imageBoundingBox.png">
+        <img id = "imageBoxLogo" src = "../assets/imageBoundingBoxLogo.png">
         <b-card
         class = "workCard"
         no-body
@@ -9,21 +9,26 @@
       <h4 class="mb-0">이미지 바운딩 박스 작업</h4>
     </template>
     <b-list-group flush>
-      <b-list-group-item>프로젝트 이름 : {{" "+ project.projectName}}</b-list-group-item>
-      <b-list-group-item>프로젝트 의뢰자 : {{" " + project.userId}}</b-list-group-item>
-      <b-list-group-item><프로젝트 수집 데이터 목록>
+      <b-list-group-item>작업 이름 : {{" "+ project.projectName}}</b-list-group-item>
+      <b-list-group-item>작업 의뢰자 : {{" " + project.userId}}</b-list-group-item>
+      <b-list-group-item><데이터 라벨 목록>
         <div v-for="classname, index in classNameList">
             <br>
             {{index+1+". "+classname.className}}
         </div>
         </b-list-group-item>
     </b-list-group>
-    <b-card-footer style="font-weight: bolder">프로젝트 진행 방법</b-card-footer>
+    <b-card-footer style="font-weight: bolder">라벨 진행 방법</b-card-footer>
     <b-card-text class ="content">{{project.wayContent}}</b-card-text>
-    <b-card-footer style="font-weight: bolder">프로젝트 조건</b-card-footer>
+    <b-card-footer style="font-weight: bolder">라벨 조건</b-card-footer>
     <b-card-text class ="content">{{project.conditionContent}}</b-card-text>
-    <b-card-footer style="font-weight: bolder">프로젝트 예시 데이터</b-card-footer>
-    <b-card-text class ="content">{{project.exampleContent}}</b-card-text>
+    <b-card-footer style="font-weight: bolder">작업 예시 데이터</b-card-footer>
+    <b-card-text class ="content">
+        <br>
+        <div class = "exampleClass" >
+            <img id="exampleImage" :src = "downloadUrl" v-if="downloadUrl != ''" style="width: 400px; height: 300px;"/>
+        </div>
+        </b-card-text>
     <div v-for="i in imageCount">
         <br>
     </div>
@@ -32,10 +37,7 @@
                 <b-icon icon="file-earmark-plus" aria-label="Help"></b-icon> Add
         </b-button>
         <b-button size="lg" variant="warning" v-on:click="upload" v-model ="createCollection">
-                <b-icon icon="upload"></b-icon> Upload
-        </b-button>
-        <b-button size="lg" variant="warning" v-on:click="download" v-model ="createCollection">
-                <b-icon icon="upload"></b-icon> download
+                <b-icon icon="upload"></b-icon> 업로드
         </b-button>
         <img :src = "downloadUrl" v-if="downloadUrl != ''" style="width: 400px; height: 500px;"/>
         <AudioUpload v-if="audioUrl != ''" :value="audioUrl"/>
@@ -111,6 +113,7 @@ const local_file_path = '../assets';
     },
     async created() {
         this.fetchData();
+        this.examplaDataDownload();
         var searchproject = await localStorage.getItem('searchProject');//this.$route.params.project;
         //console.log(JSON.parse(searchproject));
         this.bucketName = JSON.parse(searchproject).projectDto.bucketName;
@@ -143,6 +146,32 @@ const local_file_path = '../assets';
             this.classNameList = JSON.parse(searchproject).classNameList;//this.$route.params.classList;
             console.log(this.project);
         },
+        async examplaDataDownload(){
+            var exampleData = await localStorage.getItem('exampleContent');
+            console.log(exampleData);
+            if(exampleData == null){
+                    s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
+                        responseType : 'blob',
+                    }).then((res) =>{
+                        var exampleFile = new File([res.data], this.project.exampleContent,{ type: res.headers['content-type'], lastModified : Date.now() } );
+                        const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
+                        console.log(url);
+                            this.downloadUrl = url;
+                                var content = {
+                                    type : res.data.type,
+                                    file : exampleFile,
+                                }
+                            localStorage.exampleContent = JSON.stringify(content);
+                    });
+            }
+            else {
+                var exampleLocal = await localStorage.getItem('exampleContent');
+                var exampleLocalDataType = JSON.parse(exampleLocal).type;
+                var exampleLocalData = JSON.parse(exampleLocal).file;
+
+                this.downloadUrl = URL.createObjectURL(exampleLocalData);
+            }   
+        },
         preventNav(event) {
                 if (!dataState || this.createCollection) return;
                 event.preventDefault();
@@ -164,44 +193,13 @@ const local_file_path = '../assets';
            console.log("=========================================");
            
         },
-        download() {
-            console.log("hello!");
-            var string = "안녕하세요.txt"
-            var subString = ".txt";
-            if(string.includes(subString)){
-                s3Client.get("/freitag/안녕하세요.txt", {
-                    responseType : 'text',
-                }).then(res => {
-                    console.log(res.data.type);
-                    console.log(res.data);
-                })
-            }
-            // s3Client.get("/freitag/안녕하세요.txt", {
-            //     responseType : 'blob',
-            // }).then(res => {
-            //     const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
-            //     console.log("hello!!!");
-            //     console.log(res.data.type);
-            //     if(res.data.type == "image/jpeg"){
-            //         this.downloadUrl = url;
-            //     }
-            //     else if(res.data.type == "audio/x-m4a"){
-            //         this.audioUrl = url;
-            //     }
-            //     console.log(url);
-                
-            //});
-        }
-        
-        
-
 
     }
 
  }
 </script>
 <style>
-#imageCollectionLogo {
+#imageBoxLogo {
     width: 400px;
     height: 100px;
 }

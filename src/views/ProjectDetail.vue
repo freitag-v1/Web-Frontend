@@ -11,12 +11,19 @@
 
     <b-card-body>
       <b-card-title>{{ project.projectName }}</b-card-title>
-      <b-card-text v-if="project.workType =='collection'">
+      <b-card-text v-if="project.workType =='collection' && project.dataType == 'image'">
         작업 데이터 종류: 
-        <b-icon icon="image" v-if="project.dataType == 'image'" variant="success"></b-icon>
-        <b-icon icon="mic-fill" v-if="project.dataType == 'audio'" variant="primary"></b-icon>
-        <b-icon icon="blockquote-left" v-if="project.dataType == 'text'" variant="warning"></b-icon>
-        {{" " +project.dataType}}
+        <b-icon icon="image" v-if="project.dataType == 'image'" variant="success"></b-icon> 이미지
+      </b-card-text>
+      <b-card-text v-if="project.workType =='collection' && project.dataType == 'audio'">
+        작업 데이터 종류: 
+        <b-icon icon="mic-fill" v-if="project.dataType == 'audio'" variant="primary"></b-icon> 음성
+      </b-card-text>
+      <b-card-text v-if="project.workType =='collection' && project.dataType == 'text'">
+        작업 데이터 종류: 
+        <b-icon icon="blockquote-left" v-if="project.dataType == 'text'" variant="warning"></b-icon> 텍스트
+      </b-card-text>
+        
       </b-card-text>
        <b-card-text v-if="project.workType !='collection'">
         작업 종류: <!--Image Bounding Box를 boundingBox로 나중에 바꿔야 한다.-->
@@ -39,12 +46,11 @@
     <b-card-footer style="font-weight: bolder">작업 방법</b-card-footer>
     <br>
     <b-card-text class ="content">{{project.wayContent}}</b-card-text>
+    <br>
     <b-card-footer style="font-weight: bolder">작업 조건</b-card-footer>
     <br>
     <b-card-text class="content">{{project.conditionContent}}</b-card-text>
       <br>
-        
-    <br>
     <b-card-footer style="font-weight: bolder">작업 정보 수집 동의</b-card-footer>
     <br>
     <br>
@@ -195,20 +201,10 @@ s3Client.interceptors.request.use(function (config) {
                     }
                     break;
                   case "labelling" :
-                    if(this.project.dataType == "boundingBox"){
-                      const boundingBoxProblemRes = await axios.get("/api/work/labelling", {
-                        params : {
-                          projectId : this.project.projectId,
-                        }
-                      });
-                      if(boundingBoxProblemRes.headers.problems == "success"){
-                          var boundingBoxProblem = boundingBoxProblemRes.data;
-                          console.log(boundingBoxProblem);
-                          localStorage.problemList = JSON.stringify(boundingBoxProblem);
-                          this.$router.push({name: 'ImageBoundingBox', params : {
-                            idx: 0,
-                          }});
-                      }
+                    if(this.project.dataType == "boundingBox") {
+                      this.$router.push({name: 'ImageBoundingBox', params : {
+                            idx: this.project.projectId,
+                        }});
                       //this.$router.push({name: 'ImageBoundingBox'});
                       break;
                     }
@@ -239,10 +235,18 @@ s3Client.interceptors.request.use(function (config) {
     margin: auto;
     border-style : dashed;
 }
-#startButton {
-    margin :auto;
-    width: 400px;
-    height: 70px;
-    font-size: 20px;
+#startButton{
+      height      : auto;
+      line-height : auto;
+      text-align  : center;
+      width       : auto;
+      border      : 1px;
+      border-color : black;
+      padding-left:10px;
+      padding-right:10px;
+      min-width:100px;
+      font-size : 20px;
+
 }
+
 </style>
