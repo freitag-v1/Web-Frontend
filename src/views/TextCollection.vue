@@ -33,6 +33,7 @@
             <p>{{value+1 + "번 답변 : " + index.answer}}</p>
         </div>
         <div v-if="textData != null">
+        {{textData}}
         </div>
     </b-card-text>
      <br>
@@ -74,6 +75,8 @@
         <br>
     <b-card-footer style="font-weight: bolder">텍스트 데이터 작성</b-card-footer>
         <br>
+        <h5>*텍스트 등록 버튼을 눌러야 작업이 완료가 됩니다! 꼭 버튼을 눌러주세요!</h5>
+        <br>
             <b-button variant="light" id="addTextButton" v-on:click="addText" >
                    텍스트 데이터 추가 <b-icon icon="plus" aria-hidden="true"></b-icon>
             </b-button>
@@ -91,25 +94,27 @@
                 <b-form-textarea
                     id="inputExample"
                     v-model="item.question"
-                    placeholder="예시 데이터를 작성해주세요."
+                    placeholder="텍스트 수집 데이터를 작성해주세요."
                 ></b-form-textarea>
                 <br>
                 <p>답변</p>
                 <b-form-textarea
                     id="inputExample"
                     v-model="item.answer"
-                    placeholder="예시 데이터를 작성해주세요."
+                    placeholder="텍스트 수집 데이터를 작성해주세요."
                 ></b-form-textarea>
+                <br>
+                
                 </b-card>
                 <br>
             </div>
     
     <br>
     <div class = "buttons">
-        <b-button variant="warning" v-on:click="upload" v-model ="createCollection">
-                <b-icon icon="upload"></b-icon> 텍스트 등록
-        </b-button>
-        <b-button variant="warning"  v-model ="createCollection">
+        <b-button id = "registerButton" variant="warning" v-on:click="upload" v-model ="createCollection">
+                    <b-icon icon="upload"></b-icon> 텍스트 등록
+                </b-button>
+        <b-button variant="warning"  v-model ="createCollection" v-on:click="endWork">
                 <b-icon icon="upload"></b-icon> 작업 완료
         </b-button>
     </div>
@@ -155,7 +160,7 @@ s3Client.interceptors.request.use(function (config) {
         return config;
     });
 
-var changeText = false;
+
 
 export default {
     name : 'TextCollection',
@@ -174,7 +179,7 @@ export default {
             textExampleCount: 1,
             exampleQuestionText: null,
             exampleAnswerText: null,
-            exampleTextConversation: [{question : "텍스트 데이터를 작성해주세요.", answer : "텍스트 데이터를 작성해주세요."}],
+            exampleTextConversation: [{question : "", answer : ""}],
         }
     },
     async beforeCreate() {
@@ -187,11 +192,9 @@ export default {
         selected : function(val){
             this.textContent = '';
             this.textPreUrl = '';
+            this.exampleTextConversation = [{question : "", answer : ""}];
             
         },
-        exampleTextConversation : function() {
-            changeText = true;
-        }
     },
     beforeMount() {
             delete localStorage.exampleContent;
@@ -289,15 +292,20 @@ export default {
             let textUploadData = new FormData();
             if(this.textContent != null){ //텍스트 데이터 업로드
                 for(var uploadTextFile of this.textContent){
-                    audioData.append('files', uploadTextFile);
+                    textUploadData.append('files', uploadTextFile);
                     nameList.push(uploadTextFile.name);
                 }
             }//텍스트에 글을 쓰고 한개이상이 있는경우 텍스트를 작성한 것이므로 
-            if(changeText == true && this.exampleTextConversation.length >= 1) {
+             console.log(this.exampleTextConversation.length);
+            if(this.exampleTextConversation.length >= 1) {
+               
                 for(let i = 0; i < this.exampleTextConversation.length; i++){
-                    var jsonTextExample = JSON.stringify(this.exampleTextConversation[i]);
-                    var exampleTextFile = new File([jsonTextExample], userId+this.name+Date.now()+"workTextWrite.txt",{type: "text/plain;charset=utf-8"});
-                    textUploadData.append('file',exampleTextFile);
+                    if(this.exampleTextConversation[i].question != "" && this.exampleTextConversation[i].answer != ""){
+                        var jsonTextExample = JSON.stringify(this.exampleTextConversation[i]);
+                        var exampleTextFile = new File([jsonTextExample], userId+this.project.projectName+Date.now()+"workTextWrite.txt",{type: "text/plain;charset=utf-8"});
+                        textUploadData.append('files',exampleTextFile);
+                        nameList.push(exampleTextFile.name);
+                    }
                 }
             }
             var textByClass = {
@@ -305,6 +313,11 @@ export default {
                 textFormData : textUploadData,
                 textConversation : this.exampleTextConversation
             }
+            var textName = {
+                class : this.selected,
+                name : nameList,
+            };
+
             var duplicatedIndex = -1;
             for(let i = 0; i < TextByClassList.length; i++){
                 console.log(this.selected);
@@ -316,15 +329,52 @@ export default {
             if(duplicatedIndex != -1){
                 //ImageByClassList.splice(duplicatedIndex,1);
                 TextByClassList[duplicatedIndex] = textByClass;
+                this.textNameList[duplicatedIndex] = textName;
                 //duplicatedIndex = 0;
             }
             else {
                 TextByClassList.push(textByClass);
-                //this.audioNameList.push(audioName);
+                this.textNameList.push(textName);
             }
             duplicatedIndex = -1;
             //if(this.exampleTextConversation)
             console.log(TextByClassList);
+            console.log(this.textNameList);
+
+
+        },
+        async endWork() {
+            var successCount = 0;
+            this.createCollection = true;
+            axios.defaults.headers.common['bucketName'] = this.project.bucketName;
+            axios.defaults.headers.common['projectId'] = this.project.projectId;
+            for(let i  = 0; i < TextByClassList.length; i++){
+                    await axios.post("/api/work/collection", TextByClassList[i].textFormData, {
+                        params: {
+                            className : TextByClassList[i].class,
+                            // 파라미터로 class를 보내야한다. 
+                        }
+                    }).then((collectionWorkRes) => {
+                        if(collectionWorkRes.headers.upload == "success"){
+                            successCount++;
+                        }
+                        else {
+                            alert("수집 작업이 실패하였습니다. 다시 시도해주세요!");
+                            this.$router.go(-1);
+                            //location.reload();
+                        }
+                    })
+                    .catch(function(error){
+                        if(error.response){
+                            alert("수집 작업이 실패하였습니다. 다시 시도해주세요!");
+                            this.$router.go(-1);
+                        }
+                })
+            }
+            if(successCount == TextByClassList.length){
+                alert("수집 작업이 완료되었습니다!");
+                this.$router.push("/");
+            }
         }
     }
 }
@@ -341,5 +391,9 @@ export default {
 #deleteTextButton {
     width: 150px;
     float : right;
+}
+#registerButton {
+    width: 150px;
+    margin: auto;
 }
 </style>
