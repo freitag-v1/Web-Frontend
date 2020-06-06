@@ -25,7 +25,19 @@
         <br>
         <img id = "problemImage" v-if = "problemImageUrl != ''" :src= "problemImageUrl"/>
         <AudioUpload v-if="problemAudioUrl != ''" :value = "problemAudioUrl"/>
-        <p v-if = "textData != ''">{{textData}}</p>
+        <b-card v-if="textQnA != '' || textData != ''"style="width: 900px; margin: auto;">
+                <b-card-text class ="content">
+                <div v-if = "textQnA != ''" v-for="index, value in textQnA">
+                    <p>{{value}}</p>
+                    <p>{{value+1 + "번 질문 : " + index.question}}</p>
+                    <p>{{value+1 + "번 답변 : " + index.answer}}</p>
+                </div>
+                <div v-if="textData != ''">
+                {{textData}}
+                </div>
+            </b-card-text>
+                
+        </b-card>
         <br>
         
     </div>
@@ -125,6 +137,7 @@ export default {
             options: [],
             currentProblem: '',
             historyId: '',
+            textQnA: '',
             
 
         }
@@ -144,6 +157,7 @@ export default {
             this.problemImageUrl = '';
             this.problemAudioUrl = '';
             this.textData = '';
+            this.textQnA = '';
             this.currentProblem = '';
             this.selected = [];
             var problemDTO = await localStorage.getItem('problemList');
@@ -156,8 +170,13 @@ export default {
                 
                 this.problemAudioUrl = this.problemContentList[val -1].blob;
                 console.log(this.problemAudioUrl);
+            } //사용자가 텍스트를 등록하여 수집을 한 경우
+            else if(this.problemContentList[val -1].type == 'textQnA'){
+
+                this.textQnA = this.problemContentList[val -1].blob;
+                console.log(this.textQnA);
             }
-            else {
+            else { // 사용자가 그냥 데이터를 업로드한 경우
                 this.textData = this.problemContentList[val -1].blob;
             }
             
@@ -204,30 +223,57 @@ export default {
                     }
                     else {
                         alert("문제를 가져오는데 실패하였습니다.");
-                        //this.router.go(-1);
+                        this.$router.push("/project/startLabelling");
                     }
                 })
                 .catch(function(error) {
                     if(error.response){
                         alert("생성된 분류 작업이 없습니다!");
-                        //this.router.go(-1);
+                        this.$router.push("/project/startLabelling");
                     }
                 })
                 //var problemContentList = new Array();
                 
                 for(let i = 0; i < this.problemList.length; i++){
                     console.log("hello", this.problemList.length);
-                    await s3Client.get("/"+this.problemList[i].problemDto.bucketName+"/"+this.problemList[i].problemDto.objectName, {
-                        responseType: 'blob'
-                    }).then(res => {
-                        console.log(res);
-                        const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
-                        var problemBlob = {
-                                type : res.headers['content-type'],
-                                blob : url,
-                        }
-                        this.problemContentList.push(problemBlob);
-                    });
+                    if(this.problemList[i].problemDto.objectName.includes(".txt")){ 
+                        await s3Client.get("/"+this.problemList[i].problemDto.bucketName+"/"+this.problemList[i].problemDto.objectName, {
+                            responseType: 'text'
+                        }).then(res =>  {
+                            console.log(res);
+                            var textData = res.data;
+                            console.log(textData);
+                            //사용자가 직접 텍스트를 등록하여 데이터를 제공한 경우 //원래 이름 확인할 때 this.problemList[i].problemDto.projectName+이거 붙여야한다.
+                            if(this.problemList[i].problemDto.objectName.includes(this.problemList[i].problemDto.projectName+"workTextWrite.txt")){
+                                var problemBlob = {
+                                    type : 'textQnA',
+                                    blob : textData,
+                                }
+                            }
+                            else {
+                                 var problemBlob = {
+                                    type : 'textData',
+                                    blob : textData,
+                                }
+                            }
+                            this.problemContentList.push(problemBlob);
+                        });
+                    }
+                    else {
+                        await s3Client.get("/"+this.problemList[i].problemDto.bucketName+"/"+this.problemList[i].problemDto.objectName, {
+                            responseType: 'blob'
+                        }).then(res =>  {
+                            console.log(res);
+                            var text = new Response(res).text();
+                            console.log(text);
+                            const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
+                            var problemBlob = {
+                                    type : res.headers['content-type'],
+                                    blob : url,
+                            }
+                            this.problemContentList.push(problemBlob);
+                        });
+                    }
                     
                 }
                 console.log(this.problemContentList);

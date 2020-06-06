@@ -302,7 +302,7 @@ export default {
                 for(let i = 0; i < this.exampleTextConversation.length; i++){
                     if(this.exampleTextConversation[i].question != "" && this.exampleTextConversation[i].answer != ""){
                         var jsonTextExample = JSON.stringify(this.exampleTextConversation[i]);
-                        var exampleTextFile = new File([jsonTextExample], userId+this.project.projectName+Date.now()+"workTextWrite.txt",{type: "text/plain;charset=utf-8"});
+                        var exampleTextFile = new File([jsonTextExample], Date.now()+userId+this.project.projectName+"workTextWrite.txt",{type: "text/plain;charset=utf-8"});
                         textUploadData.append('files',exampleTextFile);
                         nameList.push(exampleTextFile.name);
                     }

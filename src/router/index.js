@@ -162,12 +162,6 @@ const requireAuth = async (to, from, next) => {
     beforeEnter: requireAuth
   },
   {
-    path:'/startProject',
-    name: 'StartProject',
-    component: StartProject,
-    beforeEnter: requireAuth
-  },
-  {
     path: '/project/complete',
     name : 'CompleteProject',
     component : CompleteProject,
