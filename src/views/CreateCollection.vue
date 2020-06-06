@@ -273,7 +273,7 @@ export default {
                         if(this.selectedData == 'text'){
                             if(this.selectedOption == 'textWrite' ){ //텍스트인데 그냥 적은 내용 자체가 텍스트 예시 데이터 인경우 파일로 변환을 해야 
                                 var jsonTextExample = JSON.stringify(this.exampleTextConversation);
-                                var exampleTextFile = new File([jsonTextExample], userId+this.name+"exampleTextWrite.txt",{type: "text/plain;charset=utf-8"});
+                                var exampleTextFile = new File([jsonTextExample], this.name+userId+"exampleTextWrite.txt",{type: "text/plain;charset=utf-8"});
                                 let exampleTextData = new FormData();
                                     exampleTextData.append('file',exampleTextFile);
                                     const textRes = await axios.post("/api/project/upload/example", exampleTextData, config);
@@ -344,7 +344,8 @@ export default {
                 console.log(e.target.files);
                 const file = e.target.files[0];
                 if(file.type == "image/"){
-                    this.imageUrl = URL.createObjectURL(file);    
+                    this.imageUrl = URL.createObjectURL(file);
+                    console.log(this.imageUrl);    
                 }
                 else //if(file.type == "audio/"){
                 {

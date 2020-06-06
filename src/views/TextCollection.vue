@@ -233,7 +233,7 @@ export default {
             this.selected = this.classNameList[0].className;
             console.log(this.project);
                 console.log(this.project.bucketName, this.project.exampleContent);
-                if(this.project.exampleContent.includes(this.project.projectName + "exampleTextWrite.txt")) { // 질문 답변 직접 작성해서 넣은 경우
+                if(this.project.exampleContent.includes(this.project.projectName+this.project.userId+"exampleTextWrite.txt")) { // 질문 답변 직접 작성해서 넣은 경우
                     await s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
                             responseType : 'text',
                         }).then((res) =>{
