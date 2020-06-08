@@ -8,8 +8,8 @@
         <br>   
         <br/>
         <br/>
-        <b-button class="button" v-on:click="accountAuthenticate"variant="outline-primary" style="font-size: 18px; font-weight: bold">계좌 인증</b-button>   
-        <b-button class="button" v-on:click ="signUpComplete" variant="outline-primary" style="font-size: 18px;">complete</b-button>
+        <b-button class="button" v-if="!isRegistered" v-on:click="accountAuthenticate"variant="outline-primary" style="font-size: 18px; font-weight: bold">계좌 인증</b-button>
+        <b-button class="button" v-if="isRegistered" v-on:click ="signUpComplete" variant="outline-primary" style="font-size: 18px;">complete</b-button>
         <!--signup complete 이 부분 계좌인증 안받으면 보이지 않도록 v-if해서 설정해야-->
     </div>
     <div class = "afterAuthentication" v-if="Authentication">
@@ -21,6 +21,7 @@
 <script>
 import SignUpComplete from '../components/SignUpComplete';
 import axios from 'axios';
+
   var state = null;
   var userId = null;
 
@@ -30,10 +31,11 @@ import axios from 'axios';
       SignUpComplete,
     },
     data() {
-        return {
-            Authentication: false,
-            isComplete: false,
-        }
+      return {
+        Authentication: false,
+        isComplete: false,
+        isRegistered: false
+      }
     },
     async created () {
       state = await localStorage.bankState;
@@ -42,7 +44,8 @@ import axios from 'axios';
             window.addEventListener("beforeunload", this.preventNav);
             this.$once("hook:beforeDestroy", () => {
             window.removeEventListener("beforeunload", this.preventNav);
-        });
+            });
+            window.addEventListener('message', this.registerComplete);
     },
     beforeRouteLeave(to, from, next) {
         if(!this.isComplete){ //버튼을 눌러서 완성이 되면 이 기능을 무시하도록 
@@ -58,6 +61,11 @@ import axios from 'axios';
                 event.preventDefault();
                 // Chrome requires returnValue to be set.
                 event.returnValue = "";
+        },
+        async registerComplete(e) {
+              if(e.data.registerOpenBanking === 'complete') {
+                this.isRegistered = true;
+              }
         },
         async signUpComplete() { //로그인을 해야 jwt 토큰을 받아서 나의 정보를 알아올 수 없음 그래서 계좌인증 여부를 여기서 알기 힘드니까 마이페이지에서 ! 
             this.Authentication = true;
