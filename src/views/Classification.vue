@@ -28,7 +28,6 @@
         <b-card v-if="textQnA != '' || textData != ''"style="width: 900px; margin: auto;">
                 <b-card-text class ="content">
                 <div v-if = "textQnA != ''" v-for="index, value in textQnA">
-                    <p>{{value}}</p>
                     <p>{{value+1 + "번 질문 : " + index.question}}</p>
                     <p>{{value+1 + "번 답변 : " + index.answer}}</p>
                 </div>
@@ -137,7 +136,7 @@ export default {
             options: [],
             currentProblem: '',
             historyId: '',
-            textQnA: '',
+            textQnA: [],
             
 
         }
@@ -157,7 +156,7 @@ export default {
             this.problemImageUrl = '';
             this.problemAudioUrl = '';
             this.textData = '';
-            this.textQnA = '';
+            this.textQnA = [];
             this.currentProblem = '';
             this.selected = [];
             var problemDTO = await localStorage.getItem('problemList');
@@ -173,8 +172,8 @@ export default {
             } //사용자가 텍스트를 등록하여 수집을 한 경우
             else if(this.problemContentList[val -1].type == 'textQnA'){
 
-                this.textQnA = this.problemContentList[val -1].blob;
-                console.log(this.textQnA);
+                this.textQnA.push(this.problemContentList[val -1].blob);
+                console.log(this.textQnA.question);
             }
             else { // 사용자가 그냥 데이터를 업로드한 경우
                 this.textData = this.problemContentList[val -1].blob;
@@ -213,7 +212,7 @@ export default {
     methods : {
         async fetchData() {
             axios.defaults.headers.common['dataType'] = 'classification';
-                await axios.get("/api/work/start").then((problemRes) => {
+                await axios.get("/api/work/classification/start").then((problemRes) => {
                     if(problemRes.headers.problems == "success"){
                         this.historyId = problemRes.headers.workhistory;
                         this.problemList = problemRes.data; 
@@ -223,13 +222,13 @@ export default {
                     }
                     else {
                         alert("문제를 가져오는데 실패하였습니다.");
-                        this.$router.push("/project/startLabelling");
+                        this.$route.push("/project/startLabelling");
                     }
                 })
                 .catch(function(error) {
                     if(error.response){
                         alert("생성된 분류 작업이 없습니다!");
-                        this.$router.push("/project/startLabelling");
+                        this.$route.push("/project/startLabelling");
                     }
                 })
                 //var problemContentList = new Array();
@@ -244,7 +243,8 @@ export default {
                             var textData = res.data;
                             console.log(textData);
                             //사용자가 직접 텍스트를 등록하여 데이터를 제공한 경우 //원래 이름 확인할 때 this.problemList[i].problemDto.projectName+이거 붙여야한다.
-                            if(this.problemList[i].problemDto.objectName.includes(this.problemList[i].problemDto.projectName+"workTextWrite.txt")){
+                            //console.log("workTextWrite.txt");
+                            if(this.problemList[i].problemDto.objectName.includes("workTextWrite.txt")){
                                 var problemBlob = {
                                     type : 'textQnA',
                                     blob : textData,
@@ -403,7 +403,7 @@ export default {
                 axios.defaults.headers.common['historyId'] = this.historyId;
                 var Answer = Object.fromEntries(AnswerList);
                 console.log(Answer);
-                await axios.post("/api/work/labelling", Answer).then(res => {
+                await axios.post("/api/work/classification", Answer).then(res => {
                     if(res.headers.answer == "success"){
                         alert("분류 작업이 완료되었습니다!");
                         AnswerList.clear();

@@ -57,7 +57,7 @@
             </div>
             <b-form-file 
                 v-model="exampleContent"
-                v-if="(selectedData == 'text' && selectedOption == 'textUpload') || selectedData != '텍스트'"
+                v-if="(selectedData == 'text' && selectedOption == 'textUpload') || selectedData != 'text'"
                 :state="Boolean(exampleContent)"
                 placeholder="Choose a file or drop it here..."
                 drop-placeholder="Drop file here..."

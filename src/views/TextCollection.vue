@@ -360,14 +360,14 @@ export default {
                         }
                         else {
                             alert("수집 작업이 실패하였습니다. 다시 시도해주세요!");
-                            this.$router.go(-1);
+                            this.$router.push("/project");
                             //location.reload();
                         }
                     })
                     .catch(function(error){
                         if(error.response){
                             alert("수집 작업이 실패하였습니다. 다시 시도해주세요!");
-                            this.$router.go(-1);
+                            this.$router.push("/project");
                         }
                 })
             }

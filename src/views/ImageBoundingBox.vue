@@ -177,6 +177,7 @@ function move(e){
             boundingBoxProblemUrl : '',
             currentPage: 1,
             downloadUrl: '',
+            workhistoryId : '',
 
         }
     },
@@ -186,7 +187,21 @@ function move(e){
     async created() {
         this.fetchData();
         //this.examplaDataDownload();
-        var searchproject = await localStorage.getItem('searchProject');//this.$route.params.project;
+        var searchproject = await localStorage.getItem('searchProject');
+        // axios.defaults.headers.common['projectId'] = this.project.projectId;
+
+        // await axios.get("/api/work/boundingbox/start").then(boundingBoxRes => {
+        //     if(boundingBoxRes.headers.problems == "success"){
+        //         this.problemList = boundingBoxRes.data;
+        //         console.log(this.problemList);
+        //     }
+        //     else {
+        //         alert("잘못 접근한 프로젝트이거나 문제 세트를 생성할 수 없습니다.");
+        //         this.$route.go(-1);
+        //     }
+            
+
+        // })
         //console.log(JSON.parse(searchproject));
         this.bucketName = JSON.parse(searchproject).projectDto.bucketName;
         //canvas를 생성해서 여기 위에서 진행을 할 수 있도록 
