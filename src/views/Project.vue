@@ -87,10 +87,10 @@
             :per-page="perPage"
             aria-controls="my-table"
             align="center"
-            first-text="First"
-            prev-text="Prev"
-            next-text="Next"
-            last-text="Last"
+            first-text="처음"
+            prev-text="이전"
+            next-text="다음"
+            last-text="마지막"
             ></b-pagination>
 
             <p class="mt-3">Current Page: {{ currentPage }}</p>

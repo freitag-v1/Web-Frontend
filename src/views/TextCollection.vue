@@ -298,7 +298,6 @@ export default {
             }//텍스트에 글을 쓰고 한개이상이 있는경우 텍스트를 작성한 것이므로 
              console.log(this.exampleTextConversation.length);
             if(this.exampleTextConversation.length >= 1) {
-               
                 for(let i = 0; i < this.exampleTextConversation.length; i++){
                     if(this.exampleTextConversation[i].question != "" && this.exampleTextConversation[i].answer != ""){
                         var jsonTextExample = JSON.stringify(this.exampleTextConversation[i]);

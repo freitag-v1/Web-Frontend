@@ -67,10 +67,10 @@
          v-model="currentPage"
           :total-rows="problemList.length"
             per-page= 1
-            first-text="First"
-            prev-text="Prev"
-            next-text="Next"
-            last-text="Last"></b-pagination>
+            first-text="처음"
+            prev-text="이전"
+            next-text="다음"
+            last-text="마지막"></b-pagination>
     </div>
     </div>
 </template>
@@ -159,9 +159,7 @@ export default {
             this.textQnA = [];
             this.currentProblem = '';
             this.selected = [];
-            var problemDTO = await localStorage.getItem('problemList');
-            var problemList = JSON.parse(problemDTO);
-            this.problem = problemList[val -1].problemDto;
+            this.problem = this.problemList[val -1].problemDto;
             if(this.problemContentList[val -1].type.includes("image/")){
                 this.problemImageUrl = this.problemContentList[val -1].blob;
             }
@@ -327,65 +325,6 @@ export default {
             console.log(AnswerList); 
             
         },    
-        // async examplaDataDownload(){
-        //     var exampleData = await localStorage.getItem('exampleContent');
-        //     console.log(exampleData);
-        //     if(exampleData == null){
-        //         if(this.project.exampleContent.includes(".txt")){
-        //             s3Client.get("/"+this.bucketName+"/"+this.project.exampleContent, {
-        //                 responseType: 'text',
-        //             }).then((res) =>{
-        //             var textExample = document.createElement('p');
-        //             textExample.innerText = res.data;
-        //             document.getElementById("exampleContent").appendChild(textExample);
-        //             localStorage.exampleContent = res.data;
-        //             }); 
-        //         }
-        //         else {
-        //             s3Client.get("/"+this.bucketName+"/"+this.project.exampleContent, {
-        //                 responseType : 'blob',
-        //             }).then((res) =>{
-        //                 var exampleFile = new File([res.data], this.project.exampleContent,{ type: res.headers['content-type'], lastModified : Date.now() } );
-        //                 const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
-        //                 if(res.data.type.includes("image/")){
-        //                     this.downloadUrl = url;
-        //                     console.log(res.data.type);
-        //                     var content = {
-        //                         type : res.data.type,
-        //                         file : exampleFile,
-        //                     }
-        //                     console.log(exampleFile);
-        //                     localStorage.exampleContent = JSON.stringify(content);
-        //                 }
-        //                 else{
-        //                     this.audioUrl = url;
-        //                     var content = {
-        //                         type : res.data.type,
-        //                         url : exampleFile,
-        //                     }
-        //                     localStorage.exampleContent = JSON.stringify(content);
-        //                 }
-        //             });
-        //         }
-        //     }
-        //     else {
-        //         var exampleLocal = await localStorage.getItem('exampleContent');
-        //         var exampleLocalDataType = JSON.parse(exampleLocal).type;
-        //         var exampleLocalData = JSON.parse(exampleLocal).url;
-        //         if(exampleLocalDataType.includes("image/")){ //예시데이터가 이미지인 경우
-        //             this.downloadUrl = exampleLocalData;
-        //         }
-        //         else if(exampleLocalDataType.includes("audio/")){//예시데이터가 음성인 경우
-        //             this.audioUrl = exampleLocalData;
-        //         }
-        //         else {//예시데이터가 텍스트인 경우
-        //             var textExample = document.createElement('p');
-        //             textExample.innerText = exampleLocalData;
-        //             document.getElementById("exampleContent").appendChild(textExample);
-        //         }
-        //     }   
-        // },
-    
         preventNav(event) {
                 if (AnswerList == null || this.createCollection) return;
                 event.preventDefault();

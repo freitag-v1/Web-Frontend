@@ -30,34 +30,38 @@
         </div>
         </b-card-text>
     <b-card-footer style="font-weight: bolder">이미지 바운딩 박스 작업</b-card-footer>
+    <br>
+    <h5><데이터 라벨></h5>
+    <div v-for="value, index in colorListByLabel">
+        <hr :color="value.strokeColor" style="width : 100px;"> {{value.className}} </hr>
+    </div>
+    <br>
+    <b-form-radio-group
+            v-model="selected"
+            :options="options"
+            class="option"
+            value-field="item"
+            text-field="name"
+            ></b-form-radio-group>
     <b-card-text class = "content">
-    <img id="boundingBoxImage" :src = "boundingBoxProblemUrl" v-if="boundingBoxProblemUrl != ''"/>
-    <b-form-file multiple 
-                v-model="imageContent"
-                :state="Boolean(imageContent)"
-                placeholder="Choose a file or drop it here..."
-                drop-placeholder="Drop file here..."
-                hidden @change="onChangeImages"
-                accept="image/*"
-                ></b-form-file>
         <canvas id="boundingImage" width="800" height="600"></canvas>
         <br> 
     </b-card-text>
     <div class="overflow-auto" style="margin : auto;">
         <b-pagination id="pagination"
-         v-model="currentPage"
+         v-model="currentPageV"
           :total-rows="problemList.length"
             per-page= 1
-            first-text="First"
-            prev-text="Prev"
-            next-text="Next"
-            last-text="Last"></b-pagination>
+            first-text="처음"
+            prev-text="이전"
+            next-text="다음"
+            last-text="마지막"></b-pagination>
     </div>
     <div class = "buttons">
         <b-button size="lg" variant="primary" v-on:click="clearBox">
             박스 지우기
         </b-button>
-        <b-button size="lg" variant="warning" v-on:click="upload" v-model ="createCollection">
+        <b-button size="lg" variant="warning" v-on:click="upload" v-model ="successLabelling">
                 <b-icon icon="upload"></b-icon> 업로드
         </b-button>
     </div>
@@ -71,14 +75,12 @@
 import axios from 'axios';
 //import VueCropper from 'vue-cropperjs';
 
-var ImageList = new Array();
-var dataState = false; //데이터가 업로드 되었는지의 여부
 
 
 const endpoint = 'kr.object.ncloudstorage.com';
 const region = 'kr-standard';
-const access_key = 'InfcDU4FIzbmJ85y7trv';
-const secret_key = 'AYdAOuv3f7UtkfJy2vGpjw2HQEWsE5VCWmlaFKYa';
+const access_key = '4WhQkGZPLH1sVg6cWLtK';
+const secret_key = 'xmKmQXfbYyyPuXyEw1KeDXE7CveACDQdWUPACtzP';
 
 const v4 = require('aws-signature-v4');
 
@@ -119,9 +121,22 @@ var last_mouseY = 0;
 var mouseX = 0;
 var mouseY = 0;
 var isMouseDown = false;
+var boxAnswer = new Map(); //각 문제에 대한 answer
+var boxAnswerList = new Array(); //이 문제들의 답을 다 담고 있는 list
+var currentPageL = 1;
+var selectedLabel;
+var colorByLabel = new Array(); //라벨마다 
 
 
-
+//색 랜덤으로 추출하는거
+function getRandomColor() {
+  var letters = '0123456789ABCDEF';
+  var color = '#';
+  for (var i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
 
 //마우스로 그림을 그리는 코드
 
@@ -132,52 +147,98 @@ function down(e){
     isMouseDown = true;
 }
 
-//눌러진 마우스가 놓일 때
+//눌러진 마우스가 놓일 때 이 때 그림을 그려야한다. 
 function up(e) {
-    if(isMouseDown){
-        ctx.beginPath();
-        var width = mouseX - last_mouseX;
-        var height = mouseY - last_mouseY;
-        ctx.rect(last_mouseX, last_mouseY, width, height);
-        ctx.strokeStyle = '#1E3269';
-        ctx.lineWidth = 5;
-        ctx.stroke();
-        //이게 박스 좌표여서 이거를 서버에 보내면 된다. 
-        console.log(last_mouseX, last_mouseY, width, height);
-    }
-    isMouseDown = false;
+    draw();
 }
 
 //마우스가 움직이는 동안
 function move(e){
     mouseX = e.offsetX - canvasX;
     mouseY = e.offsetY - canvasY;
-
 }
 
+function draw(){
+    if(isMouseDown){
+        ctx.beginPath();
+        var width = mouseX - last_mouseX;
+        var height = mouseY - last_mouseY;
+        //박스를 만들고
+        ctx.rect(last_mouseX, last_mouseY, width, height);
+        //선택된 class에 맞는 색을 찾음.
+        var currentColor = colorByLabel.find(color => color.className == selectedLabel);
+        //색으로 그림을 그리고 어떤 class에 해당하는지 글로 보여주고
+        ctx.strokeStyle = currentColor.strokeColor;
+        ctx.lineWidth = 5;
+        ctx.stroke();
+        ctx.font = "18px Verdana";
+        ctx.fillStyle = currentColor.strokeColor;
+        ctx.fillText(selectedLabel,last_mouseX + 5,last_mouseY - 5);
+        //이게 박스 좌표여서 이거를 서버에 보내면 된다. 
+        var answerCoord = last_mouseX+" "+last_mouseY+" "+width+" "+height;
+        //아무런 작업 결과가 없는 경우
+        if(boxAnswerList[currentPageL - 1] == null){
+            //박스가 여러개인 경우
+             if(boxAnswer.has(selectedLabel)){
+                var multiAnswerString = boxAnswer.get(selectedLabel)+"&"+answerCoord;
+                boxAnswer.set(selectedLabel, multiAnswerString);
+            }//박스가 한개인 경우
+            else {
+                boxAnswer.set(selectedLabel, answerCoord);
+            }
+            boxAnswerList[currentPageL - 1] = boxAnswer;
+        }
+        else {
+            //작업된 결과에 선택된 라벨에 대해 작업 결과가 있는 경우
+            if(boxAnswerList[currentPageL - 1].has(selectedLabel)){
+                var multiAnswerString = boxAnswerList[currentPageL - 1].get(selectedLabel)+"&"+answerCoord;
+                boxAnswerList[currentPageL - 1].set(selectedLabel, multiAnswerString);
+            }//작업 결과 없는 경우
+            else {  
+                boxAnswerList[currentPageL -1].set(selectedLabel, answerCoord);
+            }
+        }
+        
+        console.log(boxAnswerList);
+    }
+    isMouseDown = false;
+}
+
+//이전에 작업한 바운딩 박스를 돌아가도 보여질 수 있도록 
+function workedBoxDraw(x, y, width, height, className){
+    ctx.beginPath();
+    ctx.rect(x, y, width, height);
+    //선택된 class에 맞는 색을 찾음.
+    var currentColor = colorByLabel.find(color => color.className == className);
+    //색으로 그림을 그리고 어떤 class에 해당하는지 글로 보여주고
+    ctx.strokeStyle = currentColor.strokeColor;
+    ctx.lineWidth = 5;
+    ctx.stroke();
+    ctx.font = "18px Verdana";
+    ctx.fillStyle = currentColor.strokeColor;
+    ctx.fillText(className, x + 5, y - 5);
+}
 
  export default {
     name: 'ImageCollection',
-    components : {
-        
-    },
     data() {
         return {
             problemList:[],
             problem: '',
             classNameList: [],
             project: '',
-            createCollection: false,
-            bucketName: '',
-            imageContent: '',
-            imageUrl:'',
+            successLabelling: false,
             ctx: '',
             canvas: '',
-            bounding: '',
-            boundingBoxProblemUrl : '',
-            currentPage: 1,
+            currentPageV: 1,
             downloadUrl: '',
             workhistoryId : '',
+            problemContentList : [],
+            options : [],
+            selected : '',
+            boxAnswer: null,
+            colorListByLabel : [],
+            successCount : 0,
 
         }
     },
@@ -186,29 +247,26 @@ function move(e){
     },
     async created() {
         this.fetchData();
-        //this.examplaDataDownload();
         var searchproject = await localStorage.getItem('searchProject');
-        // axios.defaults.headers.common['projectId'] = this.project.projectId;
-
-        // await axios.get("/api/work/boundingbox/start").then(boundingBoxRes => {
-        //     if(boundingBoxRes.headers.problems == "success"){
-        //         this.problemList = boundingBoxRes.data;
-        //         console.log(this.problemList);
-        //     }
-        //     else {
-        //         alert("잘못 접근한 프로젝트이거나 문제 세트를 생성할 수 없습니다.");
-        //         this.$route.go(-1);
-        //     }
+        axios.defaults.headers.common['projectId'] = this.project.projectId;
+        await axios.get("/api/work/boundingbox/start").then(boundingBoxRes => {
+            if(boundingBoxRes.headers.problems == "success"){
+                this.problemList = boundingBoxRes.data;
+                this.workhistoryId = boundingBoxRes.headers.workhistory;
+                console.log(this.problemList);
+                this.problemDataDownload();
+            }
+            else {
+                alert("잘못 접근한 프로젝트이거나 문제 세트를 생성할 수 없습니다.");
+                this.$route.go(-1);
+            }
             
 
-        // })
-        //console.log(JSON.parse(searchproject));
-        this.bucketName = JSON.parse(searchproject).projectDto.bucketName;
+        })
+
         //canvas를 생성해서 여기 위에서 진행을 할 수 있도록 
         this.canvas = document.getElementById("boundingImage");
-        //var boundingImageData = '';
         this.ctx = this.canvas.getContext('2d');
-        this.bounding = this.canvas.getBoundingClientRect(); //뭔가 바운딩을 하면 그림을 그려주는 느낌
         // 캔버스의 마우스 이벤트 핸들러 등록
         ctx = this.ctx;
         canvas = this.canvas;
@@ -216,11 +274,48 @@ function move(e){
         this.canvas.addEventListener( "mousedown", down);
         this.canvas.addEventListener( "mouseup", up);
 
-        //this.ctx.strokeRect(0,0,800,600);
-
     },
     watch : {
         '$route' : 'fetchData',
+        currentPageV : function(page) {
+            currentPageL = page;
+            boxAnswer = new Map();
+            //페이지 바뀔 때마다 이미지 다르게 보여야하기 때문에
+            ctx.clearRect(0,0,canvas.width, canvas.height);
+            var originalImage = new Image();
+            originalImage.src = this.problemContentList[page - 1].blob;
+            var imageContext = this.ctx;
+            //페이지 바뀔 때마다 이미지 새로 띄우고 이전에 한 작업을 보여줄 수 있도록 
+            originalImage.onload = function() {
+                var scale = Math.min(canvas.width / originalImage.width, canvas.height / originalImage.height);
+                var x = (canvas.width / 2) - (originalImage.width / 2) * scale;
+                var y = (canvas.height / 2) - (originalImage.height / 2) * scale;
+                imageContext.drawImage(originalImage, x, y, originalImage.width * scale, originalImage.height * scale);
+                if(boxAnswerList[page - 1] != null) {
+                var workedBoxes = Array.from(boxAnswerList[page - 1].values());
+                var workedClass = Array.from(boxAnswerList[page - 1].keys());
+                for(let i = 0; i < workedBoxes.length; i++){
+                    if(workedBoxes[i].includes("&")){
+                        var parseBoxAnswer = workedBoxes[i].split("&");
+                        for(let j = 0; j < parseBoxAnswer.length; j++){
+                            var coordinateWithMulti = parseBoxAnswer[j].split(" ");
+                            workedBoxDraw(Number(coordinateWithMulti[0]), Number(coordinateWithMulti[1]),
+                                 Number(coordinateWithMulti[2]), Number(coordinateWithMulti[3]), workedClass[i]);
+                        }
+                    }
+                    else {
+                        var coordinate = workedBoxes[i].split(" ");
+                        workedBoxDraw(Number(coordinate[0]), Number(coordinate[1]), Number(coordinate[2]), 
+                            Number(coordinate[3]),workedClass[i]);
+                    }
+                }
+            } 
+            }
+           
+        },
+        selected : function(className){
+            selectedLabel = className;
+        }
 
     },
     beforeMount() {
@@ -230,8 +325,7 @@ function move(e){
         });
     },
     beforeRouteLeave(to, from, next) { //작업하고나서 나가려고 하면 이루어지는거
-
-        if (dataState || this.createCollection) {
+        if ( boxAnswerList.length != 0 && !this.successLabelling) {
             if (!window.confirm("페이지를 벗어나면 작업이 저장되지 않습니다. 그래도 이동하시겠습니까?")) {
                 return;
             }
@@ -241,67 +335,36 @@ function move(e){
     methods : {
         async fetchData() {
             var searchproject = await localStorage.getItem('searchProject');//this.$route.params.project;
-            console.log(JSON.parse(searchproject));
-
             this.project = JSON.parse(searchproject).projectDto;
-            this.classNameList = JSON.parse(searchproject).classNameList;//this.$route.params.classList;
-            console.log(this.project);
+            this.classNameList = JSON.parse(searchproject).classNameList;
+            this.exampleDownload();
         },
-        // async examplaDataDownload(){
-        //     var exampleData = await localStorage.getItem('exampleContent');
-        //     console.log(exampleData);
-        //     if(exampleData == null){
-        //             s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
-        //                 responseType : 'blob',
-        //             }).then((res) =>{
-        //                 var exampleFile = new File([res.data], this.project.exampleContent,{ type: res.headers['content-type'], lastModified : Date.now() } );
-        //                 const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
-        //                 console.log(url);
-        //                     this.downloadUrl = url;
-        //                         var content = {
-        //                             type : res.data.type,
-        //                             file : exampleFile,
-        //                         }
-        //                     localStorage.exampleContent = JSON.stringify(content);
-        //             });
-        //     }
-        //     else {
-        //         var exampleLocal = await localStorage.getItem('exampleContent');
-        //         var exampleLocalDataType = JSON.parse(exampleLocal).type;
-        //         var exampleLocalData = JSON.parse(exampleLocal).file;
-
-        //         this.downloadUrl = URL.createObjectURL(exampleLocalData);
-        //     }   
-        // },
-        preventNav(event) {
-                if (!dataState || this.createCollection) return;
-                event.preventDefault();
-                // Chrome requires returnValue to be set.
-                event.returnValue = "";
+        async problemDataDownload() {
+            for(let i = 0; i < this.problemList.length; i++){
+                    await s3Client.get("/"+this.problemList[i].problemDto.bucketName+"/"+this.problemList[i].problemDto.objectName, {
+                        responseType: 'blob'
+                    }).then(problemRes =>  {
+                        const url = URL.createObjectURL(new Blob([problemRes.data], { type: problemRes.headers['content-type'] }));
+                        var problemBlob = {
+                            type : problemRes.headers['content-type'],
+                            blob : url,
+                        }
+                        this.problemContentList.push(problemBlob);
+                    });
+                }
+                await this.initialData();
         },
-        clearBox() {
-            this.ctx = clearRect(0, 0, canvas.width, canvas.height);
-
+        async exampleDownload(){
+            await s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
+                responseType : 'blob'
+            }).then(exampleRes => {
+                const url = URL.createObjectURL(new Blob([exampleRes.data], { type: exampleRes.headers['content-type'] }));
+                this.downloadUrl = url;
+            })
         },
-        upload() { //formData 리스트!
-            //var imageFormData = new Array(); 뭔가 formdata 리스트가 아니라 formdata에 append해서 보내는거 같다
-        this.createCollection = true;
-        let imgUrl = new FormData();
-           for(var uploadImageFile of ImageList){
-               imgUrl.append('file', uploadImageFile);
-               //imageFormData.push(imgUrl);
-           }
-           console.log(imgUrl);//여기서 데이터 보내면 된다
-           console.log("=========================================");
-           
-        },
-        onChangeImages(e) {
-            console.log(e.target.files);
-            const file = e.target.files[0];
-            this.imageUrl = URL.createObjectURL(file);    
-            //this.$refs.cropper.replace(this.imageUrl);
+        initialData () {
             var originalImage = new Image();
-            originalImage.src = this.imageUrl;
+            originalImage.src = this.problemContentList[0].blob;
             //boundingImageData = this.imageUrl;
             var imageContext = this.ctx;
             
@@ -311,9 +374,106 @@ function move(e){
                 var y = (canvas.height / 2) - (originalImage.height / 2) * scale;
                 imageContext.drawImage(originalImage, x, y, originalImage.width * scale, originalImage.height * scale);
             }
-            
+            for(let i = 0; i < this.problemList[0].classNameList.length; i++){
+                    var option = { item : this.problemList[0].classNameList[i].className, name : this.problemList[0].classNameList[i].className };
+                    this.options.push(option);
+                    var color = getRandomColor();
+                    colorByLabel[i] = {
+                        strokeColor : color,
+                        className : this.problemList[0].classNameList[i].className,
+                    };
+            }
+            this.colorListByLabel = colorByLabel;
+            this.selected = this.options[0].item;  
         },
-        
+        preventNav(event) {
+                console.log(boxAnswerList.length);
+                if (boxAnswerList.length == 0 || this.successLabelling) return;
+                event.preventDefault();
+                // Chrome requires returnValue to be set.
+                event.returnValue = "";
+        },
+        clearBox() {
+            boxAnswerList[this.currentPageV - 1] = null;
+            console.log(boxAnswerList[this.currentPageV - 1]);
+            ctx.clearRect(0,0,canvas.width, canvas.height);
+            var originalImage = new Image();
+            originalImage.src = this.problemContentList[this.currentPageV - 1].blob;
+            //boundingImageData = this.imageUrl;
+            var imageContext = this.ctx;
+            //페이지 바뀔 때마다 이미지 새로 띄우고 이전에 한 작업을 보여줄 수 있도록 
+            originalImage.onload = function() {
+                var scale = Math.min(canvas.width / originalImage.width, canvas.height / originalImage.height);
+                var x = (canvas.width / 2) - (originalImage.width / 2) * scale;
+                var y = (canvas.height / 2) - (originalImage.height / 2) * scale;
+                imageContext.drawImage(originalImage, x, y, originalImage.width * scale, originalImage.height * scale);
+            }
+
+        },
+        async upload() { //formData 리스트!
+            this.successLabelling = true;
+            axios.defaults.headers.common['projectId'] = this.project.projectId;
+            axios.defaults.headers.common['historyId'] = this.workhistoryId;
+                for(let i = 0; i < this.problemList.length; i++){
+                    var answerJson = Object.fromEntries(boxAnswerList[i]);
+                    await axios.post("/api/work/boundingbox", answerJson, {
+                        params : {
+                            problemId : this.problemList[this.successCount].problemDto.problemId,
+                        }
+                    }).then(boundingWorkRes => {
+                        if(boundingWorkRes.headers.map == "fail"){
+                            alert("답이 제대로 저장이 되지 않았습니다.")
+                        }
+                        else if(boundingWorkRes.headers.project == "fail"){
+                            alert("해당 프로젝트가 존재하지 않습니다.")
+                        }
+                        else if(boundingWorkRes.headers.answer == "success"){
+                            this.successCount++;
+                        }
+                        else {
+                            alert("작업이 실패하였습니다. 다시 시도해주세요.")
+                        }
+                    })
+                    .catch(function(error) {
+                        if(error.response){
+                            alert("작업이 제대로 완료되지 않았습니다.");
+                        }
+                    });
+                }
+                if(this.successCount == this.problemList.length){
+                    alert("작업이 완료되었습니다.");
+                    this.$router.push("/");
+                }
+            
+           
+        },
+        async request(answerJson) {
+            console.log(this.problemList[this.successCount].problemDto.problemId)
+            await axios.post("/api/work/boundingbox", answerJson, {
+                params : {
+                    problemId : this.problemList[this.successCount].problemDto.problemId,
+                }
+                }).then(boundingWorkRes => {
+                    if(boundingWorkRes.headers.map == "fail"){
+                        alert("답이 제대로 저장이 되지 않았습니다.")
+                    }
+                    else if(boundingWorkRes.headers.project == "fail"){
+                        alert("해당 프로젝트가 존재하지 않습니다.")
+                    }
+                    else if(boundingWorkRes.headers.answer == "success"){
+                        this.successCount++;
+                    }
+                    else {
+                        alert("작업이 실패하였습니다. 다시 시도해주세요.")
+                    }
+                })
+                .catch(function(error) {
+                    if(error.response){
+                        alert("작업이 제대로 완료되지 않았습니다.");
+                    }
+                });
+        }
+ 
     }
 
  }
@@ -349,5 +509,6 @@ function move(e){
 canvas {
     cursor : crosshair;
 }
+
 </style>
 
