@@ -38,6 +38,10 @@
             <div class = "exampleTextForm" v-if="selectedOption == 'textWrite' && selectedData == 'text'" v-for="value in exampleTextConversation">
                 <br>
                 <b-card>
+                <b-button variant="danger" id="deleteTextButton" v-on:click="deleteText(i)" >
+                    삭제 <b-icon icon="trash-fill" aria-hidden="true"></b-icon>
+                </b-button>
+                <br>
                 <p>질문</p>
                 <b-form-textarea
                     id="inputExample"
@@ -361,7 +365,19 @@ export default {
             // else {
             //     alert("원하는 수집 데이터를 입력해주세요!");
             // }
-        }
+        },
+        deleteText(index) {
+            console.log(this.exampleAnswerText, this.exampleQuestionText);
+            // var conversation = {
+            //     question : this.exampleQuestionText,
+            //     answer : this.exampleAnswerText,
+            // }
+            this.exampleTextConversation.splice(index, 1);
+            console.log(this.exampleTextConversation);
+            // console.log(JSON.stringify(this.exampleTextConversation))
+
+            
+        },
     }
 }
 </script>
@@ -447,4 +463,9 @@ p {
 #addTextButton {
     width: 300px;
 }
+#deleteTextButton {
+    width: 150px;
+    float : right;
+}
+
 </style>

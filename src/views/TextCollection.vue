@@ -86,8 +86,9 @@
                 <br>
                 <b-card style="width: 900px; margin: auto;">
                 <b-button variant="danger" id="deleteTextButton" v-on:click="deleteText(i)" >
-                    삭제 <b-icon icon="dash" aria-hidden="true"></b-icon>
+                    삭제 <b-icon icon="trash-fill" aria-hidden="true"></b-icon>
                 </b-button>
+                <br>
                 <br>
                 <br>
                 <p>질문</p>

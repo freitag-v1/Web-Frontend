@@ -58,11 +58,11 @@
             last-text="마지막"></b-pagination>
     </div>
     <div class = "buttons">
-        <b-button size="lg" variant="primary" v-on:click="clearBox">
-            박스 지우기
+        <b-button id = "removeBox"variant="primary" v-on:click="clearBox">
+            <b-icon icon="trash-fill"></b-icon> 박스 지우기
         </b-button>
-        <b-button size="lg" variant="warning" v-on:click="upload" v-model ="successLabelling">
-                <b-icon icon="upload"></b-icon> 업로드
+        <b-button id = "completeBox" variant="warning" v-on:click="upload" v-model ="successLabelling">
+                <b-icon icon="upload"></b-icon> 작업 완료
         </b-button>
     </div>
     <br>
@@ -100,7 +100,7 @@ s3Client.interceptors.request.use(function (config) {
                         v4.createCredentialScope(timestamp, region, 's3') + ', SignedHeaders=' +
                         v4.createSignedHeaders(headers) + ', Signature=' + signature;
 
-	config.url = '/object' + config.url;
+	    config.url = '/object' + config.url;
         config.headers['x-amz-content-sha256'] = headers['x-amz-content-sha256'];
         config.headers['x-amz-date'] = headers['x-amz-date'];
         config.headers['Authorization'] = authorization;
@@ -238,6 +238,7 @@ function workedBoxDraw(x, y, width, height, className){
             selected : '',
             boxAnswer: null,
             colorListByLabel : [],
+            failCount : 0,
             successCount : 0,
 
         }
@@ -253,15 +254,20 @@ function workedBoxDraw(x, y, width, height, className){
             if(boundingBoxRes.headers.problems == "success"){
                 this.problemList = boundingBoxRes.data;
                 this.workhistoryId = boundingBoxRes.headers.workhistory;
-                console.log(this.problemList);
                 this.problemDataDownload();
             }
             else {
                 alert("잘못 접근한 프로젝트이거나 문제 세트를 생성할 수 없습니다.");
-                this.$route.go(-1);
+                window.location.href = "/project";
             }
             
 
+        }).catch(function(err) {
+            if(err){
+                alert("잘못 접근한 프로젝트이거나 문제 세트를 생성할 수 없습니다.");
+                window.location.href = "/project";
+            }
+            
         })
 
         //canvas를 생성해서 여기 위에서 진행을 할 수 있도록 
@@ -292,24 +298,24 @@ function workedBoxDraw(x, y, width, height, className){
                 var y = (canvas.height / 2) - (originalImage.height / 2) * scale;
                 imageContext.drawImage(originalImage, x, y, originalImage.width * scale, originalImage.height * scale);
                 if(boxAnswerList[page - 1] != null) {
-                var workedBoxes = Array.from(boxAnswerList[page - 1].values());
-                var workedClass = Array.from(boxAnswerList[page - 1].keys());
-                for(let i = 0; i < workedBoxes.length; i++){
-                    if(workedBoxes[i].includes("&")){
-                        var parseBoxAnswer = workedBoxes[i].split("&");
-                        for(let j = 0; j < parseBoxAnswer.length; j++){
-                            var coordinateWithMulti = parseBoxAnswer[j].split(" ");
-                            workedBoxDraw(Number(coordinateWithMulti[0]), Number(coordinateWithMulti[1]),
-                                 Number(coordinateWithMulti[2]), Number(coordinateWithMulti[3]), workedClass[i]);
+                    var workedBoxes = Array.from(boxAnswerList[page - 1].values());
+                    var workedClass = Array.from(boxAnswerList[page - 1].keys());
+                    for(let i = 0; i < workedBoxes.length; i++){
+                        if(workedBoxes[i].includes("&")){
+                            var parseBoxAnswer = workedBoxes[i].split("&");
+                            for(let j = 0; j < parseBoxAnswer.length; j++){
+                                var coordinateWithMulti = parseBoxAnswer[j].split(" ");
+                                workedBoxDraw(Number(coordinateWithMulti[0]), Number(coordinateWithMulti[1]),
+                                    Number(coordinateWithMulti[2]), Number(coordinateWithMulti[3]), workedClass[i]);
+                            }
+                        }
+                        else {
+                            var coordinate = workedBoxes[i].split(" ");
+                            workedBoxDraw(Number(coordinate[0]), Number(coordinate[1]), Number(coordinate[2]), 
+                                Number(coordinate[3]),workedClass[i]);
                         }
                     }
-                    else {
-                        var coordinate = workedBoxes[i].split(" ");
-                        workedBoxDraw(Number(coordinate[0]), Number(coordinate[1]), Number(coordinate[2]), 
-                            Number(coordinate[3]),workedClass[i]);
-                    }
-                }
-            } 
+                } 
             }
            
         },
@@ -415,64 +421,47 @@ function workedBoxDraw(x, y, width, height, className){
             axios.defaults.headers.common['projectId'] = this.project.projectId;
             axios.defaults.headers.common['historyId'] = this.workhistoryId;
                 for(let i = 0; i < this.problemList.length; i++){
-                    var answerJson = Object.fromEntries(boxAnswerList[i]);
-                    await axios.post("/api/work/boundingbox", answerJson, {
-                        params : {
-                            problemId : this.problemList[this.successCount].problemDto.problemId,
-                        }
-                    }).then(boundingWorkRes => {
-                        if(boundingWorkRes.headers.map == "fail"){
-                            alert("답이 제대로 저장이 되지 않았습니다.")
-                        }
-                        else if(boundingWorkRes.headers.project == "fail"){
-                            alert("해당 프로젝트가 존재하지 않습니다.")
-                        }
-                        else if(boundingWorkRes.headers.answer == "success"){
-                            this.successCount++;
-                        }
-                        else {
-                            alert("작업이 실패하였습니다. 다시 시도해주세요.")
-                        }
-                    })
-                    .catch(function(error) {
-                        if(error.response){
-                            alert("작업이 제대로 완료되지 않았습니다.");
-                        }
-                    });
+                    if(boxAnswerList[i] != null || boxAnswerList[i] != undefined) {
+                        console.log("================================")
+                        console.log(i,boxAnswerList[i]);
+                        var answerJson = Object.fromEntries(boxAnswerList[i]);
+                        await axios.post("/api/work/boundingbox", answerJson, {
+                            params : {
+                                problemId : this.problemList[i].problemDto.problemId,
+                            }
+                        }).then(boundingWorkRes => {
+                            if(boundingWorkRes.headers.map == "fail"){
+                                this.failCount++;
+                                alert("답이 제대로 저장이 되지 않았습니다.")
+                            }
+                            else if(boundingWorkRes.headers.project == "fail"){
+                                this.failCount++;
+                                alert("해당 프로젝트가 존재하지 않습니다.")
+                            }
+                            else if(boundingWorkRes.headers.answer == "success"){
+                                this.successCount++;
+                            }
+                            else {
+                                this.failCount++;
+                                alert("작업이 실패하였습니다. 다시 시도해주세요.")
+                            }
+                        })
+                        .catch(function(error) {
+                            if(error.response){
+                                this.failCount++;
+                                alert("작업이 제대로 완료되지 않았습니다.");
+                            }
+                        });
+                    }
+                    
                 }
-                if(this.successCount == this.problemList.length){
-                    alert("작업이 완료되었습니다.");
-                    this.$router.push("/");
+                if(this.failCount == 0 || this.successCount != 0) {
+                        alert("작업이 완료되었습니다.");
+                        this.$router.push("/");
                 }
             
            
         },
-        async request(answerJson) {
-            console.log(this.problemList[this.successCount].problemDto.problemId)
-            await axios.post("/api/work/boundingbox", answerJson, {
-                params : {
-                    problemId : this.problemList[this.successCount].problemDto.problemId,
-                }
-                }).then(boundingWorkRes => {
-                    if(boundingWorkRes.headers.map == "fail"){
-                        alert("답이 제대로 저장이 되지 않았습니다.")
-                    }
-                    else if(boundingWorkRes.headers.project == "fail"){
-                        alert("해당 프로젝트가 존재하지 않습니다.")
-                    }
-                    else if(boundingWorkRes.headers.answer == "success"){
-                        this.successCount++;
-                    }
-                    else {
-                        alert("작업이 실패하였습니다. 다시 시도해주세요.")
-                    }
-                })
-                .catch(function(error) {
-                    if(error.response){
-                        alert("작업이 제대로 완료되지 않았습니다.");
-                    }
-                });
-        }
  
     }
 
@@ -506,8 +495,14 @@ function workedBoxDraw(x, y, width, height, className){
     margin: 5px;
     width: 150px;
 }
-canvas {
+#boundingImage {
     cursor : crosshair;
+}
+#removeBox {
+    width: 200px;
+}
+#completeBox{
+    width : 200px;
 }
 
 </style>

@@ -180,15 +180,12 @@ export default {
                 event.returnValue = "";
         },
         async createProject() {
-            console.log(this.exampleContent);
-            
             var userId = await localStorage.getItem('userId');
             const config = {
                     headers: { 'Content-type': 'multipart/form-data'}
                 };
             if(this.name == null  || this.subject == null || this.wayContent == null 
             || this.description == null || this.conditionContent == null || this.selectedWork  == null || this.labellingContent == null){
-                console.log(this.labellingContent);
                 alert("프로젝트 생성을 위해 내용을 빠짐없이 작성해주세요.");
             }
             else {
@@ -209,17 +206,14 @@ export default {
                         totalData: 0,
                     }
                 });
-                console.log(projectRes.headers.create); 
                   if(projectRes.headers.create == "success"){
                         const projectId = projectRes.headers.projectid;
-                        console.log(projectId);
                         var params = new URLSearchParams();
                         for (let i = 0; i < this.dataClass.length; i++){
                             params.append("className",this.dataClass[i].name);
                         }
                         params.append("projectId",projectId);
                         const classNameRes = await axios.post("/api/project/class", params);
-                        console.log(classNameRes.headers.class);
                         if(classNameRes.headers.class == "success"){
                             axios.defaults.headers.common['bucketName'] = classNameRes.headers.bucketname;
                             let exampleData = new FormData();
@@ -230,8 +224,6 @@ export default {
                                 for(let labellingDataNumber = 0; labellingDataNumber < this.labellingContent.length; labellingDataNumber++){
                                     labellingData.append('files',this.labellingContent[labellingDataNumber]);
                                 }
-                                console.log(labellingData);
-                                console.log(typeof(exampleDataRes.headers.projectid));
                                 if(this.labellingContent.length < 2){
                                     alert("라벨링 데이터는 최소 20개 이상이어야합니다!")
                                 }
@@ -281,10 +273,7 @@ export default {
             
                 this.dataClass.push({name:''});
                 console.log(this.dataClass);
-            
-            // else {
-            //     alert("원하는 수집 데이터를 입력해주세요!");
-            // }
+        
         }
     }
 }

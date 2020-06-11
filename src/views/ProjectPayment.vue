@@ -39,7 +39,7 @@ export default {
         });
     },
     beforeRouteLeave(to, from, next) {
-        if (pointPaySuccess != "success") {
+        if (pointPaySuccess != "success" && accountSuccess != true ) {
             if (!window.confirm("결제 페이지를 벗어나는 경우 프로젝트이 생성되지 않습니다. 그래도 이동하시겠습니까?")) {
                 return;
             }
@@ -63,7 +63,6 @@ export default {
                 this.value += 20;
             }, 1000);
             setTimeout(()=> {
-                console.log(this.projectId);
                 const pointPayRes = axios.get("/api/project/point/payment", {
                     params : {
                         projectId : this.projectId,
@@ -88,6 +87,7 @@ export default {
             this.$router.push({name : "AccountPayment", params : {
                 cost : this.cost,
                 name : this.projectName,
+                projectId : this.projectId,
             }})
         }
 

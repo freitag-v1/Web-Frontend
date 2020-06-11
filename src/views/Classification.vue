@@ -8,7 +8,7 @@
     <template v-slot:header>
       <h4 class="mb-0">분류 작업</h4>
       <br>
-      <p>*분류 작업은 주어진 데이터를 보고 해당하는 라벨을 선택하여 분류하는 작업입니다</p>
+      <p>*분류 작업은 주어진 데이터를 보고 문제에 맞게 답을 선택하는 작업입니다.</p>
     </template>
     <br>
     <b-card-footer style="font-weight: bolder">분류 작업</b-card-footer>
@@ -20,9 +20,10 @@
         <span>{{ "문제 번호: " +this.problem.problemId}}</span>
         <br>
         <br>
-        <h4>{{currentPage + "번째 문제 : 데이터에 해당하는 라벨을 선택하시면 됩니다."}}</h4>
+        <h4 v-if = "boundingProblem == false">{{currentPage + "번째 문제 : 데이터에 해당하는 라벨을 선택하시면 됩니다."}}</h4>
         <br>
         <br>
+        <canvas id = "boundingcanvas" width="0" height="0"></canvas>
         <img id = "problemImage" v-if = "problemImageUrl != ''" :src= "problemImageUrl"/>
         <AudioUpload v-if="problemAudioUrl != ''" :value = "problemAudioUrl"/>
         <b-card v-if="textQnA != '' || textData != ''"style="width: 900px; margin: auto;">
@@ -42,13 +43,25 @@
     </div>
     <br>
     <br>
-    <h5><데이터 라벨></h5>
+    <h5 v-if="boundingProblem == false"><데이터 라벨></h5>
     <br>
     <b-form-checkbox-group
             v-model="selected"
             :options="options"
+            v-if="boundingProblem == false"
             class="option"
             ></b-form-checkbox-group>
+    <div v-if="boundingProblem == true" v-for="index, value in boundingBoxAnswers">
+        <br>
+        <h5 v-if = "boundingProblem == true">{{currentPage+"-"+(value+1)+"번째 문제 : 위 사진 속 "+(value+1)+"번 바운딩 박스가 주어진 작업 조건에 맞게 "+index.className+"을(를) 포함하고 있습니까?"}} </h5>
+        <b-form-radio-group
+                v-model="selectedBoxAnswer[value]"
+                :options="yesornoOptions"
+                v-if="boundingProblem == true"
+                class="option"
+                ></b-form-radio-group>
+    </div>  
+    <br>      
     <div class = "buttons">
         <b-button id = "workRegister" variant="warning" v-on:click="register" v-model ="createCollection">
                 <b-icon icon="upload"></b-icon> 작업 결과 등록
@@ -111,6 +124,32 @@ s3Client.interceptors.request.use(function (config) {
         return config;
     });
 
+//색 랜덤으로 추출하는거
+function getRandomColor() {
+  var letters = '0123456789ABCDEF';
+  var color = '#';
+  for (var i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
+
+var globalctx;
+
+function workedBoxDraw(x, y, width, height, index){
+    globalctx.beginPath();
+    globalctx.rect(x, y, width, height);
+    //선택된 class에 맞는 색을 찾음.
+    var currentColor = getRandomColor();
+    //색으로 그림을 그리고 어떤 class에 해당하는지 글로 보여주고
+    globalctx.strokeStyle = currentColor;
+    globalctx.lineWidth = 5;
+    globalctx.stroke();
+    globalctx.font = "italic bolder 30px Verdana";
+    globalctx.fillStyle = currentColor;
+    globalctx.fillText(index+1, x + 5, y - 5);
+        }
 export default {
     name: 'ImageCollection',
     components : {
@@ -137,17 +176,25 @@ export default {
             currentProblem: '',
             historyId: '',
             textQnA: [],
-            
+            boundingProblem: false,
+            canvas : '',
+            ctx : '',
+            selectedBoxAnswer: [],
+            boundingBoxAnswers: [],
+            yesornoOptions: [ { value : 'yes', text : '예'}, { value : 'no', text : '아니오'}],
 
         }
-    },
-    async beforeCreate() {
-        axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
     },
     async created() {
         this.fetchData();
         //this.initialData();
         //this.examplaDataDownload();
+    },
+    mounted() {
+        this.canvas = document.getElementById("boundingcanvas");
+        console.log(document.getElementById("boundingcanvas").width);
+        this.ctx = this.canvas.getContext('2d');
+        globalctx = this.ctx;
     },
     watch : {
         '$route' : 'fetchData',
@@ -159,10 +206,16 @@ export default {
             this.textQnA = [];
             this.currentProblem = '';
             this.selected = [];
+            this.selectedBoxAnswer = [];
+            this.canvas.width = 0;
+            this.canvas.height = 0;
+            this.boundingProblem = false;
             this.problem = this.problemList[val -1].problemDto;
-            if(this.problemContentList[val -1].type.includes("image/")){
+            //이미지 수집에 대한 교차검증 문제
+            if(this.problemContentList[val -1].type.includes("image/") && this.problemList[val - 1].boundingBoxList == null){
                 this.problemImageUrl = this.problemContentList[val -1].blob;
             }
+            //음성 수집에 대한 교차검증 문제
             else if (this.problemContentList[val -1].type.includes("audio/")){
                 
                 this.problemAudioUrl = this.problemContentList[val -1].blob;
@@ -172,6 +225,31 @@ export default {
 
                 this.textQnA.push(this.problemContentList[val -1].blob);
                 console.log(this.textQnA.question);
+            }
+            //바운딩 박스에 대한 교차 검증인 경우
+            else if(this.problemList[val - 1].boundingBoxList != null){
+                this.boundingProblem = true;
+                var originalImage = new Image();
+                originalImage.src = this.problemContentList[val- 1].blob;
+                this.canvas.width = 800;
+                this.canvas.height = 600;
+                this.ctx.clearRect(0,0, 800, 600);
+                var imageContext = this.ctx;
+                var imageCanvas = this.canvas;
+                var boxList = this.problemList[val -1].boundingBoxList;
+                this.boundingBoxAnswers = boxList;
+                originalImage.onload = function() {
+                var scale = Math.min(imageCanvas.width / originalImage.width, imageCanvas.height / originalImage.height);
+                var x = (imageCanvas.width / 2) - (originalImage.width / 2) * scale;
+                var y = (imageCanvas.height / 2) - (originalImage.height / 2) * scale;
+                imageContext.drawImage(originalImage, x, y, originalImage.width * scale, originalImage.height * scale);
+                    for(let i = 0; i < boxList.length; i++){
+                        var coordinate = boxList[i].coordinates.split(" ");
+                            workedBoxDraw(Number(coordinate[0]), Number(coordinate[1]), Number(coordinate[2]), 
+                                Number(coordinate[3]), i);
+                    }
+                }
+
             }
             else { // 사용자가 그냥 데이터를 업로드한 경우
                 this.textData = this.problemContentList[val -1].blob;
@@ -210,7 +288,11 @@ export default {
     methods : {
         async fetchData() {
             axios.defaults.headers.common['dataType'] = 'classification';
+            axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
+            console.log(axios.defaults.headers.common['authorization']);
+        
                 await axios.get("/api/work/classification/start").then((problemRes) => {
+                    console.log(problemRes.headers.problems);
                     if(problemRes.headers.problems == "success"){
                         this.historyId = problemRes.headers.workhistory;
                         this.problemList = problemRes.data; 
@@ -220,19 +302,18 @@ export default {
                     }
                     else {
                         alert("문제를 가져오는데 실패하였습니다.");
-                        this.$route.push("/project/startLabelling");
+                        window.location.href = "/project/startLabelling";
                     }
                 })
                 .catch(function(error) {
                     if(error.response){
                         alert("생성된 분류 작업이 없습니다!");
-                        this.$route.push("/project/startLabelling");
+                        window.location.href = "/project/startLabelling";
                     }
                 })
-                //var problemContentList = new Array();
-                
                 for(let i = 0; i < this.problemList.length; i++){
                     console.log("hello", this.problemList.length);
+                    //텍스트 수집에 대한 교차검증문제인 경우 
                     if(this.problemList[i].problemDto.objectName.includes(".txt")){ 
                         await s3Client.get("/"+this.problemList[i].problemDto.bucketName+"/"+this.problemList[i].problemDto.objectName, {
                             responseType: 'text'
@@ -257,6 +338,25 @@ export default {
                             this.problemContentList.push(problemBlob);
                         });
                     }
+                    // //바운딩 박스에 대한 교차검증 문제인 경우
+                    // else if(this.problemList[i].boundingBoxList != null){
+                    //     this.canvas = document.getElementById("boundingcanvas");
+                    //     this.ctx = this.canvas.getContext('2d');
+                    //     await s3Client.get("/"+this.problemList[i].problemDto.bucketName+"/"+this.problemList[i].problemDto.objectName, {
+                    //         responseType: 'blob'
+                    //     }).then(res =>  {
+                    //         console.log(res);
+                    //         var text = new Response(res).text();
+                    //         console.log(text);
+                    //         const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
+                    //         var problemBlob = {
+                    //                 type : res.headers['content-type'],
+                    //                 blob : url,
+                    //         }
+                    //         this.problemContentList.push(problemBlob);
+                    //     });
+                    // }
+                    //이미지나 음성 수집에 대한 교차검증을 하는 경우
                     else {
                         await s3Client.get("/"+this.problemList[i].problemDto.bucketName+"/"+this.problemList[i].problemDto.objectName, {
                             responseType: 'blob'
@@ -272,6 +372,8 @@ export default {
                             this.problemContentList.push(problemBlob);
                         });
                     }
+
+                    
                     
                 }
                 console.log(this.problemContentList);
@@ -302,27 +404,45 @@ export default {
                 
         },
         register() {
-            var selected = "";
-            console.log(typeof(this.selected));
-            if(this.selected.length > 1){
-                for(let i = 0 ; i < this.selected.length - 1; i++){
-                    selected = selected + this.selected[i] + "&";
+            if(this.selected.length != 0){
+                var selected = "";
+                console.log(typeof(this.selected));
+                if(this.selected.length > 1){
+                    for(let i = 0 ; i < this.selected.length - 1; i++){
+                        selected = selected + this.selected[i] + "&";
+                    }
+                    selected = selected + this.selected[this.selected.length - 1];
                 }
-                selected = selected + this.selected[this.selected.length - 1];
+                else {
+                    selected = this.selected[0];
+                }
+                var problemId = this.problemList[this.currentPage - 1].problemDto.problemId;
+                AnswerList.set(problemId.toString(), selected);
+            }//바운딩 박스 답을 등록
+            if(this.selectedBoxAnswer.length != 0){
+                var selected = "";
+                if(this.selectedBoxAnswer.length == 3){
+                        
+                        for(let i = 0 ; i < this.selectedBoxAnswer.length - 1; i++){
+                            if(this.selectedBoxAnswer[i] == "yes"){
+                                console.log("hellooo");
+                                console.log(this.problemList[this.currentPage - 1].boundingBoxList);
+                                selected = selected + this.problemList[this.currentPage - 1].boundingBoxList[i].boxId+ " ";
+                            }
+                        }
+                        if(this.selectedBoxAnswer[this.selectedBoxAnswer.length - 1] == "yes"){
+                            selected = selected + this.problemList[this.currentPage - 1].boundingBoxList[this.selectedBoxAnswer.length - 1].boxId;
+                        }
+                        console.log(selected);
+                    var problemId = this.problemList[this.currentPage - 1].problemDto.problemId;
+                    AnswerList.set(problemId.toString(), selected);
+                    }
+                else {
+                    alert("답을 선택하지 않은 문제가 존재합니다!");
+                }
+                
             }
-            else {
-                selected = this.selected[0];
-            }
-
-            
-            
-            console.log("===========");
-            console.log(this.selected);
-            console.log(selected)
-            console.log(typeof(this.problemList[this.currentPage - 1].problemDto.problemId));
-            var problemId = this.problemList[this.currentPage - 1].problemDto.problemId;
-            AnswerList.set(problemId.toString(), selected);
-            console.log(AnswerList); 
+        console.log(AnswerList);
             
         },    
         preventNav(event) {
@@ -332,7 +452,6 @@ export default {
                 event.returnvalue = "";
         },
         async upload() { //formData 리스트!
-            //var imageFormData = new Array(); 뭔가 formdata 리스트가 아니라 formdata에 append해서 보내는거 같다
             this.createCollection = true;
 
             if(AnswerList.size < this.problemList.length){
@@ -357,6 +476,7 @@ export default {
         
            
         },
+
     }
 }
 </script>
@@ -374,5 +494,8 @@ export default {
 }
 #workRegister {
     width: 200px;
+}
+canvas {
+    cursor : default;
 }
 </style>

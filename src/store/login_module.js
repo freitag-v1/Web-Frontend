@@ -48,6 +48,7 @@ export default new Vuex.Store({
                 .then(res => {
                     //console.log(res.headers.authorization);
                     var token = res.headers.authorization;
+                    console.log(token);
                     var authorities = res.data.authorities;
                     commit('LOGIN',{token, authorities,userId}) //로그인 성공시 session id랑 authorities이거 넘겨주는
                     alert("로그인 완료!");

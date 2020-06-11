@@ -75,7 +75,7 @@
                 <br>
 
     <div class = "buttons">
-        <b-button variant="warning"v-on:click="upload" v-model ="createCollection">
+        <b-button variant="primary"v-on:click="upload" v-model ="createCollection">
                 <b-icon icon="upload"></b-icon> 이미지 등록
         </b-button>
         <b-button variant="warning"  v-on:click="endWork" v-model ="createCollection">
@@ -158,42 +158,7 @@ s3Client.interceptors.request.use(function (config) {
     },
     async created() {
         this.fetchData();
-    
-        
-        // var exampleData = await localStorage.getItem('exampleContent');
-        // console.log(exampleData);
-        // if(exampleData == null){
-            // if(this.project.exampleContent.includes(".txt")){
-            //     s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
-            //         responseType: 'text',
-            //     }).then((res) =>{
-            //     var textExample = document.createElement('p');
-            //     textExample.innerText = res.data;
-            //     document.getElementById("exampleContent").appendChild(textExample);
-            //     localStorage.exampleContent = res.data;
-            //     }); 
-            // }
-            // else { // 이미지 데이터에 대해서만 처리를 한다 
-                // 
-
-                // });
-            
-        // }
-        // else {
-        //     var exampleLocal = await localStorage.getItem('exampleContent');
-        //     var exampleLocalDataType = JSON.parse(exampleLocal).type;
-        //     var exampleLocalData = JSON.parse(exampleLocal).url;
-        //      //예시데이터가 이미지인 경우
-        //     this.downloadUrl = exampleLocalData;
-            
-            // else if(exampleLocalDataType.includes("audio/")){//예시데이터가 음성인 경우
-            //     this.audioUrl = exampleLocalData;
-            // }
-            // else {//예시데이터가 텍스트인 경우
-            //      var textExample = document.createElement('p');
-            //     textExample.innerText = exampleLocalData;
-            //     document.getElementById("exampleContent").appendChild(textExample);
-            // }
+        this.exampleContentDownload();
           
     },
     beforeMount() {
@@ -214,7 +179,7 @@ s3Client.interceptors.request.use(function (config) {
         next();
     },
     methods : {
-        async examplaDataDownload(){
+        async exampleContentDownload(){
             var exampleData = await localStorage.getItem('exampleContent');
             console.log(exampleData);
             if(exampleData == null){
