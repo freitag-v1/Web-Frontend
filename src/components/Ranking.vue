@@ -1,12 +1,12 @@
 <template>
 <div>
-  <b-tabs content-class="mt-3" class = "ranking">
-    <b-tab title="정확도" active><p>
+  <b-tabs content-class="mt-3" class = "ranking" v-model="tabIndex">
+    <b-tab id="accuracyTitle" title="정확도" :title-link-class="linkClass(0)"><p>
       <div>
         <b-table striped hover :items="accuracyItems" >
         </b-table>
       </div></p></b-tab>
-    <b-tab title="누적포인트"><p>
+    <b-tab id="pointTitle" title="누적포인트" :title-link-class="linkClass(1)" active><p>
      <div>
         <b-table striped hover :items="pointItems" :fields="pointFields">
           <template v-slot:cell(rank)="data"> 
@@ -26,17 +26,13 @@ export default {
     return {
       pointFields : [{key: 'rank', label: '순위'}, {key : 'userId', label: '사용자 아이디'}, {key : 'totalPoint', label: '누적 포인트'}],
       accuracyItems: [
-        { Ranking: 1, first_name: 'Dickerson', accuracy: '99%' },
-        { Ranking: 2, first_name: 'Larsen', accuracy: '70%' },
-        { Ranking: 3, first_name: 'Geneva', accuracy: '50%' },
-        { Ranking: 4, first_name: 'Jami', accuracy: '40%' }
+        { 순위: 1, 이름: 'Dickerson', 정확도: '99%' },
+        { 순위: 2, 이름: 'Larsen', 정확도: '70%' },
+        { 순위: 3, 이름: 'Geneva', 정확도: '50%' },
+        { 순위: 4, 이름: 'Jami', 정확도: '40%' }
       ],
-      pointItems: [
-        // { Ranking: 1, first_name: 'Dickerson', point: 3310000 },
-        // { Ranking: 2, first_name: 'Larsen', point: 200000 },
-        // { Ranking: 3, first_name: 'Geneva', point: 10000 },
-        // { Ranking: 4, first_name: 'Jami', point: 4000 }
-      ],
+      pointItems: [],
+      tabIndex: 0,
     }
   },
   async created() {
@@ -46,16 +42,23 @@ export default {
     }
     else {
       this.pointItems = pointRankingRes.data;
-      console.log(pointRankingRes.data);
+    }
+  },
+  methods:{
+    linkClass(idx){
+      if(this.tabIndex == idx){
+        return ['bg-info', 'text-light']
+      }
+      else {
+        return ['bg-light', 'text-info']
+      }
     }
   }
 }
 </script>
 
-
 <style>
 .ranking{
   max-width: 400px;
-  
 }
 </style>

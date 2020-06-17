@@ -37,8 +37,8 @@
                 accept="audio/*,image/*,text/*"
                 ></b-form-file>
                 <div id = "select" class="mt-3">선택된 파일: {{ exampleContent ? exampleContent.name : '' }}</div>
-                    <img id ="examplePreview" v-if="imageUrl != null" :src = "imageUrl"></img>
-                    <AudioUpload id="audioPreview" v-if="audioUrl != null" :value="audioUrl"/>
+                    <img id ="examplePreview" v-if="imageUrl != ''" :src = "imageUrl"></img>
+                    <VueAudio v-if="audioUrl != ''" :file="audioUrl" />
                 <br>
                 <br>
             <p>라벨링 작업 주제</p>
@@ -86,7 +86,7 @@
 </template>
 <script>
 import axios from 'axios';
-import AudioUpload from '../components/AudioUpload.vue';
+import VueAudio from "vue-audio";
 
 var createSuccess = '';
 export default {
@@ -94,21 +94,21 @@ export default {
     data() {
         return {
             show : true,
-            name: null,
-            subject: null,
-            wayContent: null,
-            description: null,
-            conditionContent: null,
-            exampleContent: null,
-            imageUrl: null,
-            selectedWork: null,
-            labellingContent: null,
+            name: '',
+            subject: '',
+            wayContent: '',
+            description: '',
+            conditionContent: '',
+            exampleContent: '',
+            imageUrl: '',
+            selectedWork: '',
+            labellingContent: '',
             dataClass: [{name : '라벨링 데이터'}],
-            audioUrl: null,
+            audioUrl: '',
         }
     },
     components : {
-      AudioUpload,
+      VueAudio,
     },
     async beforeCreate() {
       axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
@@ -184,15 +184,11 @@ export default {
             const config = {
                     headers: { 'Content-type': 'multipart/form-data'}
                 };
-            if(this.name == null  || this.subject == null || this.wayContent == null 
-            || this.description == null || this.conditionContent == null || this.selectedWork  == null || this.labellingContent == null){
+            if(this.name == ''  || this.subject == '' || this.wayContent == '' 
+            || this.description == '' || this.conditionContent == '' || this.selectedWork  == '' || this.labellingContent == ''){
                 alert("프로젝트 생성을 위해 내용을 빠짐없이 작성해주세요.");
             }
             else {
-                let classLength = this.dataClass.length;
-                if(this.dataClass[classLength -1].name == ""){
-                    this.dataClass.splice(classLength-1, 1);
-                }
                 const projectRes =  await axios.post("/api/project/create", "",{
                     params : {
                         projectName : this.name,
@@ -218,36 +214,38 @@ export default {
                             axios.defaults.headers.common['bucketName'] = classNameRes.headers.bucketname;
                             let exampleData = new FormData();
                             exampleData.append('file',this.exampleContent);
+                            //예시 데이터 업로드
                             const exampleDataRes = await axios.post("/api/project/upload/example", exampleData, config); 
                             if(exampleDataRes.headers.example == "success") {
-                                let labellingData = new FormData();
-                                for(let labellingDataNumber = 0; labellingDataNumber < this.labellingContent.length; labellingDataNumber++){
-                                    labellingData.append('files',this.labellingContent[labellingDataNumber]);
-                                }
                                 if(this.labellingContent.length < 2){
                                     alert("라벨링 데이터는 최소 20개 이상이어야합니다!")
                                 }
+                                else {
+                                    var labellingData = new FormData();
+                                    for(let labellingDataNumber = 0; labellingDataNumber < this.labellingContent.length; labellingDataNumber++){
+                                        labellingData.append('files',this.labellingContent[labellingDataNumber]);
+                                    }
+                                }
+                                //라벨링 데이터 업로드
                                 const labellingDataRes = await axios.post("/api/project/upload/labelling",labellingData, {
                                     params :{
-                                    projectId :exampleDataRes.headers.projectid,
-                                }}, config);
+                                        projectId :exampleDataRes.headers.projectid,
+                                    }}, config);
                                 createSuccess = labellingDataRes.headers.upload;
                                 if(labellingDataRes.headers.upload == "success") {
-                                            alert("라벨링 프로젝트 생성 완료!");
-                                            this.$router.push({name: "ProjectPayment", 
-                                            params : {
-                                                point: labellingDataRes.headers.cost,
-                                                projectName : this.name,
-                                                projectId : exampleDataRes.headers.projectid,
-                                            }});
+                                    alert("라벨링 프로젝트 생성 완료!");
+                                    this.$router.push({name: "ProjectPayment", 
+                                        params : {
+                                            point: labellingDataRes.headers.cost,
+                                            projectName : this.name,
+                                            projectId : exampleDataRes.headers.projectid,
+                                        }});
                                     }
                                     else {
-                                            alert("라벨링 프로젝트 생성 실패");
+                                        alert("라벨링 프로젝트 생성 실패");
                                     }   
                             }
                         }
-
-
                     }
                   else {
                         alert("라벨링 프로젝트 생성 실패");
@@ -257,23 +255,19 @@ export default {
             
         },
         onChangeFile(e) { 
-                this.imageUrl = null;
-                this.audioUrl = null;
-                console.log(e.target.files);
-                const file = e.target.files[0];
-                if(file.type.includes("image/")){
-                    this.imageUrl = URL.createObjectURL(file);
-                }
-                else {
-                    this.audioUrl = URL.createObjectURL(file);
-                }
+            this.imageUrl = '';
+            this.audioUrl = '';
+            const file = e.target.files[0];
+            if(file.type.includes("image/")){
+                this.imageUrl = URL.createObjectURL(file);
+            }
+            else {
+                this.audioUrl = URL.createObjectURL(file);
+            }
                 
         },
         addClass() {
-            
-                this.dataClass.push({name:''});
-                console.log(this.dataClass);
-        
+            this.dataClass.push({name:''});
         }
     }
 }
@@ -314,10 +308,9 @@ export default {
     font-size: 20px;
     letter-spacing: 2.5px;
     font-weight: 500;
-    color: #000;
-    background-color: #fff;
-    border: none;
-    border-radius: 20px;
+    color: #fff;
+    background-color: #4682B4;
+    border: 2px solid #4682B4;
     box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease 0s;
     cursor: pointer;
@@ -325,11 +318,10 @@ export default {
 
 }
 #createProjectButton:hover {
-    background-color: #28adfc;
+    background-color: #4682B4;
     box-shadow: 0px 15px 20px rgba(40, 173,252, 0.4);
     color: #fff;
     transform: translateY(-7px);
-    border-radius: 8px;
 }
 p {
     font-weight: bolder;

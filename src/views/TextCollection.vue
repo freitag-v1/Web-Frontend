@@ -29,12 +29,12 @@
     <br>
     <b-card-text class ="content">
         <div v-if = "textExampleList != null" v-for="index, value in textExampleList">
-            <p>{{value+1 + "번 질문 : " + index.question}}</p>
-            <p>{{value+1 + "번 답변 : " + index.answer}}</p>
+            <pre>{{value+1 + "번 질문 : " + index.question}}</pre>
+            <pre>{{value+1 + "번 답변 : " + index.answer}}</pre>
         </div>
-        <div v-if="textData != null">
-        {{textData}}
-        </div>
+        <pre style="text-align : center; font-size : 20px;" v-if="textData != null">
+            {{textData}}
+        </pre>
     </b-card-text>
      <br>
      <b-card-footer style="font-weight: bolder">텍스트 데이터 업로드</b-card-footer>
@@ -130,8 +130,8 @@ import axios from 'axios';
 
 const endpoint = 'kr.object.ncloudstorage.com';
 const region = 'kr-standard';
-const access_key = '4WhQkGZPLH1sVg6cWLtK';
-const secret_key = 'xmKmQXfbYyyPuXyEw1KeDXE7CveACDQdWUPACtzP';
+const access_key = 'sQG5BeaHcnvvqK4FI01A';
+const secret_key = 'mvNVjSac240XvnrK4qF39HpoMvvtMQMzUnnNHaRV';
 
 const v4 = require('aws-signature-v4');
 
@@ -246,6 +246,7 @@ export default {
                         });
                 }
                 else { //그냥 텍스트 데이터를 올린 경우 
+                console.log("geeee");
                     await s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
                             responseType : 'text',
                         }).then((res) =>{

@@ -57,22 +57,20 @@
                 ></b-form-textarea>
                 </b-card>
             <br>
-                <br>
             </div>
             <b-form-file 
                 v-model="exampleContent"
                 v-if="(selectedData == 'text' && selectedOption == 'textUpload') || selectedData != 'text'"
                 :state="Boolean(exampleContent)"
-                placeholder="Choose a file or drop it here..."
+                placeholder="파일을 선택하거나 끌어서 놓아주세요."
                 drop-placeholder="Drop file here..."
                 hidden @change="onChangeFile"
                 accept="audio/*,image/*,text/*"
                 ></b-form-file>
-                <div class="exampleClass" v-if="exampleContent != null">선택된 파일: {{ exampleContent ? exampleContent.name : '' }}
-                <br>
+                <div class="exampleClass" v-if="exampleContent != ''">선택된 파일: {{ exampleContent ? exampleContent.name : '' }}
                 </div>
-                <img style="max-width: 100%; height: auto;" v-if="imageUrl && this.selectedData == 'image'" :src = "imageUrl"></img>
-                <AudioUpload id="audioPreview" v-if="this.selectedData == 'audio' && audioUrl" :value="audioUrl"/>
+                <img style="max-width: 100%; height: auto;" v-if="imageUrl != '' && selectedData == 'image'" :src = "imageUrl"></img>
+                <VueAudio v-if="audioUrl != '' && selectedData == 'audio'" :file="audioUrl" />
             <br>
             <br>
             <p>수집 작업 주제</p>
@@ -107,44 +105,38 @@
             <br>
             
             </b-card-text>
-
-            <b-button id ="createProjectButton" variant="outline-info" v-on:click ="createProject">작업 생성</b-button>
+            <b-button id ="createProjectButton" v-on:click ="createProject">작업 생성</b-button>
         </b-card>
     </div>
     </div>
 </template>
 <script>
 import axios from 'axios';
-import Qs from 'qs';
-import AudioUpload from '../components/AudioUpload.vue';
+import VueAudio from "vue-audio";
 
-var FileSaver = require("file-saver");
 var createSuccess = '';
+
 export default {
   name: 'CreateProject',
   components : {
-      AudioUpload,
+      VueAudio,
   },
     data() {
         return {
-            selectedOption: null,
+            selectedOption: '',
             show : true,
-            name: null,
-            selectedData: null,
-            subject: null,
-            wayContent: null,
-            description: null,
-            conditionContent: null,
-            exampleContent: null,
-            imageUrl: null,
-            totalData: null,
+            name: '',
+            selectedData: '',
+            subject: '',
+            wayContent: '',
+            description: '',
+            conditionContent: '',
+            exampleContent: '',
+            imageUrl: '',
+            totalData: '',
             dataClass: [{name : '수집 데이터'}],
-            exampleTextContent: null,
             isEditing: false,
-            audioUrl: null,
-            textExampleCount: 1,
-            exampleQuestionText: null,
-            exampleAnswerText: null,
+            audioUrl: '',
             exampleTextConversation: [{question : "예시 텍스트 데이터를 작성해주세요.", answer : "예시 텍스트 데이터를 작성해주세요."}],
         }
     },
@@ -158,7 +150,7 @@ export default {
         });
     },
     beforeRouteLeave(to, from, next) {
-        if (this.isEditing && createSuccess != "success") {
+        if (!this.isEditing || createSuccess != "success") {
             if (!window.confirm("페이지를 벗어나는 경우 프로젝트이 생성되지 않습니다. 그래도 이동하시겠습니까?")) {
                 return;
             }
@@ -172,6 +164,7 @@ export default {
         },
         selectedData : function(data) {
             this.isEditing = true;
+            this.exampleContent = '';
             
         },
         subject : function(data) {
@@ -204,50 +197,28 @@ export default {
             this.isEditing = true;
             
         },
-        exampleTextContent : function(data) {
-            this.isEditing = true;
-            
-        },
+
 
     },
     methods : {
         preventNav(event) {
-                if (!this.isEditing) return;
-                event.preventDefault();
-                // Chrome requires returnValue to be set.
-                event.returnValue = "";
+            if (!this.isEditing) return;
+            event.preventDefault();
+            event.returnValue = "";
         },
         addText() {
-            console.log(this.exampleAnswerText, this.exampleQuestionText);
-            // var conversation = {
-            //     question : this.exampleQuestionText,
-            //     answer : this.exampleAnswerText,
-            // }
             this.exampleTextConversation.push({question : '', answer: ''});
-            // console.log(this.exampleTextConversation);
-            // console.log(JSON.stringify(this.exampleTextConversation))
-
-            
         },
         async createProject() {
             const config = {
                     headers: { 'Content-type': 'multipart/form-data'}
             };
             var userId = await localStorage.getItem('userId');
-            //alert(userId);
-            if(this.name == null || this.selectedData == null || this.subject == null || this.wayContent == null 
-            || this.description == null || this.conditionContent == null || this.totalData == null || this.dataClass == null){
-                //console.log(typeof(this.totalData));
+            if(this.name == '' || this.selectedData == '' || this.subject == '' || this.wayContent == '' 
+            || this.description == '' || this.conditionContent == '' || this.totalData == '' || this.dataClass == ''){
                 alert("프로젝트 생성을 위해 내용을 빠짐없이 작성해주세요.");
             }
             else {
-                //console.log(this.name, this.selectedData, this.subject, this.wayContent, this.description, this.conditionContent, this.totalData, this.dataClass);
-                let classLength = this.dataClass.length;
-                if(this.dataClass[classLength -1].name == ""){
-                    this.dataClass.splice(classLength-1, 1);
-                }
-                
-                 //맨 뒤에 빈 값이 들어가서 그거 삭제하는 역할
                 const projectRes = await axios.post("/api/project/create","", {
                     params : {
                         projectName : this.name,
@@ -270,73 +241,75 @@ export default {
                         params.append("className",this.dataClass[i].name);
                     }
                     params.append("projectId",projectId);
-                    
                     const classNameRes = await axios.post("/api/project/class", params);
                     if(classNameRes.headers.class == "success"){
                         axios.defaults.headers.common['bucketName'] = classNameRes.headers.bucketname;
-                        if(this.selectedData == 'text'){
-                            if(this.selectedOption == 'textWrite' ){ //텍스트인데 그냥 적은 내용 자체가 텍스트 예시 데이터 인경우 파일로 변환을 해야 
-                                var jsonTextExample = JSON.stringify(this.exampleTextConversation);
-                                var exampleTextFile = new File([jsonTextExample], this.name+userId+"exampleTextWrite.txt",{type: "text/plain;charset=utf-8"});
-                                let exampleTextData = new FormData();
+                        switch(this.selectedData) {
+                            case 'text' : {
+                                if(this.selectedOption == 'textWrite' ){ //텍스트인데 그냥 적은 내용 자체가 텍스트 예시 데이터 인경우 파일로 변환을 해야 
+                                    var jsonTextExample = JSON.stringify(this.exampleTextConversation);
+                                    var exampleTextFile = new File([jsonTextExample], this.name+userId+"exampleTextWrite.txt",{type: "text/plain;charset=utf-8"});
+                                    let exampleTextData = new FormData();
                                     exampleTextData.append('file',exampleTextFile);
                                     const textRes = await axios.post("/api/project/upload/example", exampleTextData, config);
                                     createSuccess = textRes.headers.example;
                                     if(textRes.headers.example == "success") {
-                                        alert("수집 프로젝트 생성 완료!");
-                                        this.$router.push({name: "ProjectPayment", 
-                                        params : {
-                                            projectId : textRes.headers.projectid,
-                                            point: textRes.headers.cost,
-                                            projectName : this.name,
-                                        }});
-                                    }
+                                            alert("수집 프로젝트 생성 완료!");
+                                            this.$router.push({name: "ProjectPayment", 
+                                                params : {
+                                                    projectId : textRes.headers.projectid,
+                                                    point: textRes.headers.cost,
+                                                    projectName : this.name,    
+                                            }});
+                                        }
                                     else {
                                         alert("수집 프로젝트 생성 실패");
                                     }
-                            }
-                            else {//그냥 텍스트 첨부파일을 올리는 경우 
-                                let exampleData = new FormData();
-                                        exampleData.append('file',this.exampleContent);
-                                        const exampleDataRes = await axios.post("/api/project/upload/example", exampleData, config); 
-                                        createSuccess = exampleDataRes.headers.example;
+                                }
+                                else {//그냥 텍스트 첨부파일을 올리는 경우 
+                                    let exampleData = new FormData();
+                                    exampleData.append('file',this.exampleContent);
+                                    const exampleDataRes = await axios.post("/api/project/upload/example", exampleData, config); 
+                                    createSuccess = exampleDataRes.headers.example;
                                         if(exampleDataRes.headers.example == "success") {
                                             alert("수집 프로젝트 생성 완료!");
                                             this.$router.push({name: "ProjectPayment", 
-                                            params : {
-                                                projectId : exampleDataRes.headers.projectid,
-                                                point: exampleDataRes.headers.cost,
-                                                projectName : this.name,
-                                            }});
-                                        }
+                                                params : {
+                                                    projectId : exampleDataRes.headers.projectid,
+                                                    point: exampleDataRes.headers.cost,
+                                                    projectName : this.name,
+                                                }});
+                                            }
                                         else {
-                                            alert("수집 프로젝트 생성 실패");
+                                                alert("수집 프로젝트 생성 실패");
                                         }     
+                                }
+                                break;
                             }
-                        }
-                        else  {// 이미지, 음성인 경우 
-                            let exampleData = new FormData();
-                            exampleData.append('file',this.exampleContent);
-                            const exampleDataRes = await axios.post("/api/project/upload/example", exampleData, config); 
-                            createSuccess = exampleDataRes.headers.example;
-                            if(exampleDataRes.headers.example == "success") {
-                                alert("수집 프로젝트 생성 완료!");
-                                this.$router.push({name: "ProjectPayment", 
-                                params : {
-                                    projectId : exampleDataRes.headers.projectid,
-                                    point: exampleDataRes.headers.cost,
-                                    projectName : this.name,
-                                }});
-                            }
-                            else {
-                                alert("수집 프로젝트 생성 실패");
-                            }
+                            default: {
+                                let exampleData = new FormData();
+                                exampleData.append('file',this.exampleContent);
+                                const exampleDataRes = await axios.post("/api/project/upload/example", exampleData, config); 
+                                createSuccess = exampleDataRes.headers.example;
+                                if(exampleDataRes.headers.example == "success") {
+                                    alert("수집 프로젝트 생성 완료!");
+                                    this.$router.push({name: "ProjectPayment", 
+                                    params : {
+                                        projectId : exampleDataRes.headers.projectid,
+                                        point: exampleDataRes.headers.cost,
+                                        projectName : this.name,
+                                    }});
+                                }
+                                else {
+                                    alert("수집 프로젝트 생성 실패");
+                                }
+                                break;
+                            } 
                         }
                     }
                     else {
                         alert("수집 프로젝트 생성 실패");
                     }
-
                 }
                 else {
                     alert("수집 프로젝트 생성 실패");
@@ -345,38 +318,20 @@ export default {
             
         },
         onChangeFile(e) {
-                console.log(e.target.files);
-                const file = e.target.files[0];
-                if(file.type == "image/"){
-                    this.imageUrl = URL.createObjectURL(file);
-                    console.log(this.imageUrl);    
-                }
-                else //if(file.type == "audio/"){
-                {
-                    this.audioUrl = URL.createObjectURL(file);  
-                }
-                
+            const file = e.target.files[0];
+            if(file.type.includes("image/")){
+                this.imageUrl = URL.createObjectURL(file);    
+            }
+            else {
+                this.audioUrl = URL.createObjectURL(file);  
+            } 
+            
         },
         addClass() {
-
-                this.dataClass.push({name:''});
-                console.log(this.dataClass);
-
-            // else {
-            //     alert("원하는 수집 데이터를 입력해주세요!");
-            // }
+            this.dataClass.push({name:''});
         },
         deleteText(index) {
-            console.log(this.exampleAnswerText, this.exampleQuestionText);
-            // var conversation = {
-            //     question : this.exampleQuestionText,
-            //     answer : this.exampleAnswerText,
-            // }
             this.exampleTextConversation.splice(index, 1);
-            console.log(this.exampleTextConversation);
-            // console.log(JSON.stringify(this.exampleTextConversation))
-
-            
         },
     }
 }
@@ -418,10 +373,9 @@ export default {
     font-size: 20px;
     letter-spacing: 2.5px;
     font-weight: 500;
-    color: #000;
-    background-color: #fff;
-    border: none;
-    border-radius: 20px;
+    color: #fff;
+    background-color: #4682B4;
+    border: 2px solid #4682B4;
     box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease 0s;
     cursor: pointer;
@@ -429,21 +383,18 @@ export default {
 
 }
 #createProjectButton:hover {
-    background-color: #28adfc;
+    background-color: #4682B4;
     box-shadow: 0px 15px 20px rgba(40, 173,252, 0.4);
     color: #fff;
     transform: translateY(-7px);
-    border-radius: 8px;
 }
 p {
     font-weight: bolder;
     font-size: 18px;
 }
-
 #addClassIcon {
     width: 30px;
     height : 30px;
-    
 }
 #addClassButton {
     float: right;

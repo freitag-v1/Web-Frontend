@@ -4,16 +4,16 @@
         <b-card
         class = "workCard"
         no-body
-  >
+        >
     <template v-slot:header>
       <h4 class="mb-0">이미지 수집 작업</h4>
       <h5>*이미지 수집 작업은 주어진 수집 데이터 라벨에 맞는 이미지를 업로드 하는 작업입니다.</h5>
     </template>
     <b-list-group flush>
-      <b-list-group-item>작업 이름 : {{" "+ project.projectName}}</b-list-group-item>
-      <b-list-group-item>작업 의뢰자 : {{" " + project.userId}}</b-list-group-item>
-      <b-list-group-item><데이터 라벨 목록>
-        <div v-for="classname, index in classNameList">
+      <b-list-group-item class = "workContent">작업 이름 : {{" "+ project.projectName}}</b-list-group-item>
+      <b-list-group-item class = "workContent">작업 의뢰자 : {{" " + project.userId}}</b-list-group-item>
+      <b-list-group-item class = "workContent"><데이터 라벨 목록>
+        <div class = "workContent" v-for="(classname, index) in classNameList" v-bind:key="index">
             <br>
             {{index+1+". "+classname.className}}
         </div>
@@ -21,11 +21,11 @@
     </b-list-group>
     <b-card-footer style="font-weight: bolder">작업 방법</b-card-footer>
     <br>
-    <b-card-text class ="content">{{project.wayContent}}</b-card-text>
+    <p class ="linecontent">{{project.wayContent}}</p>
     <br>
     <b-card-footer style="font-weight: bolder">작업 조건</b-card-footer>
     <br>
-    <b-card-text class ="content">{{project.conditionContent}}</b-card-text>
+    <p class="linecontent" >{{project.conditionContent}}</p>
     <br>
     <b-card-footer style="font-weight: bolder">작업 예시 데이터</b-card-footer>
     <b-card-text class ="content">
@@ -49,19 +49,17 @@
             <div class="mt-3">선택된 라벨: <strong>{{ selected }}</strong></div>
         </div>
         <br>
-            <div class = "registeredImage" v-for="name in imageNameList">
-                <br>
+            <div class = "registeredImage" v-for="name in imageByClassList">
                 <h4 v-if = "name.class == selected">< 이전에 등록된 이미지 이름 ></h4>
-                <div v-if = "name.class == selected" v-for="index, value in name.name">
+                <div v-if = "name.class == selected" v-for="(index, value) in name.name">
                     <p> {{ value+1 + ". " + index }}</p>
-
                 </div>    
             </div>
         <br>
     <b-form-file multiple 
                 v-model="imageContent"
                 :state="Boolean(imageContent)"
-                placeholder="Choose a file or drop it here..."
+                placeholder="파일을 선택하거나 끌어서 놓아주세요."
                 drop-placeholder="Drop file here..."
                 hidden @change="onChangeImages"
                 accept="image/*"
@@ -69,17 +67,17 @@
                 <br>
                 <p v-if="imageUrl!=''">{{ "업로드 데이터 " + imageContent[0].name + "의 preview" }} </p>
                 <img id ="previewImg" v-if="imageUrl!=''" :src = "imageUrl"></img>
-                <div class="mt-3"  v-for = "name, index in imageContent">
+                <div class="mt-3"  v-for = "(name, index) in imageContent">
                     Selected file: {{ index + 1 + "." + name ? name.name : '' }}
                 </div>
                 <br>
 
     <div class = "buttons">
-        <b-button variant="primary"v-on:click="upload" v-model ="createCollection">
-                <b-icon icon="upload"></b-icon> 이미지 등록
+        <b-button id = "registerButton" v-on:click="upload">
+                <b-icon icon="download"></b-icon> 이미지 등록
         </b-button>
-        <b-button variant="warning"  v-on:click="endWork" v-model ="createCollection">
-                <b-icon icon="upload"></b-icon> 작업 완료
+        <b-button id= "endWorkButton" v-on:click="endWork">
+                <b-icon icon = "upload"></b-icon> 작업 완료
         </b-button>
     </div>
     <br>
@@ -90,13 +88,6 @@
 </template>
 <script>
 import axios from 'axios';
-import VueCropper from 'vue-cropperjs';
-import ImageUpload from '../components/ImageUpload.vue';
-
-
-var ImageList = new Array();
-var ImageByClassList = new Array();
-var dataState = false; //데이터가 업로드 되었는지의 여부
 
 const endpoint = 'kr.object.ncloudstorage.com';
 const region = 'kr-standard';
@@ -139,10 +130,9 @@ s3Client.interceptors.request.use(function (config) {
             imageContent: '',
             imageUrl : '',
             downloadUrl: '',
-            audioUrl: '',
             options: [],
             selected : '',
-            imageNameList: [],
+            imageByClassList: [],
         }
     },
     async beforeCreate() {
@@ -151,7 +141,6 @@ s3Client.interceptors.request.use(function (config) {
     watch: {
         '$route' : 'fetchData',
         selected : function(val){
-            
             this.imageContent = '';
             this.imageUrl = '';
         }
@@ -162,153 +151,108 @@ s3Client.interceptors.request.use(function (config) {
           
     },
     beforeMount() {
-            delete localStorage.exampleContent;
             window.addEventListener("beforeunload", this.preventNav); //웹페이지 닫을 때 일어나는거 
             this.$once("hook:beforeDestroy", () => {
             window.removeEventListener("beforeunload", this.preventNav);
         });
     },
     beforeRouteLeave(to, from, next) { //작업하고나서 나가려고 하면 이루어지는거
-
-        if (ImageByClassList != null && !this.createCollection) {
+        if (this.imageByClassList != null && !this.createCollection) {
             if (!window.confirm("페이지를 벗어나면 작업이 저장되지 않습니다. 그래도 이동하시겠습니까?")) {
                 return;
             }
         }
-        delete localStorage.exampleContent;
         next();
     },
     methods : {
         async exampleContentDownload(){
-            var exampleData = await localStorage.getItem('exampleContent');
-            console.log(exampleData);
-            if(exampleData == null){
-                    s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
-                        responseType : 'blob',
-                    }).then((res) =>{
-                        var exampleFile = new File([res.data], this.project.exampleContent,{ type: res.headers['content-type'], lastModified : Date.now() } );
-                        const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
-                        console.log(url);
-                            this.downloadUrl = url;
-                                var content = {
-                                    type : res.data.type,
-                                    file : exampleFile,
-                                }
-                            localStorage.exampleContent = JSON.stringify(content);
-                    });
-            }
-            else {
-                var exampleLocal = await localStorage.getItem('exampleContent');
-                var exampleLocalDataType = JSON.parse(exampleLocal).type;
-                var exampleLocalData = JSON.parse(exampleLocal).file;
-
-                this.downloadUrl = URL.createObjectURL(exampleLocalData);
-            }   
+            s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
+                responseType : 'blob',
+                }).then((res) =>{
+                    var exampleFile = new File([res.data], this.project.exampleContent,{ type: res.headers['content-type'], lastModified : Date.now() } );
+                    const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
+                    this.downloadUrl = url;
+                    var content = {
+                        type : res.data.type,
+                        file : exampleFile,
+                    }
+                });
+            
         },
         async fetchData() {
-            var searchproject = await localStorage.getItem('searchProject');//this.$route.params.project;
-            console.log(JSON.parse(searchproject));
-
+            var searchproject = await localStorage.getItem('searchProject');
             this.project = JSON.parse(searchproject).projectDto;
-            this.classNameList = JSON.parse(searchproject).classNameList;//this.$route.params.classList;
+            this.classNameList = JSON.parse(searchproject).classNameList;
             var optionDataList = new Array();
+            //class 이름들을 선택할 수 있도록 option에 넣기 위해서
             for(let i = 0 ; i < this.classNameList.length; i++){
                 var optionData = {
                     name : this.classNameList[i].className,
                     item : this.classNameList[i].className,
                 }
                 optionDataList.push(optionData);
-               
             }
             this.options = optionDataList;
             this.selected = this.classNameList[0].className;
-            console.log(this.options);
-            console.log(this.project);
             await s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
                     responseType: 'blob',
                 }).then((res) => {
                     const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
-                    console.log(url);
                     this.downloadUrl = url;
                 });
         },
         onChangeImages(e) {
-            console.log(e.target.files);
             const file = e.target.files[0];
-            this.imageUrl = URL.createObjectURL(file);    
-            
+            this.imageUrl = URL.createObjectURL(file);      
         },
         preventNav(event) {
-                if (ImageByClassList == null || this.createCollection) return;
+                if (this.imageByClassList == null || this.createCollection) return;
                 event.preventDefault();
-                // Chrome requires returnValue to be set.
                 event.returnValue = "";
         },
-        upload() { //formData 리스트!
-            //var imageFormData = new Array(); 뭔가 formdata 리스트가 아니라 formdata에 append해서 보내는거 같다
-            
-            let imgUrl = new FormData();
+        upload() {
+            let imageFile = new FormData();
             var nameList = new Array();
             for(var uploadImageFile of this.imageContent){
-                imgUrl.append('files', uploadImageFile);
+                imageFile.append('files', uploadImageFile);
                 nameList.push(uploadImageFile.name);
-            }
-            var imageName = {
-                name: nameList,
-                class : this.selected,
             }
             var imageByClass = {
                 class : this.selected,
-                imgUrl : imgUrl,
+                imageFile : imageFile,
+                name: nameList,
             }
             var duplicatedIndex = -1;
-            for(let i = 0; i < ImageByClassList.length; i++){
-                console.log(this.selected);
-                if(ImageByClassList[i].class == this.selected){
-                    console.log("hello",i);
+            for(let i = 0; i < this.imageByClassList.length; i++){
+                if(this.imageByClassList[i].class == this.selected){
                     duplicatedIndex = i;
                 }
             }
             if(duplicatedIndex != -1){
-                //ImageByClassList.splice(duplicatedIndex,1);
-                ImageByClassList[duplicatedIndex] = imageByClass;
-                this.imageNameList[duplicatedIndex] = imageName;
-                //duplicatedIndex = 0;
+                this.imageByClassList[duplicatedIndex] = imageByClass;
             }
             else {
-                ImageByClassList.push(imageByClass);
-                this.imageNameList.push(imageName);
+                this.imageByClassList.push(imageByClass);
             }
             duplicatedIndex = -1;
-            console.log(imgUrl);//여기서 데이터 보내면 된다
-            console.log(ImageByClassList);
-            console.log("===================name===================");
-            console.log(this.imageNameList);
-            console.log("======================================");
-            
-
-           
         },
         async endWork(){
             var successCount = 0;
             this.createCollection = true;
             axios.defaults.headers.common['bucketName'] = this.project.bucketName;
             axios.defaults.headers.common['projectId'] = this.project.projectId;
-            for(let i  = 0; i < ImageByClassList.length; i++){
-                    await axios.post("/api/work/collection", ImageByClassList[i].imgUrl, {
+            for(let i  = 0; i < this.imageByClassList.length; i++){
+                    await axios.post("/api/work/collection", this.imageByClassList[i].imageFile, {
                         params: {
-                            className : ImageByClassList[i].class,
-                            // 파라미터로 class를 보내야한다. 
+                            className : this.imageByClassList[i].class,
                         }
                     }).then((collectionWorkRes) => {
                         if(collectionWorkRes.headers.upload == "success"){
                             successCount++;
-                            //alert("수집 작업이 완료되었습니다!");
-                        
                         }
                         else {
                             alert("수집 작업이 실패하였습니다. 다시 시도해주세요!");
-                            //location.reload();
+                            location.reload(); //새로고침을 해서 이전에 한 작업들을 지울 수 있도록 
                         }
                     })
                     .catch(function(error){
@@ -317,29 +261,11 @@ s3Client.interceptors.request.use(function (config) {
                         }
                 })
             }
-            if(successCount == ImageByClassList.length){
+            if(successCount == this.imageByClassList.length){
                 alert("수집 작업이 완료되었습니다!");
                 this.$router.push("/");
             }
         },
-        // registerImageUrl(data) { //index를 저장을 해서 기존에 올린 사진을 수정하는 경우 추가되지 않고 변경해야해서 props로 index 주고 받고 해서 변경
-        //         if(data != null) {
-        //             dataState = true;
-        //         }
-        //         let i = data.index -1;
-        //         let url  = data.url;
-        //         if(ImageList[i] == null){
-        //             ImageList.push(url);
-        //         }
-        //         else {
-        //             ImageList.splice(i,1,url);
-
-        //         }
-        //         alert("등록완료!");
-        //         console.log(ImageList);
-        
-        // }
-
 
     }
 
@@ -355,11 +281,6 @@ s3Client.interceptors.request.use(function (config) {
     margin: auto;
     font-size : 20px;
 }
-#cropImg {
-    margin: auto;
-    max-width: 500px;
-    max-height: 200px;
-}
 #previewImg {
     margin: auto;
     max-width: 800px;
@@ -368,10 +289,6 @@ s3Client.interceptors.request.use(function (config) {
 .buttons {
     margin: auto;
     width: 50%;
-}
-.buttons button{
-    margin: 5px;
-    width: 200px;
 }
 .option{
     max-width : 200px;
@@ -384,5 +301,28 @@ s3Client.interceptors.request.use(function (config) {
 .exampleClass{
     width: 25%;
     margin: auto;
+}
+.linecontent {
+    font-family:'Jeju Gothic', sans-serif;
+    white-space : pre-line;
+    font-weight: lighter;
+    font-size : 20px;
+}
+#registerButton {
+    width: 200px;
+    background-color : #4682B4;
+    border: none;
+    font-size: 19px;
+    color : black;
+}
+#endWorkButton {
+    width: 150px;
+    background-color : #FA8072;
+    border : none;
+    font-size: 19px;
+    color : black;
+}
+.workContent {
+    font-size : 20px;
 }
 </style>

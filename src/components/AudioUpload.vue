@@ -1,51 +1,61 @@
 <template>
   <div>
-  <span>
-        {{ currentTime }}/{{ getDuration }}
-    </span>
-  <div class ="waveform">
-    <div id="wave" style=" width: 500px;"></div>
-        <br>
-        <div id= "wave-timeline"></div>
-        <br>
-        <span>
-            <p>Volume    <input type="range" min="1" max="100" v-model="volume" @input="setVolume"></p>
-         </span>
+    <span> {{ currentTime }}/{{ getDuration }} </span>
+    <div class="waveform">
+      <div id="wave" style=" width: 500px;"></div>
+      <br />
+      <div id="wave-timeline"></div>
+      <br />
+      <span>
+        <p>
+          Volume
+          <input
+            type="range"
+            min="1"
+            max="100"
+            v-model="volume"
+            @input="setVolume"
+          />
+        </p>
+      </span>
     </div>
-    <br>
-    <br>
-    <button v-on:click="play">재생</button>
-<button v-on:click="wavesurfer.pause()">일시정지</button>
-<button v-on:click="wavesurfer.stop()">정지</button>
-<br>
+    <br />
+    <br />
+    <button class="audioPlayButtons" v-on:click="play">재생</button>
+    <button class="audioPlayButtons" v-on:click="wavesurfer.pause()">
+      일시정지
+    </button>
+    <button class="audioPlayButtons" v-on:click="wavesurfer.stop()">
+      정지
+    </button>
+    <br />
   </div>
-    
 </template>
 
 <script>
-  import WaveSurfer from "wavesurfer.js";
-  import TimelinePlugin from 'wavesurfer.js/src/plugin/timeline.js'
+import WaveSurfer from "wavesurfer.js";
+import TimelinePlugin from "wavesurfer.js/src/plugin/timeline.js";
 
-    function formatTimeCallback(seconds, pxPerSec) {
-        seconds = Number(seconds);
-        var minutes = Math.floor(seconds / 60);
-        seconds = seconds % 60;
+function formatTimeCallback(seconds, pxPerSec) {
+  seconds = Number(seconds);
+  var minutes = Math.floor(seconds / 60);
+  seconds = seconds % 60;
 
-        // fill up seconds with zeroes
-        var secondsStr = Math.round(seconds).toString();
-        if (pxPerSec >= 25 * 10) {
-            secondsStr = seconds.toFixed(2);
-        } else if (pxPerSec >= 25 * 1) {
-            secondsStr = seconds.toFixed(1);
-        }
+  // fill up seconds with zeroes
+  var secondsStr = Math.round(seconds).toString();
+  if (pxPerSec >= 25 * 10) {
+    secondsStr = seconds.toFixed(2);
+  } else if (pxPerSec >= 25 * 1) {
+    secondsStr = seconds.toFixed(1);
+  }
 
-        if (minutes > 0) {
-            if (seconds < 10) {
-                secondsStr = '0' + secondsStr;
-            }
-            return `${minutes}:${secondsStr}`;
-        }
-        return secondsStr;
+  if (minutes > 0) {
+    if (seconds < 10) {
+      secondsStr = "0" + secondsStr;
+    }
+    return `${minutes}:${secondsStr}`;
+  }
+  return secondsStr;
 }
 
 /**
@@ -59,25 +69,25 @@
  * @param: pxPerSec
  */
 function timeInterval(pxPerSec) {
-    var retval = 1;
-    if (pxPerSec >= 25 * 100) {
-        retval = 0.01;
-    } else if (pxPerSec >= 25 * 40) {
-        retval = 0.025;
-    } else if (pxPerSec >= 25 * 10) {
-        retval = 0.1;
-    } else if (pxPerSec >= 25 * 4) {
-        retval = 0.25;
-    } else if (pxPerSec >= 25) {
-        retval = 1;
-    } else if (pxPerSec * 5 >= 25) {
-        retval = 5;
-    } else if (pxPerSec * 15 >= 25) {
-        retval = 15;
-    } else {
-        retval = Math.ceil(0.5 / pxPerSec) * 60;
-    }
-    return retval;
+  var retval = 1;
+  if (pxPerSec >= 25 * 100) {
+    retval = 0.01;
+  } else if (pxPerSec >= 25 * 40) {
+    retval = 0.025;
+  } else if (pxPerSec >= 25 * 10) {
+    retval = 0.1;
+  } else if (pxPerSec >= 25 * 4) {
+    retval = 0.25;
+  } else if (pxPerSec >= 25) {
+    retval = 1;
+  } else if (pxPerSec * 5 >= 25) {
+    retval = 5;
+  } else if (pxPerSec * 15 >= 25) {
+    retval = 15;
+  } else {
+    retval = Math.ceil(0.5 / pxPerSec) * 60;
+  }
+  return retval;
 }
 
 /**
@@ -92,25 +102,25 @@ function timeInterval(pxPerSec) {
  * @param pxPerSec
  */
 function primaryLabelInterval(pxPerSec) {
-    var retval = 1;
-    if (pxPerSec >= 25 * 100) {
-        retval = 10;
-    } else if (pxPerSec >= 25 * 40) {
-        retval = 4;
-    } else if (pxPerSec >= 25 * 10) {
-        retval = 10;
-    } else if (pxPerSec >= 25 * 4) {
-        retval = 4;
-    } else if (pxPerSec >= 25) {
-        retval = 1;
-    } else if (pxPerSec * 5 >= 25) {
-        retval = 5;
-    } else if (pxPerSec * 15 >= 25) {
-        retval = 15;
-    } else {
-        retval = Math.ceil(0.5 / pxPerSec) * 60;
-    }
-    return retval;
+  var retval = 1;
+  if (pxPerSec >= 25 * 100) {
+    retval = 10;
+  } else if (pxPerSec >= 25 * 40) {
+    retval = 4;
+  } else if (pxPerSec >= 25 * 10) {
+    retval = 10;
+  } else if (pxPerSec >= 25 * 4) {
+    retval = 4;
+  } else if (pxPerSec >= 25) {
+    retval = 1;
+  } else if (pxPerSec * 5 >= 25) {
+    retval = 5;
+  } else if (pxPerSec * 15 >= 25) {
+    retval = 15;
+  } else {
+    retval = Math.ceil(0.5 / pxPerSec) * 60;
+  }
+  return retval;
 }
 
 /**
@@ -129,110 +139,108 @@ function primaryLabelInterval(pxPerSec) {
  * @param pxPerSec
  */
 function secondaryLabelInterval(pxPerSec) {
-    // draw one every 10s as an example
-    return Math.floor(10 / timeInterval(pxPerSec));
+  // draw one every 10s as an example
+  return Math.floor(10 / timeInterval(pxPerSec));
 }
-  export default {
-    name: "wavesurfer",
-    props : {
-        value : String,
+export default {
+  name: "wavesurfer",
+  props: {
+    value: String,
+  },
+  data() {
+    return {
+      currentTime: 0.0,
+      volume: 100,
+      wavesurfer: null,
+    };
+  },
+  mounted() {
+    this.createWave(this.value);
+  },
+  watch: {
+    value: function(value) {
+      this.wavesurfer.destroy();
+      this.createWave(value);
     },
-    data (){
-        return {
-            currentTime: 0.00,
-            volume: 100,
-            wavesurfer: null,
-        }
-    },
-    mounted(){
-        this.createWave(this.value);
-      
-    },
-    watch: {
-        value : function(value){
-            this.wavesurfer.destroy();
-            this.createWave(value);
-        }
-    },
-    methods : {
-        createWave (value) {
-            //var TimelinePlugin = window.WaveSurfer.timeline;
+  },
+  methods: {
+    createWave(value) {
+      //var TimelinePlugin = window.WaveSurfer.timeline;
 
-            this.wavesurfer = WaveSurfer.create({
-                container: "#wave",
-                waveColor: 'tomato',
-                progressColor: '',
-                normalize : true,
-                barwidth: 2,
-                plugins: [
-                   TimelinePlugin.create({
-                        container: "#wave-timeline",
-                        // primaryColor: 'blue',
-                        // secondaryColor: '#fff',
-                        // primaryFontColor: 'blue',
-                        // secondaryFontColor: '#fff'
-                        formatTimeCallback: formatTimeCallback,
-                        timeInterval: timeInterval,
-                        primaryLabelInterval: primaryLabelInterval,
-                        secondaryLabelInterval: secondaryLabelInterval,
-                        cursorWidth: 2,
-                        removeMediaElementOnDestroy: true,
-                    })
-                ],
-            });
-            this.wavesurfer.load(value);
-            this.wavesurfer.on("ready", function() {
-                //this.wavesurfer.play();
-            });
-                
-            
-            },
-            timeDisplay(time){
-                // Hours, minutes and seconds
-                let hrs = Math.floor(time / 3600);
-                let mins = Math.floor((time % 3600) / 60);
-                let secs = Math.floor(time % 60);
-                // Output like "1:01" or "4:03:59" or "123:03:59"
-                let output = '';
-                if (hrs > 0) {
-                    output += '' + hrs + ':' + (mins < 10 ? '0' : '');
-                }
-                output += '' + mins + ':' + (secs < 10 ? '0' : '');
-                output += '' + secs;
-                return output;
-            },
-            setVolume(){
-                let floatValue = this.volume/100
-                this.wavesurfer.setVolume(Number.parseFloat(floatValue.toFixed(2)))
-            },
-            play() {
-                this.timeInterval = setInterval(() => {
-                    this.currentTime = this.timeDisplay(this.wavesurfer.getCurrentTime())
-                }, 1000);
-                this.wavesurfer.play();
-            },
-
-        },
-        computed : {
-            getDuration: function() {
-                if(this.wavesurfer){
-                    
-                    return this.timeDisplay(this.wavesurfer.getDuration());
-                }
-                else{
-                    return null
-                }
-            },
+      this.wavesurfer = WaveSurfer.create({
+        container: "#wave",
+        waveColor: "#F4A460",
+        progressColor: "",
+        normalize: true,
+        barwidth: 2,
+        plugins: [
+          TimelinePlugin.create({
+            container: "#wave-timeline",
+            // primaryColor: 'blue',
+            // secondaryColor: '#fff',
+            // primaryFontColor: 'blue',
+            // secondaryFontColor: '#fff'
+            formatTimeCallback: formatTimeCallback,
+            timeInterval: timeInterval,
+            primaryLabelInterval: primaryLabelInterval,
+            secondaryLabelInterval: secondaryLabelInterval,
+            cursorWidth: 2,
+            removeMediaElementOnDestroy: true,
+          }),
+        ],
+      });
+      this.wavesurfer.load(value);
+      this.wavesurfer.on("ready", function() {
+        //this.wavesurfer.play();
+      });
     },
-            
-
-  };
+    timeDisplay(time) {
+      // Hours, minutes and seconds
+      let hrs = Math.floor(time / 3600);
+      let mins = Math.floor((time % 3600) / 60);
+      let secs = Math.floor(time % 60);
+      // Output like "1:01" or "4:03:59" or "123:03:59"
+      let output = "";
+      if (hrs > 0) {
+        output += "" + hrs + ":" + (mins < 10 ? "0" : "");
+      }
+      output += "" + mins + ":" + (secs < 10 ? "0" : "");
+      output += "" + secs;
+      return output;
+    },
+    setVolume() {
+      let floatValue = this.volume / 100;
+      this.wavesurfer.setVolume(Number.parseFloat(floatValue.toFixed(2)));
+    },
+    play() {
+      this.timeInterval = setInterval(() => {
+        this.currentTime = this.timeDisplay(this.wavesurfer.getCurrentTime());
+      }, 1000);
+      this.wavesurfer.play();
+    },
+  },
+  computed: {
+    getDuration: function() {
+      if (this.wavesurfer) {
+        return this.timeDisplay(this.wavesurfer.getDuration());
+      } else {
+        return null;
+      }
+    },
+  },
+};
 </script>
 <style>
-.waveform{
-    display: table; 
-    margin-left: auto; 
-    margin-right: auto;
+.waveform {
+  display: table;
+  margin-left: auto;
+  margin-right: auto;
 }
-
+.audioPlayButtons {
+  width: 100px;
+  height: 40px;
+  border-radius: 20px;
+  border: 2px solid;
+  margin: 5px;
+}
 </style>
