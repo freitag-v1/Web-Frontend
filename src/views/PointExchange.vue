@@ -31,12 +31,12 @@
               </b-form-valid-feedback>
         </b-form>
         <br>
-        <b-button id = "firstToggle" v-if= "pointValidation" v-b-toggle.collapse-1 variant="outline-info">포인트 환전</b-button>
+        <b-button id ="exchangeButton" v-if= "pointValidation" v-b-toggle.collapse-1 variant="outline-info">포인트 환전</b-button>
     </b-card-body>
-        <b-collapse id="collapse-1" class="check" v-if= "pointValidation">
+      <b-collapse id="collapse-1" class="check" v-if= "pointValidation">
             <b-card class = "passwordCheck">
             <b-form @submit.stop.prevent>
-                <label for="text-password">Your Password: </label> <!--password validation 여기서 해줌  -->
+                <label for="text-password">비밀번호: </label>
                 <b-input v-model= "userPassword" type="password" id="first-text-password"></b-input>
               <b-form-invalid-feedback :state="userPasswordValidation">
               포인트 환전을 위해서 비밀번호 확인이 필요합니다. 
@@ -45,7 +45,8 @@
               확인이 완료되었습니다. 환전이 가능합니다.
               </b-form-valid-feedback>
                 </b-form>
-                <b-button id="modifybutton" v-if="userPasswordValidation" v-on:click ="exchangePoint" variant="outline-info">환전</b-button><!--v-if해서 비밀번호 맞으면 보여주도록-->
+                <br>
+                <b-button id="realExchangeButton" v-if="userPasswordValidation" v-on:click ="exchangePoint">환전</b-button>
                 <br>
                 <br>
             </b-card>
@@ -71,8 +72,7 @@ export default {
         wantPoint: 0,
       }
   },
-  async beforeCreate() { //페이지 간 라우터로 데이터를 주고받을지 아님 다시 mypage에 접근해서 가져올지 고민
-   
+  async beforeCreate() { 
     axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
       this.userPoint = this.$route.params.point;
       this.userName = this.$route.params.userName;
@@ -81,7 +81,6 @@ export default {
   computed: {
     userPasswordValidation() {
          var checkPassword = bcrypt.compareSync(this.userPassword, userBcryptPwd, function(err,res) {
-          //console.log("1" + res);
           return res;
         });
         return checkPassword;
@@ -115,8 +114,7 @@ export default {
 #wantPoint {
     max-width: 300px;
     margin: auto;
-    margin-top: 30px;
-    
+    margin-top: 30px; 
 }
 .point{
     margin: auto;
@@ -125,5 +123,43 @@ export default {
   max-width: 300px;
   margin: auto;
   margin-top: 30px;
+}
+#exchangeButton {
+  width: 150px;
+  height: 40px;
+  font-size: 20px;
+  text-transform: uppercase;
+  color: #fff;
+  background-color: #4682b4;
+  border: 2px solid #4682b4;
+  box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease 0s;
+  cursor: pointer;
+  outline: none;
+}
+#exchangeButton:hover {
+  background-color: #4682b4;
+  box-shadow: 0px 15px 20px rgba(40, 173, 252, 0.4);
+  color: #fff;
+  transform: translateY(-7px);
+}
+#realExchangeButton {
+  width: 150px;
+  height: 40px;
+  font-size: 20px;
+  text-transform: uppercase;
+  color: #fff;
+  background-color: #4682b4;
+  border: 2px solid #4682b4;
+  box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease 0s;
+  cursor: pointer;
+  outline: none;
+}
+#realExchangeButton:hover {
+  background-color: #4682b4;
+  box-shadow: 0px 15px 20px rgba(40, 173, 252, 0.4);
+  color: #fff;
+  transform: translateY(-7px);
 }
 </style>

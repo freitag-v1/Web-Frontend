@@ -1,10 +1,9 @@
 <template>
-
-    <div class = "signUpForm" style ="overflow:auto">
-     <b-card no-body class="overflow-hidden" style="height: auto;">
+    <div class = "MypageModify" style ="overflow:auto">
+     <b-card no-body class="overflow-hidden" style="height: auto; margin : auto;">
          <b-row no-gutters>
       <b-col md="6">
-        <b-card-img src="https://picsum.photos/400/400/?image=20" alt="Image" class="rounded-0"></b-card-img>
+        <img src="../assets/modify.png" alt="Image" class="rounded-0"></img>
       </b-col>
        <b-col md="6">
         <b-card-body title="개인 정보 수정">
@@ -12,11 +11,9 @@
       <b-form-group
         id="input-group-1"
         label-for="input-1"
-        description="수정을 원하는 정보를 수정하면 됩니다."
       >
-
       </b-form-group>
-      <b-form-group id="input-group-2" label="성함:" label-for="input-2">
+      <b-form-group id="input-group-2" label="이름:" label-for="input-2">
         <b-form-input
           id="input-2"
           v-model="userName"
@@ -40,7 +37,6 @@
         Looks Good.
       </b-form-valid-feedback>
       </b-form-group>
-
       <b-form-group id="input-group-4" label="소속 기관:" label-for="input-4">
         <b-form-input
           id="input-4"
@@ -50,11 +46,10 @@
         ></b-form-input>
       </b-form-group>
       </b-form-group>
-      <p>휴대전화 번호 </p>
+      <p style="font-weight: lighter; font-size : 20px;">휴대전화 번호 </p>
       <VuePhoneNumberInput v-model="userPhonenumber" />
       <br/>
-      <b-button class="button" v-on:click = "accountAuthentication" variant="outline-primary">계좌 변경</b-button>
-      <b-button class="button" v-on:click = "modify" variant="outline-primary">저장</b-button>
+      <b-button id="saveButton" v-on:click = "modify">저장</b-button>
       <br/>
       
     </b-form>
@@ -70,9 +65,8 @@
 import VuePhoneNumberInput from 'vue-phone-number-input';
 import axios from 'axios';
 
-
-var user = null;
 var modifySuccess = '';
+
   export default {
     name: 'MypageModify',
     components: {
@@ -80,6 +74,7 @@ var modifySuccess = '';
     },
     data() {
       return {
+        user: '',
         show: true,
         userEmail: '',
         userAffiliation: '',
@@ -92,7 +87,7 @@ var modifySuccess = '';
     async beforeCreate() {
       var state = await localStorage.getItem('bankState');
       axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
-      user = this.$route.params.user;
+      this.user = this.$route.params.user;
     },
     computed: {
       userEmailValidation() { // email에는 @이 필수 요소니까 @ 여부로 validation, 그리고 .com 과 .kr 로 끝나는지를 확인
@@ -139,26 +134,27 @@ var modifySuccess = '';
                 event.returnValue = "";
         },
         async modify() {
-            console.log(user.userName, user.userEmail, user.userAffiliation, user.userPhone);
-            var userNamedata = this.userName != '' ? this.userName : user.userName;
-            var userEmaildata = this.userEmail != '' ? this.userEmail : user.userEmail;
-            var userAffiliationdata = this.userAffiliation != '' ? this.userAffiliation : user.userAffiliation;
-            var userPhonedata = this.userPhonenumber != null ? this.userPhonenumber : user.userPhone;
-            console.log(userNamedata,userEmaildata,userAffiliationdata,userPhonedata);
-            const modifyRes = await axios.put("/api/mypage/update?userName="+userNamedata+"&userEmail="+userEmaildata+"&userAffiliation="+userAffiliationdata+"&userPhone="+userPhonedata
-              // params : {
-              //   userId: userId,
-              //   userName : userNamedata,
-              //   userEmail : userEmaildata,
-              //   userAffiliation : userAffiliationdata,
-              //   userPhone : userPhonedata,
-              // }
+            //비밀번호 - 이거 지우고 붙이는 역할
+            var parseNumber = this.userPhonenumber.split('-');
+            var parsePhoneNumber = parseNumber[0].concat(parseNumber[1]);
+            parsePhoneNumber = parsePhoneNumber.concat(parseNumber[2]);
+
+            var userNamedata = this.userName != '' ? this.userName : this.user.userName;
+            var userEmaildata = this.userEmail != '' ? this.userEmail : this.user.userEmail;
+            var userAffiliationdata = this.userAffiliation != '' ? this.userAffiliation : this.user.userAffiliation;
+            var userPhonedata = parsePhoneNumber != null ? parsePhoneNumber : this.user.userPhone;
+            const modifyRes = await axios.put("/api/mypage/update","",{
+              params : {
+                userName : userNamedata,
+                userEmail : userEmaildata,
+                userAffiliation : userAffiliationdata,
+                userPhone : userPhonedata,
+              }
+              }
             )
             .then(res => {
               modifySuccess = res.headers.update;
-              console.log(res.headers.update);
               if(res.headers.update == "success"){
-                
                   alert("수정이 완료되었습니다.");
                   setTimeout(()=> {
                     this.$router.push("/");
@@ -168,14 +164,28 @@ var modifySuccess = '';
                 alert("수정을 실패하였습니다.");
               }
             })
-
-
         },
-        async accountAuthentication() {
-            var state = await localStorage.getItem('bankState');
-            window.open("https://testapi.openbanking.or.kr/oauth/2.0/authorize?auth_type=0&scope=login+transfer+inquiry&response_type=code&redirect_uri=http%3a%2f%2fwodnd999999.iptime.org%3a8080%2fexternalapi%2fopenbanking%2foauth%2ftoken&lang=kor&state="+state+"&client_id=XXyvh2Ij7l9rss0HAVObS880qY3penX57JXkib9q");
-
-        }
     },
   }
 </script>
+<style>
+#saveButton {
+  width: 150px;
+  height: 40px;
+  font-size: 20px;
+  text-transform: uppercase;
+  color: #fff;
+  background-color: #4682b4;
+  border: 2px solid #4682b4;
+  box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease 0s;
+  cursor: pointer;
+  outline: none;
+}
+#saveButton:hover {
+  background-color: #4682b4;
+  box-shadow: 0px 15px 20px rgba(40, 173, 252, 0.4);
+  color: #fff;
+  transform: translateY(-7px);
+}
+</style>

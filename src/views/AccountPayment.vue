@@ -8,16 +8,17 @@
     class = "point"
   >
     <b-card-body id="userInfoBody">
-      <b-card-title id="projectName" style="font-size: 30px;">{{projectName + "'s Cost"}}</b-card-title>
+      <b-card-title id="projectName" style="font-size: 30px;">{{projectName + "의 비용"}}</b-card-title>
       <div class = "userDetail">
       <b-card-text style="font-size: 20px; text-align:center;">
             <b-icon icon="credit-card" aria-hidden="true"></b-icon>
-            {{"비용 :"+ projectCost}}</b-list-group-item>
+            {{"비용 :"+ projectCost}}
+            </b-list-group-item>
       </b-card-text>
       </div>
       <br>
         <br>
-        <b-button id = "firstToggle" v-on:click="accountPayment" variant="outline-info">계좌이체</b-button>
+        <b-button id = "accountPayButton" v-on:click="accountPayment" variant="outline-info">계좌이체</b-button>
     </b-card-body> 
   </b-card>
     
@@ -44,15 +45,13 @@ export default {
   created() {
     this.fetchData();
   },
-  watch : {
-    '$route' : 'fetchData' //라우터 객체를 감시하고 있다가 fetchData 함수를 호출한다. 
-  },
   methods : {
-    //계좌이체를 해서 payment header 성공이면 성공이니까 홈화면으로 가고,
-    //계좌이체를 해서 payment header 실패라면 계좌이체가 불가능하다고 알려주고 프로젝트 결제 페이지로 이동하자(대신 cost를 파라미터로 보내야한다.)
-    //계좌이체를 해서 payment header 실패이면서 state가 오면 계좌 등록이 되지 않았으므로 계좌 인증 페이지로 이동
       async accountPayment() {
-        const paymentRes = await axios.get('/api/project/account/payment');
+        const paymentRes = await axios.get('/api/project/account/payment', {
+          params: {
+            projectId : this.projectId,
+          }
+        });
         if(paymentRes.headers.payment == "success"){
            alert("계좌이체 성공하였습니다.");
            this.$router.push("/");
@@ -68,6 +67,7 @@ export default {
         }
         else {
           //계좌 인증할 때 로컬스토리지에서 가져와서 헤더로 받은 state저장
+          alert("계좌가 등록되지 않았습니다. 계좌 인증 페이지로 이동합니다.")
           localStorage.bankState = paymentRes.headers.state;
           this.$router.push({name : "Account", 
               params : {
@@ -78,7 +78,6 @@ export default {
               }});
         }
 
-        
       },
       async fetchData() {
           this.projectCost = this.$route.params.cost; //스토리지에서 가져오고 
@@ -93,9 +92,17 @@ export default {
 }
 </script>
 <style>
-#accountInput {
-  max-width: 300px;
-  margin: auto;
-  margin-top: 30px;
+#accountPayButton {
+  width: 200px;
+  background-color: #4682b4;
+  border: none;
+  font-size: 19px;
+  color: black;
+}
+#accountPayButton:hover {
+  background-color: #4682b4;
+  box-shadow: 0px 15px 20px rgba(40, 173, 252, 0.4);
+  color: #fff;
+  transform: translateY(-7px);
 }
 </style>
