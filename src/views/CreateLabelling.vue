@@ -1,5 +1,5 @@
 <template>
-    <div class ="createCollection">
+    <div class ="createLabelling">
     <div>
         <b-card class ="createForm" body-class="text-center" header-tag="nav">
             <img id="createLabelLogo" src = "../assets/createlabelingLogo.png"/>
@@ -47,7 +47,7 @@
             <br>
             <p>라벨링 데이터 라벨</p>
             <b-button variant="light" class="addClassButton" v-on:click="addClass">
-                    Add <b-icon icon="plus" aria-hidden="true"></b-icon>
+                    라벨 추가 <b-icon icon="plus" aria-hidden="true"></b-icon>
             </b-button>
                 <div v-for="data in dataClass">
                     <b-form-input size="sm" id="inputClass" placeholder="라벨링 클래스" v-model="data.name" ></b-form-input>
@@ -303,18 +303,11 @@ export default {
     height : 300px;
 }
 #createProjectButton{
-    width: 200px;
-    height: 60px;
-    font-size: 20px;
-    letter-spacing: 2.5px;
-    font-weight: 500;
-    color: #fff;
-    background-color: #4682B4;
-    border: 2px solid #4682B4;
-    box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease 0s;
-    cursor: pointer;
-    outline: none;
+  width: 200px;
+  background-color: #4682b4;
+  border: none;
+  font-size: 19px;
+  color: black;
 
 }
 #createProjectButton:hover {

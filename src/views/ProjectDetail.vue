@@ -165,9 +165,10 @@ let day = today.getDay();  // 요일
 }
 #startButton{
       height      : auto;
+      margin      : auto;
       line-height : auto;
       text-align  : center;
-      width       : auto;
+      width       : 500px;
       border      : 2px solid #4682B4;
       padding-left:10px;
       padding-right:10px;
@@ -189,5 +190,6 @@ let day = today.getDay();  // 요일
   font-weight: lighter;
   font-size: 18px;
 }
+
 
 </style>

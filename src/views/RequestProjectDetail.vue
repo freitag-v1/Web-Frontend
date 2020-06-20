@@ -38,7 +38,6 @@
             v-if="project.dataType == 'boundingBox'"
             variant="info"
           ></b-icon>
-          <!--<b-icon icon="columns-gap" v-if="project.dataType == 'classification'" variant="warning"></b-icon>-->
           {{ " 이미지 바운딩 박스" }}
         </b-card-text>
       </b-card-body>
@@ -71,6 +70,7 @@
       <br />
       <b-card-footer style="font-weight: bolder">작업 진행 상황</b-card-footer>
       <br />
+      <p id="projectStatus">{{ project.status }}</p>
       <progressPieChart
         style="width: 400px; height: 400px; margin: auto;"
         :chartData="chartData"
@@ -83,6 +83,15 @@
       <b-card-text class="content" style="padding : 7px; ">{{
         "진행 중인 데이터 갯수: " + project.progressData
       }}</b-card-text>
+      <br />
+      <div class="buttons">
+        <b-button id="downloadButton" v-on:click="download">
+          <b-icon icon="download"></b-icon> 결과물 다운로드
+        </b-button>
+        <b-button id="endButton" v-on:click="endProject">
+          <b-icon icon="box-arrow-right"></b-icon> 프로젝트 종료
+        </b-button>
+      </div>
       <br />
       <br />
     </b-card>
@@ -176,10 +185,7 @@ export default {
   },
   async beforeCreate() {
     var searchproject = await localStorage.getItem("searchProject"); //this.$route.params.project;
-    console.log(JSON.parse(searchproject));
-
     this.project = JSON.parse(searchproject).projectDto;
-
     this.classNameList = JSON.parse(searchproject).classNameList; //this.$route.params.classList;
     this.chartData.datasets[0].data[0] = this.project.progressData;
     this.chartData.datasets[0].data[1] = this.project.validatedData;
@@ -190,44 +196,16 @@ export default {
     }
 
     console.log(this.chartData);
-    //this.exampleDownload();
   },
   methods: {
-    // async exampleDownload() {
-    //     if(this.project.exampleContent.includes(".txt")){
-    //           s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
-    //               responseType: 'text',
-    //           }).then((res) =>{
-    //             var textExample = document.createElement('p');
-    //             textExample.innerText = res.data;
-    //             document.getElementById("exampleContent").appendChild(textExample);
-    //             localStorage.exampleContent = res.data;
-    //           });
-    //       }
-    //       else {
-    //             s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
-    //               responseType: 'blob',
-    //           }).then((res) => {
-    //               var exampleFile = new File([res.data], this.project.exampleContent,{ type: res.headers['content-type'], lastModified : Date.now() } );
-    //               const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
-    //               var content = {
-    //                     type : res.data.type,
-    //                     file : exampleFile,
-    //                   }
-    //               localStorage.exampleContent = JSON.stringify(content);
-    //               if(this.project.exampleContent.includes("image/")){
-    //                  this.downloadUrl = url;
-    //               }
-    //               else {
-    //                  this.audioUrl = url;
-    //               }
-    //           });
-    //       }
-    // },
+    download() {},
+    endProject() {},
   },
 };
 </script>
 <style>
+font-size: 20px;
+
 .detailCard {
   max-width: 1000px;
   margin: auto;
@@ -237,15 +215,39 @@ export default {
   font-size: 20px;
   font-weight: lighter;
 }
-.agreement {
-  width: 800px;
+#projectStatus {
+  font-size: 30px;
+  background-color: #ffebcd;
+  width: 300px;
   margin: auto;
-  border-style: dashed;
+  font-weight: lighter;
 }
-#startButton {
-  margin: auto;
-  width: 400px;
-  height: 70px;
-  font-size: 20px;
+#downloadButton {
+  width: 200px;
+  background-color: #4682b4;
+  border: none;
+  font-size: 19px;
+  color: black;
+}
+#downloadButton:hover {
+  background-color: #4682b4;
+  box-shadow: 0px 15px 20px rgba(40, 173, 252, 0.4);
+  color: #fff;
+  transform: translateY(-7px);
+  border-radius: 8px;
+}
+#endButton {
+  width: 200px;
+  background-color: #fa8072;
+  border: none;
+  font-size: 19px;
+  color: black;
+}
+#endButton:hover {
+  background-color: #fa8072;
+  box-shadow: 0px 15px 20px rgba(40, 173, 252, 0.4);
+  color: #fff;
+  transform: translateY(-7px);
+  border-radius: 8px;
 }
 </style>

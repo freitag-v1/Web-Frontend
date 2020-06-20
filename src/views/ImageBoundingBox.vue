@@ -33,7 +33,7 @@
     <br>
     <h5><데이터 라벨></h5>
     <div v-for="value, index in colorListByLabel">
-        <hr :color="value.strokeColor" style="width : 100px;"> {{value.className}} </hr>
+        <hr :color="value.strokeColor" style="width : 100px; margin : auto;"> {{value.className}} </hr>
     </div>
     <br>
     <b-form-radio-group
@@ -58,10 +58,10 @@
             last-text="마지막"></b-pagination>
     </div>
     <div class = "buttons">
-        <b-button id = "removeBox"variant="primary" v-on:click="clearBox">
+        <b-button id = "removeBoxButton"  v-on:click="clearBox">
             <b-icon icon="trash-fill"></b-icon> 박스 지우기
         </b-button>
-        <b-button id = "completeBox" variant="warning" v-on:click="upload" v-model ="successLabelling">
+        <b-button id = "endWorkBoxButton" v-on:click="upload" v-model ="successLabelling">
                 <b-icon icon="upload"></b-icon> 작업 완료
         </b-button>
     </div>
@@ -73,60 +73,53 @@
 </template>
 <script>
 import axios from 'axios';
-//import VueCropper from 'vue-cropperjs';
 
 
+
+/************************************Naver Object Storage 접근****************************/
 
 const endpoint = 'kr.object.ncloudstorage.com';
 const region = 'kr-standard';
 const access_key = '4WhQkGZPLH1sVg6cWLtK';
 const secret_key = 'xmKmQXfbYyyPuXyEw1KeDXE7CveACDQdWUPACtzP';
-
 const v4 = require('aws-signature-v4');
-
 var s3Client = axios.create();
-
 s3Client.interceptors.request.use(function (config) {
         var timestamp = Date.now();
         var headers = {};
         headers['host'] = endpoint;
         headers['x-amz-content-sha256'] = 'UNSIGNED-PAYLOAD';
         headers['x-amz-date'] = new Date(timestamp).toISOString().replace(/[:\-]|\.\d{3}/g, "");
-
         var canonicalRequest = v4.createCanonicalRequest('GET', config.url, {}, headers, 'UNSIGNED-PAYLOAD', true);
         var stringToSign = v4.createStringToSign(timestamp, region, 's3', canonicalRequest);
         var signature = v4.createSignature(secret_key, timestamp, region, 's3', stringToSign);
         var authorization = 'AWS4-HMAC-SHA256 Credential=' + access_key + '/' +
                         v4.createCredentialScope(timestamp, region, 's3') + ', SignedHeaders=' +
                         v4.createSignedHeaders(headers) + ', Signature=' + signature;
-
 	    config.url = '/object' + config.url;
         config.headers['x-amz-content-sha256'] = headers['x-amz-content-sha256'];
         config.headers['x-amz-date'] = headers['x-amz-date'];
         config.headers['Authorization'] = authorization;
-
         return config;
     });
-
 const local_file_path = '../assets';
 
-//바운딩 박스를 그릴 때 필요한 데이터
 
-var ctx;
+/************************************바운딩 박스 그리기******************************************/
 var canvas;
-var canvasX = 0;
-var canvasY = 0;
+var ctx;
 var last_mouseX = 0;
 var last_mouseY = 0;
 var mouseX = 0;
 var mouseY = 0;
 var isMouseDown = false;
-var boxAnswer = new Map(); //각 문제에 대한 answer
-var boxAnswerList = new Array(); //이 문제들의 답을 다 담고 있는 list
+var boxAnswer = new Map(); //각 문제에 대한 이전 작업 결과
+var realBoxAnswer = new Map();
+var boxAnswerList = new Array(); //이전에 작업한 box의 좌표들이 담긴 배열
+var realBoxAnswerList = new Array(); //서버에 전송되어 저장되는 좌표
 var currentPageL = 1;
 var selectedLabel;
 var colorByLabel = new Array(); //라벨마다 
-
 
 //색 랜덤으로 추출하는거
 function getRandomColor() {
@@ -142,28 +135,27 @@ function getRandomColor() {
 
 //마우스가 눌러질 때
 function down(e){
-    last_mouseX = e.offsetX - canvasX;
-    last_mouseY = e.offsetY - canvasY;
+    last_mouseX = e.offsetX;
+    last_mouseY = e.offsetY;
     isMouseDown = true;
 }
-
 //눌러진 마우스가 놓일 때 이 때 그림을 그려야한다. 
 function up(e) {
     draw();
 }
-
 //마우스가 움직이는 동안
 function move(e){
-    mouseX = e.offsetX - canvasX;
-    mouseY = e.offsetY - canvasY;
+    mouseX = e.offsetX;
+    mouseY = e.offsetY;
 }
+
 
 function draw(){
     if(isMouseDown){
         ctx.beginPath();
         var width = mouseX - last_mouseX;
         var height = mouseY - last_mouseY;
-        //박스를 만들고
+        //박스를 그림
         ctx.rect(last_mouseX, last_mouseY, width, height);
         //선택된 class에 맞는 색을 찾음.
         var currentColor = colorByLabel.find(color => color.className == selectedLabel);
@@ -174,36 +166,60 @@ function draw(){
         ctx.font = "18px Verdana";
         ctx.fillStyle = currentColor.strokeColor;
         ctx.fillText(selectedLabel,last_mouseX + 5,last_mouseY - 5);
-        //이게 박스 좌표여서 이거를 서버에 보내면 된다. 
-        var answerCoord = last_mouseX+" "+last_mouseY+" "+width+" "+height;
+        //작업한 좌표를 나중에 그릴 수 있도록 
+        var workedBoxCoord = last_mouseX+" "+last_mouseY+" "+width+" "+height;
+        //실제 서버에 보낼 좌표 xmin xmax, ymin, ymax
+        var xMin = (last_mouseX / canvas.width).toFixed(2);
+        var yMin = (last_mouseY / canvas.height).toFixed(2);
+        var xMax = (mouseX / canvas.width).toFixed(2);
+        var yMax = (mouseY / canvas.height).toFixed(2);
+        var answerCoord = xMin+" "+yMin+" "+xMax+" "+yMax;
         //아무런 작업 결과가 없는 경우
         if(boxAnswerList[currentPageL - 1] == null){
             //박스가 여러개인 경우
              if(boxAnswer.has(selectedLabel)){
-                var multiAnswerString = boxAnswer.get(selectedLabel)+"&"+answerCoord;
+                var multiAnswerString = boxAnswer.get(selectedLabel)+"&"+workedBoxCoord;
                 boxAnswer.set(selectedLabel, multiAnswerString);
             }//박스가 한개인 경우
             else {
-                boxAnswer.set(selectedLabel, answerCoord);
+                boxAnswer.set(selectedLabel, workedBoxCoord);
             }
             boxAnswerList[currentPageL - 1] = boxAnswer;
         }
         else {
             //작업된 결과에 선택된 라벨에 대해 작업 결과가 있는 경우
             if(boxAnswerList[currentPageL - 1].has(selectedLabel)){
-                var multiAnswerString = boxAnswerList[currentPageL - 1].get(selectedLabel)+"&"+answerCoord;
+                var multiAnswerString = boxAnswerList[currentPageL - 1].get(selectedLabel)+"&"+workedBoxCoord;
                 boxAnswerList[currentPageL - 1].set(selectedLabel, multiAnswerString);
             }//작업 결과 없는 경우
             else {  
-                boxAnswerList[currentPageL -1].set(selectedLabel, answerCoord);
+                boxAnswerList[currentPageL -1].set(selectedLabel, workedBoxCoord);
             }
         }
-        
-        console.log(boxAnswerList);
+        if(realBoxAnswerList[currentPageL - 1] == null){
+            //박스가 여러개인 경우
+             if(realBoxAnswer.has(selectedLabel)){
+                var multiAnswerString = realBoxAnswer.get(selectedLabel)+"&"+answerCoord;
+                realBoxAnswer.set(selectedLabel, multiAnswerString);
+            }//박스가 한개인 경우
+            else {
+                realBoxAnswer.set(selectedLabel, answerCoord);
+            }
+            realBoxAnswerList[currentPageL - 1] = realBoxAnswer;
+        }
+        else {
+            //작업된 결과에 선택된 라벨에 대해 작업 결과가 있는 경우
+            if(realBoxAnswerList[currentPageL - 1].has(selectedLabel)){
+                var multiAnswerString = realBoxAnswerList[currentPageL - 1].get(selectedLabel)+"&"+answerCoord;
+                realBoxAnswerList[currentPageL - 1].set(selectedLabel, multiAnswerString);
+            }//작업 결과 없는 경우
+            else {  
+                realBoxAnswerList[currentPageL -1].set(selectedLabel, answerCoord);
+            }
+        }
     }
     isMouseDown = false;
 }
-
 //이전에 작업한 바운딩 박스를 돌아가도 보여질 수 있도록 
 function workedBoxDraw(x, y, width, height, className){
     ctx.beginPath();
@@ -219,13 +235,13 @@ function workedBoxDraw(x, y, width, height, className){
     ctx.fillText(className, x + 5, y - 5);
 }
 
+
+
  export default {
     name: 'ImageCollection',
     data() {
         return {
             problemList:[],
-            problem: '',
-            classNameList: [],
             project: '',
             successLabelling: false,
             ctx: '',
@@ -236,61 +252,36 @@ function workedBoxDraw(x, y, width, height, className){
             problemContentList : [],
             options : [],
             selected : '',
-            boxAnswer: null,
-            colorListByLabel : [],
             failCount : 0,
             successCount : 0,
-
+            colorListByLabel : [],
+            classNameList: [],
         }
     },
     async beforeCreate() {
       axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
     },
     async created() {
-        this.fetchData();
-        var searchproject = await localStorage.getItem('searchProject');
-        axios.defaults.headers.common['projectId'] = this.project.projectId;
-        await axios.get("/api/work/boundingbox/start").then(boundingBoxRes => {
-            if(boundingBoxRes.headers.problems == "success"){
-                this.problemList = boundingBoxRes.data;
-                this.workhistoryId = boundingBoxRes.headers.workhistory;
-                this.problemDataDownload();
-            }
-            else {
-                alert("잘못 접근한 프로젝트이거나 문제 세트를 생성할 수 없습니다.");
-                window.location.href = "/project";
-            }
-            
-
-        }).catch(function(err) {
-            if(err){
-                alert("잘못 접근한 프로젝트이거나 문제 세트를 생성할 수 없습니다.");
-                window.location.href = "/project";
-            }
-            
-        })
-
-        //canvas를 생성해서 여기 위에서 진행을 할 수 있도록 
-        this.canvas = document.getElementById("boundingImage");
-        this.ctx = this.canvas.getContext('2d');
+        await this.fetchData();
+        //canvas 생성 
+        canvas = document.getElementById("boundingImage");
+        ctx = canvas.getContext('2d');
         // 캔버스의 마우스 이벤트 핸들러 등록
-        ctx = this.ctx;
-        canvas = this.canvas;
-        this.canvas.addEventListener( "mousemove", move);
-        this.canvas.addEventListener( "mousedown", down);
-        this.canvas.addEventListener( "mouseup", up);
-
+        canvas.addEventListener( "mousemove", move);
+        canvas.addEventListener( "mousedown", down);
+        canvas.addEventListener( "mouseup", up);
     },
     watch : {
         '$route' : 'fetchData',
         currentPageV : function(page) {
             currentPageL = page;
             boxAnswer = new Map();
+            realBoxAnswer = new Map();
             //페이지 바뀔 때마다 이미지 다르게 보여야하기 때문에
             ctx.clearRect(0,0,canvas.width, canvas.height);
             var originalImage = new Image();
             originalImage.src = this.problemContentList[page - 1].blob;
-            var imageContext = this.ctx;
+            var imageContext = ctx;
             //페이지 바뀔 때마다 이미지 새로 띄우고 이전에 한 작업을 보여줄 수 있도록 
             originalImage.onload = function() {
                 var scale = Math.min(canvas.width / originalImage.width, canvas.height / originalImage.height);
@@ -322,7 +313,6 @@ function workedBoxDraw(x, y, width, height, className){
         selected : function(className){
             selectedLabel = className;
         }
-
     },
     beforeMount() {
             window.addEventListener("beforeunload", this.preventNav); //웹페이지 닫을 때 일어나는거 
@@ -340,9 +330,27 @@ function workedBoxDraw(x, y, width, height, className){
     },
     methods : {
         async fetchData() {
-            var searchproject = await localStorage.getItem('searchProject');//this.$route.params.project;
+            var searchproject = await localStorage.getItem('searchProject');
             this.project = JSON.parse(searchproject).projectDto;
-            this.classNameList = JSON.parse(searchproject).classNameList;
+            axios.defaults.headers.common['projectId'] = this.project.projectId;
+            await axios.get("/api/work/boundingbox/start").then(boundingBoxRes => {
+            if(boundingBoxRes.headers.problems == "success"){
+                this.problemList = boundingBoxRes.data;
+                this.workhistoryId = boundingBoxRes.headers.workhistory;
+                this.problemDataDownload();
+            }
+            else {
+                alert("잘못 접근한 프로젝트이거나 문제 세트를 생성할 수 없습니다.");
+                window.location.href = "/project";
+            }
+            
+            }).catch(function(err) {
+                if(err){
+                    alert("잘못 접근한 프로젝트이거나 문제 세트를 생성할 수 없습니다.");
+                    window.location.href = "/project";
+                }
+            
+            })
             this.exampleDownload();
         },
         async problemDataDownload() {
@@ -371,9 +379,7 @@ function workedBoxDraw(x, y, width, height, className){
         initialData () {
             var originalImage = new Image();
             originalImage.src = this.problemContentList[0].blob;
-            //boundingImageData = this.imageUrl;
-            var imageContext = this.ctx;
-            
+            var imageContext = ctx;
             originalImage.onload = function() {
                 var scale = Math.min(canvas.width / originalImage.width, canvas.height / originalImage.height);
                 var x = (canvas.width / 2) - (originalImage.width / 2) * scale;
@@ -389,24 +395,22 @@ function workedBoxDraw(x, y, width, height, className){
                         className : this.problemList[0].classNameList[i].className,
                     };
             }
+            this.classNameList = this.problemList[0].classNameList;
             this.colorListByLabel = colorByLabel;
             this.selected = this.options[0].item;  
         },
         preventNav(event) {
-                console.log(boxAnswerList.length);
-                if (boxAnswerList.length == 0 || this.successLabelling) return;
+            if (boxAnswerList.length == 0 || this.successLabelling) return;
                 event.preventDefault();
-                // Chrome requires returnValue to be set.
                 event.returnValue = "";
         },
         clearBox() {
             boxAnswerList[this.currentPageV - 1] = null;
-            console.log(boxAnswerList[this.currentPageV - 1]);
+            realBoxAnswerList[this.currentPageV - 1] = null;
             ctx.clearRect(0,0,canvas.width, canvas.height);
             var originalImage = new Image();
             originalImage.src = this.problemContentList[this.currentPageV - 1].blob;
-            //boundingImageData = this.imageUrl;
-            var imageContext = this.ctx;
+            var imageContext = ctx;
             //페이지 바뀔 때마다 이미지 새로 띄우고 이전에 한 작업을 보여줄 수 있도록 
             originalImage.onload = function() {
                 var scale = Math.min(canvas.width / originalImage.width, canvas.height / originalImage.height);
@@ -422,9 +426,7 @@ function workedBoxDraw(x, y, width, height, className){
             axios.defaults.headers.common['historyId'] = this.workhistoryId;
                 for(let i = 0; i < this.problemList.length; i++){
                     if(boxAnswerList[i] != null || boxAnswerList[i] != undefined) {
-                        console.log("================================")
-                        console.log(i,boxAnswerList[i]);
-                        var answerJson = Object.fromEntries(boxAnswerList[i]);
+                        var answerJson = Object.fromEntries(realBoxAnswerList[i]);
                         await axios.post("/api/work/boundingbox", answerJson, {
                             params : {
                                 problemId : this.problemList[i].problemDto.problemId,
@@ -464,7 +466,6 @@ function workedBoxDraw(x, y, width, height, className){
         },
  
     }
-
  }
 </script>
 <style>
@@ -477,16 +478,6 @@ function workedBoxDraw(x, y, width, height, className){
     margin: auto;
     font-size : 20px;
 }
-#cropImg {
-    margin: auto;
-    max-width: 500px;
-    max-height: 200px;
-}
-#previewImg {
-    margin: auto;
-    max-width: 800px;
-    max-height: 600px;
-}
 .buttons {
     margin: auto;
     width: 50%;
@@ -498,12 +489,32 @@ function workedBoxDraw(x, y, width, height, className){
 #boundingImage {
     cursor : crosshair;
 }
-#removeBox {
-    width: 200px;
+#endWorkBoxButton {
+  width: 150px;
+  background-color: #4682b4;
+  border: none;
+  font-size: 19px;
+  color: black;
 }
-#completeBox{
-    width : 200px;
+#endWorkBoxButton:hover {
+  background-color: #4682b4;
+  box-shadow: 0px 15px 20px rgba(40, 173, 252, 0.4);
+  color: #fff;
+  transform: translateY(-7px);
+  border-radius: 8px;
 }
-
+#removeBoxButton {
+  width: 150px;
+  background-color: #fa8072;
+  border: none;
+  font-size: 19px;
+  color: black;
+}
+#removeBoxButton:hover {
+  background-color: #fa8072;
+  box-shadow: 0px 15px 20px rgba(40, 173, 252, 0.4);
+  color: #fff;
+  transform: translateY(-7px);
+  border-radius: 8px;
+}
 </style>
-

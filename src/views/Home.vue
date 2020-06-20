@@ -114,7 +114,7 @@ b-navber-nav {
 }
 .carousel-fade {
   width: 800px;
-  margin-left: 100px;
+  margin-left: 145px;
   float: left;
 }
 .ranking {

@@ -78,7 +78,6 @@ export default {
               }});
         }
 
-        
       },
       async fetchData() {
           this.projectCost = this.$route.params.cost; //스토리지에서 가져오고 
@@ -93,24 +92,12 @@ export default {
 }
 </script>
 <style>
-#accountInput {
-  max-width: 300px;
-  margin: auto;
-  margin-top: 30px;
-}
 #accountPayButton {
-  width: 150px;
-  height: 40px;
-  font-size: 20px;
-  text-transform: uppercase;
-  color: #4682b4;
-  background-color: #fff;
-  border: 2px solid #4682b4;
-  border-radius: 20px;
-  box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease 0s;
-  cursor: pointer;
-  outline: none;
+  width: 200px;
+  background-color: #4682b4;
+  border: none;
+  font-size: 19px;
+  color: black;
 }
 #accountPayButton:hover {
   background-color: #4682b4;

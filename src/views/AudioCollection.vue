@@ -410,16 +410,6 @@ export default {
   margin: auto;
   font-size: 20px;
 }
-#cropImg {
-  margin: auto;
-  max-width: 500px;
-  max-height: 200px;
-}
-#previewImg {
-  margin: auto;
-  max-width: 800px;
-  max-height: 600px;
-}
 .buttons {
   margin: auto;
   width: 50%;
@@ -434,12 +424,26 @@ export default {
   font-size: 19px;
   color: black;
 }
+#registerButton:hover {
+  background-color: #4682b4;
+  box-shadow: 0px 15px 20px rgba(40, 173, 252, 0.4);
+  color: #fff;
+  transform: translateY(-7px);
+  border-radius: 8px;
+}
 #endWorkButton {
   width: 150px;
   background-color: #fa8072;
   border: none;
   font-size: 19px;
   color: black;
+}
+#endWorkButton:hover {
+  background-color: #fa8072;
+  box-shadow: 0px 15px 20px rgba(40, 173, 252, 0.4);
+  color: #fff;
+  transform: translateY(-7px);
+  border-radius: 8px;
 }
 .workContent {
   font-size: 20px;

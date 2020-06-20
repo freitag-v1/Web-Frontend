@@ -176,10 +176,6 @@ export default {
         plugins: [
           TimelinePlugin.create({
             container: "#wave-timeline",
-            // primaryColor: 'blue',
-            // secondaryColor: '#fff',
-            // primaryFontColor: 'blue',
-            // secondaryFontColor: '#fff'
             formatTimeCallback: formatTimeCallback,
             timeInterval: timeInterval,
             primaryLabelInterval: primaryLabelInterval,
@@ -190,9 +186,7 @@ export default {
         ],
       });
       this.wavesurfer.load(value);
-      this.wavesurfer.on("ready", function() {
-        //this.wavesurfer.play();
-      });
+      this.wavesurfer.on("ready", function() {});
     },
     timeDisplay(time) {
       // Hours, minutes and seconds

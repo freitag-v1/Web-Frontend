@@ -2,9 +2,9 @@
   <div class="login">
         <form class="form-signin">
             <h3 class="form-signin-heading">로그인</h3>
-            <input id ="id" v-model ="userId" type="text" class="form-control" name="username" placeholder="아이디를 입력해주세요." required="" autofocus=""/>
+            <input id ="id" v-model ="userId" type="text" class="form-control" name="username" placeholder="아이디를 입력해주세요." required="" autofocus="" v-on:keyup.enter="login"/>
             <br>
-            <input id ="pwd" v-model="password" type="password" class="form-control" name="password" placeholder="비밀번호를 입력해주세요." required=""/> 
+            <input id ="pwd" v-model="password" type="password" class="form-control" name="password" placeholder="비밀번호를 입력해주세요." required="" v-on:keyup.enter="login"/> 
             <br>
             <br>
     <div class = "signButton">
@@ -56,14 +56,14 @@ export default {
 #signupButton {
   width: 130px;
   height: 40px;
-  font-size: 16px;
+  font-size: 20px;
   text-transform: uppercase;
   letter-spacing: 2.5px;
   font-weight: 500;
-  color: #4682B4;
-  background-color: white;
-  border: 2px solid #4682B4;
-  border-radius: 20px;
+  color: white;
+  background-color: #FA8072;
+  border: 2px solid #FA8072;
+  border-radius: 5px;
   box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease 0s;
   cursor: pointer;
@@ -73,21 +73,21 @@ export default {
 #loginButton {
   width: 130px;
   height: 40px;
-  font-size: 16px;
+  font-size: 20px;
   text-transform: uppercase;
   letter-spacing: 2.5px;
   font-weight: 500;
-  color: #4682B4;
-  background-color: white;
+  color: white;
+  background-color: #4682B4;
   border: 2px solid #4682B4;
-  border-radius: 20px;
+  border-radius: 5px;
   box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease 0s;
   cursor: pointer;
   outline: none;
 }
 #signupButton:hover {
-  background-color: #4682B4;
+  background-color: #FA8072;
   box-shadow: 0px 15px 20px rgba(40, 173,252, 0.4);
   color: #fff;
   transform: translateY(-7px);

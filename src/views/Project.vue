@@ -1,24 +1,20 @@
 <template>
   <div class="projectList">
     <img id="projectLogo" src="../assets/projectList.png" />
-    <b-button
-      class="mr-2"
-      href="/newProject"
-      style="margin-top: 10px; height : 40px; width: 100px;"
-    >
+    <b-button id="requestButton" class="mr-2" href="/newProject">
       작업 의뢰
     </b-button>
     <b-button
+      id="projectListSearchButton"
       v-b-toggle.sidebar-backdrop
       class="mr-2"
-      style="margin-top: 10px; height : 40px; color: white;"
     >
       검색
     </b-button>
     <b-sidebar id="sidebar-backdrop" title="Search" backdrop shadow>
       <div>
         <br />
-        <b-form-group
+        <!--<b-form-group
           label="난이도 별 검색"
           v-if="selectedProject != ''"
           style="font-size: 15px;"
@@ -35,7 +31,7 @@
             <b-form-checkbox value="4">4</b-form-checkbox>
             <b-form-checkbox value="5">5</b-form-checkbox>
           </b-form-checkbox-group>
-        </b-form-group>
+        </b-form-group>-->
         <br />
         <p v-if="selectedProject == 'Collection'" style="font-size: 15px;">
           데이터 별 검색
@@ -80,6 +76,7 @@
           size="sm"
           class="mb-3"
           placeholder="검색"
+          id="searchSubject"
           v-model="selectedSubject"
         ></b-form-input>
         <br />
@@ -170,7 +167,7 @@ export default {
       dataType: "",
       perPage: 10,
       currentPage: 1,
-      selectedLevel: -1,
+      //selectedLevel: -1,
       selectedProject: "",
       selectedData: "",
       selectedWork: "",
@@ -266,15 +263,15 @@ export default {
         if (this.selectedProject == null) {
           alert("원하는 검색 종류를 선택해주세요!");
         } else {
-          let difficulty =
-            this.selectedLevel == -1
-              ? this.selectedLevel
-              : this.selectedLevel[0];
+          // let difficulty =
+          //   this.selectedLevel == -1
+          //     ? this.selectedLevel
+          //     : this.selectedLevel[0];
           var params = {
             projectType: this.selectedProject,
             workType: this.selectedWork,
             dataType: this.selectedData,
-            difficulty: difficulty,
+            difficulty: -1, //difficulty
             subject: this.selectedSubject,
           };
           localStorage.projectList = JSON.stringify(params);
@@ -314,7 +311,7 @@ export default {
   font-family: "Hanna", sans-serif;
 }
 .data {
-  font-size: 15px;
+  font-size: 20px;
   font-weight: lighter;
 }
 .mb-3 {
@@ -327,21 +324,61 @@ export default {
   line-height: auto;
   text-align: center;
   width: auto;
+  font-size: 18px;
   border: 0px;
   padding-left: 10px;
   padding-right: 10px;
   min-width: 100px;
   color: white;
+  background-color: #4682b4;
+  box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease 0s;
+  cursor: pointer;
+  outline: none;
 }
+#requestButton {
+  height: auto;
+  line-height: auto;
+  text-align: center;
+  font-size: 18px;
+  width: auto;
+  border: 0px;
+  padding-left: 10px;
+  padding-right: 10px;
+  min-width: 100px;
+  color: white;
+  background-color: #fa8072;
+  box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease 0s;
+  cursor: pointer;
+  outline: none;
+}
+#projectListSearchButton {
+  height: auto;
+  line-height: auto;
+  text-align: center;
+  width: auto;
+  font-size: 18px;
+  border: 0px;
+  padding-left: 10px;
+  padding-right: 10px;
+  min-width: 100px;
+  color: white;
+  background-color: #fa8072;
+  box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease 0s;
+  cursor: pointer;
+  outline: none;
+}
+
 #projectSearchButton {
   width: 150px;
-  height: 40px;
+  height: 50px;
   font-size: 20px;
   text-transform: uppercase;
-  color: #4682b4;
-  background-color: #fff;
+  color: #fff;
+  background-color: #4682b4;
   border: 2px solid #4682b4;
-  border-radius: 20px;
   box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease 0s;
   cursor: pointer;
@@ -353,5 +390,8 @@ export default {
   box-shadow: 0px 15px 20px rgba(40, 173, 252, 0.4);
   color: #fff;
   transform: translateY(-7px);
+}
+#searchSubject {
+  width: 300px;
 }
 </style>

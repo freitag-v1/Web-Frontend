@@ -315,12 +315,26 @@ s3Client.interceptors.request.use(function (config) {
     font-size: 19px;
     color : black;
 }
+#registerButton:hover {
+  background-color: #4682b4;
+  box-shadow: 0px 15px 20px rgba(40, 173, 252, 0.4);
+  color: #fff;
+  transform: translateY(-7px);
+  border-radius: 8px;
+}
 #endWorkButton {
     width: 150px;
     background-color : #FA8072;
     border : none;
     font-size: 19px;
     color : black;
+}
+#endWorkButton:hover {
+  background-color: #fa8072;
+  box-shadow: 0px 15px 20px rgba(40, 173, 252, 0.4);
+  color: #fff;
+  transform: translateY(-7px);
+  border-radius: 8px;
 }
 .workContent {
     font-size : 20px;

@@ -132,19 +132,10 @@ export default {
 }
 #authenticationButton {
   width: 200px;
-  height: 70px;
-  font-size: 25px;
-  letter-spacing: 2.5px;
-  font-weight: 500;
-  text-transform: uppercase;
-  color: #4682b4;
-  background-color: #fff;
-  border: 2px solid #4682b4;
-  border-radius: 20px;
-  box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease 0s;
-  cursor: pointer;
-  outline: none;
+  background-color: #4682b4;
+  border: none;
+  font-size: 19px;
+  color: black;
 }
 #authenticationButton:hover {
   background-color: #4682b4;
@@ -154,19 +145,10 @@ export default {
 }
 #completeButton {
   width: 200px;
-  height: 70px;
-  font-size: 25px;
-  letter-spacing: 2.5px;
-  font-weight: 500;
-  text-transform: uppercase;
-  color: #4682b4;
-  background-color: #fff;
-  border: 2px solid #4682b4;
-  border-radius: 20px;
-  box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease 0s;
-  cursor: pointer;
-  outline: none;
+  background-color: #4682b4;
+  border: none;
+  font-size: 19px;
+  color: black;
 }
 #completeButton:hover {
   background-color: #4682b4;

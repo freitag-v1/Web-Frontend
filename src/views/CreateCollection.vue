@@ -31,16 +31,17 @@
                 <b-form-radio v-model="selectedOption" name="텍스트 데이터 업로드" value="textUpload">텍스트 데이터 업로드</b-form-radio>
             </b-form-group>
             <br>
-            <b-button variant="light" id="addTextButton" v-if="selectedData == 'text' && selectedOption == 'textWrite'" v-on:click="addText">
+            <b-button id="addTextButton" v-if="selectedData == 'text' && selectedOption == 'textWrite'" v-on:click="addText">
                     텍스트 예시 데이터 추가 <b-icon icon="plus" aria-hidden="true"></b-icon>
             </b-button>
             <br>
             <div class = "exampleTextForm" v-if="selectedOption == 'textWrite' && selectedData == 'text'" v-for="value in exampleTextConversation">
                 <br>
                 <b-card>
-                <b-button variant="danger" id="deleteTextButton" v-on:click="deleteText(i)" >
+                <b-button id="deleteTextButton" v-on:click="deleteText(i)" >
                     삭제 <b-icon icon="trash-fill" aria-hidden="true"></b-icon>
                 </b-button>
+                <br>
                 <br>
                 <p>질문</p>
                 <b-form-textarea
@@ -123,20 +124,20 @@ export default {
   },
     data() {
         return {
-            selectedOption: '',
+            selectedOption: "",
             show : true,
-            name: '',
-            selectedData: '',
-            subject: '',
-            wayContent: '',
-            description: '',
-            conditionContent: '',
-            exampleContent: '',
-            imageUrl: '',
-            totalData: '',
+            name: "",
+            selectedData: "",
+            subject: "",
+            wayContent: "",
+            description: "",
+            conditionContent: "",
+            exampleContent: "",
+            imageUrl: "",
+            totalData: "",
             dataClass: [{name : '수집 데이터'}],
             isEditing: false,
-            audioUrl: '',
+            audioUrl: "",
             exampleTextConversation: [{question : "예시 텍스트 데이터를 작성해주세요.", answer : "예시 텍스트 데이터를 작성해주세요."}],
         }
     },
@@ -248,7 +249,7 @@ export default {
                             case 'text' : {
                                 if(this.selectedOption == 'textWrite' ){ //텍스트인데 그냥 적은 내용 자체가 텍스트 예시 데이터 인경우 파일로 변환을 해야 
                                     var jsonTextExample = JSON.stringify(this.exampleTextConversation);
-                                    var exampleTextFile = new File([jsonTextExample], this.name+userId+"exampleTextWrite.txt",{type: "text/plain;charset=utf-8"});
+                                    var exampleTextFile = new File([jsonTextExample], Date.now()+this.name+userId+"exampleTextWrite.txt",{type: "text/plain;charset=utf-8"});
                                     let exampleTextData = new FormData();
                                     exampleTextData.append('file',exampleTextFile);
                                     const textRes = await axios.post("/api/project/upload/example", exampleTextData, config);
@@ -368,19 +369,11 @@ export default {
     height: 150px;
 }
 #createProjectButton{
-    width: 200px;
-    height: 60px;
-    font-size: 20px;
-    letter-spacing: 2.5px;
-    font-weight: 500;
-    color: #fff;
-    background-color: #4682B4;
-    border: 2px solid #4682B4;
-    box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease 0s;
-    cursor: pointer;
-    outline: none;
-
+width: 200px;
+  background-color: #4682b4;
+  border: none;
+  font-size: 19px;
+  color: black;
 }
 #createProjectButton:hover {
     background-color: #4682B4;
@@ -399,8 +392,9 @@ p {
 #addClassButton {
     float: right;
     margin-right: 320px;
-    height: 30px;
+    height: 35px;
     width: 150px;
+    background-color: #B0C4DE;
 }
 #inputClass {
     margin-left: 480px;
@@ -413,10 +407,14 @@ p {
 }
 #addTextButton {
     width: 300px;
+    border : none;
+    background-color: #B0C4DE;
 }
 #deleteTextButton {
     width: 150px;
+    border : none;
     float : right;
+    background-color : tomato;
 }
 
 </style>

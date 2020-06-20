@@ -8,13 +8,13 @@
 
       <b-collapse id="nav-collapse" is-nav>
         <b-navbar-nav>
-          <b-nav-item v-on:click="createProject" style="font-size: 18px;" right
+          <b-nav-item v-on:click="createProject" style="font-size: 20px;" right
             >작업 의뢰</b-nav-item
           >
           <b-nav-item
             v-on:click="startProject"
             link-classes="bar-font"
-            style="font-size: 18px;"
+            style="font-size: 20px;"
             >작업 시작</b-nav-item
           >
         </b-navbar-nav>

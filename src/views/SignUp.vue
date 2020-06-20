@@ -213,7 +213,7 @@
 </script>
 <style>
 .overflow-hidden {
-    margin-left: 400px;
+    margin-left: 700px;
     margin-top: 30px;
     max-width: 1200px;
 }
@@ -221,14 +221,14 @@
 #nextButton {
   width: 130px;
   height: 40px;
-  font-size: 16px;
+  font-size: 20px;
   text-transform: uppercase;
   letter-spacing: 2.5px;
   font-weight: 500;
-  color: #4682B4;
-  background-color: #fff;
+  color: #fff;
+  background-color: #4682B4;
   border: 2px solid #4682B4;
-  border-radius: 20px;
+  border-radius: 5px;
   box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease 0s;
   cursor: pointer;
