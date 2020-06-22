@@ -151,7 +151,7 @@ export default {
         });
     },
     beforeRouteLeave(to, from, next) {
-        if (!this.isEditing || createSuccess != "success") {
+        if (this.isEditing && createSuccess != "success") {
             if (!window.confirm("페이지를 벗어나는 경우 프로젝트이 생성되지 않습니다. 그래도 이동하시겠습니까?")) {
                 return;
             }
@@ -203,7 +203,8 @@ export default {
     },
     methods : {
         preventNav(event) {
-            if (!this.isEditing) return;
+            console.log(createSuccess);
+            if (!this.isEditing || createSuccess == "success") return;
             event.preventDefault();
             event.returnValue = "";
         },

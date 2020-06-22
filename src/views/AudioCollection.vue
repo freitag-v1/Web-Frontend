@@ -238,12 +238,12 @@ export default {
   beforeRouteLeave(to, from, next) {
     //작업하고나서 나가려고 하면 이루어지는거
 
-    if (this.audioContentList != null && !this.createCollection) {
+    if (this.audioContentList.length != 0 && !this.createCollection) {
       if (
         !window.confirm(
           "페이지를 벗어나면 작업이 저장되지 않습니다. 그래도 이동하시겠습니까?"
         )
-      ) {
+      ) { 
         return;
       }
     }
@@ -293,7 +293,7 @@ export default {
       this.audioPreUrl = URL.createObjectURL(file);
     },
     preventNav(event) {
-      if (this.audioContentList == null || this.createCollection) return;
+      if (this.audioContentList.length == 0 || this.createCollection) return;
       event.preventDefault();
       event.returnValue = "";
     },

@@ -128,7 +128,7 @@ var modifySuccess = '';
     },
     methods: {
         preventNav(event) {
-                if (!this.isEditing) return;
+                if (!this.isEditing || modifySuccess == "success") return;
                 event.preventDefault();
                 // Chrome requires returnValue to be set.
                 event.returnValue = "";

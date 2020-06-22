@@ -84,14 +84,18 @@
         "진행 중인 데이터 갯수: " + project.progressData
       }}</b-card-text>
       <br />
-      <div class="buttons">
-        <b-button id="downloadButton" v-on:click="download">
-          <b-icon icon="download"></b-icon> 결과물 다운로드
+        <b-button id="validationComplete" v-b-toggle.collapse-1>
+          <b-icon icon="info-circle"></b-icon> 검증 완료된 문제 상세보기
         </b-button>
-        <b-button id="endButton" v-on:click="endProject">
-          <b-icon icon="box-arrow-right"></b-icon> 프로젝트 종료
+        <br>
+        <b-collapse id="collapse-1" class="mt-2">
+          <b-table id = "validationCompleteTable" striped hover :items="validationCompleteitems"></b-table>
+        </b-collapse>
+        <br>
+        <b-button id="progressProblem">
+          <b-icon icon="info-circle"></b-icon> 진행중인 문제 상세보기
         </b-button>
-      </div>
+        <br>
       <br />
       <br />
     </b-card>
@@ -181,6 +185,10 @@ export default {
           },
         ],
       },
+      validationCompleteitems : [{ age: 40, first_name: 'Dickerson', },
+          { age: 21, first_name: 'Larsen'},
+          { age: 89, first_name: 'Geneva', last_name: 'Wilson' },
+          { age: 38, first_name: 'Jami', last_name: 'Carney' }],
     };
   },
   async beforeCreate() {
@@ -222,32 +230,39 @@ font-size: 20px;
   margin: auto;
   font-weight: lighter;
 }
-#downloadButton {
-  width: 200px;
+#validationComplete {
+  width: 300px;
+  margin : auto;
   background-color: #4682b4;
   border: none;
   font-size: 19px;
   color: black;
 }
-#downloadButton:hover {
+#validationComplete:hover {
   background-color: #4682b4;
   box-shadow: 0px 15px 20px rgba(40, 173, 252, 0.4);
   color: #fff;
   transform: translateY(-7px);
   border-radius: 8px;
 }
-#endButton {
-  width: 200px;
+#progressProblem {
+  width: 300px;
+  margin:auto;
   background-color: #fa8072;
   border: none;
   font-size: 19px;
   color: black;
 }
-#endButton:hover {
+#progressProblem:hover {
   background-color: #fa8072;
   box-shadow: 0px 15px 20px rgba(40, 173, 252, 0.4);
   color: #fff;
   transform: translateY(-7px);
   border-radius: 8px;
 }
+#validationCompleteTable {
+  width : 800px;
+  margin: auto;
+}
+
 </style>

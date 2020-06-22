@@ -354,7 +354,7 @@ export default {
   },
   beforeRouteLeave(to, from, next) {
     //작업하고나서 나가려고 하면 이루어지는거
-    if (AnswerList != null && !this.doneClassification) {
+    if (AnswerList.size != 0 && !this.doneClassification) {
       if (
         !window.confirm(
           "페이지를 벗어나면 작업이 저장되지 않습니다. 그래도 이동하시겠습니까?"
@@ -525,7 +525,7 @@ export default {
       }
     },
     preventNav(event) {
-      if (AnswerList == null || this.doneClassification) return;
+      if (AnswerList.size == 0 || this.doneClassification) return;
       event.preventDefault();
       event.returnvalue = "";
     },

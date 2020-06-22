@@ -174,7 +174,7 @@ export default {
     },
     methods : {
         preventNav(event) {
-                if (!this.isEditing) return;
+                if (!this.isEditing || createSuccess == "success") return;
                 event.preventDefault();
                 // Chrome requires returnValue to be set.
                 event.returnValue = "";
