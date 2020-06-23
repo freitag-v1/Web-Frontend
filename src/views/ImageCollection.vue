@@ -147,7 +147,7 @@ s3Client.interceptors.request.use(function (config) {
     },
     async created() {
         this.fetchData();
-        this.exampleContentDownload();
+
           
     },
     beforeMount() {
@@ -157,7 +157,8 @@ s3Client.interceptors.request.use(function (config) {
         });
     },
     beforeRouteLeave(to, from, next) { //작업하고나서 나가려고 하면 이루어지는거
-        if (this.imageByClassList != null && !this.createCollection) {
+        if (this.imageByClassList.length != 0 && !this.createCollection) {
+            //console.log(this.imageByClassList, this.createCollection);
             if (!window.confirm("페이지를 벗어나면 작업이 저장되지 않습니다. 그래도 이동하시겠습니까?")) {
                 return;
             }
@@ -165,20 +166,6 @@ s3Client.interceptors.request.use(function (config) {
         next();
     },
     methods : {
-        async exampleContentDownload(){
-            s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
-                responseType : 'blob',
-                }).then((res) =>{
-                    var exampleFile = new File([res.data], this.project.exampleContent,{ type: res.headers['content-type'], lastModified : Date.now() } );
-                    const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
-                    this.downloadUrl = url;
-                    var content = {
-                        type : res.data.type,
-                        file : exampleFile,
-                    }
-                });
-            
-        },
         async fetchData() {
             var searchproject = await localStorage.getItem('searchProject');
             this.project = JSON.parse(searchproject).projectDto;
@@ -192,6 +179,7 @@ s3Client.interceptors.request.use(function (config) {
                 }
                 optionDataList.push(optionData);
             }
+            //console.log(this.project.bucketName, this.project.exampleContent);
             this.options = optionDataList;
             this.selected = this.classNameList[0].className;
             await s3Client.get("/"+this.project.bucketName+"/"+this.project.exampleContent, {
@@ -206,7 +194,7 @@ s3Client.interceptors.request.use(function (config) {
             this.imageUrl = URL.createObjectURL(file);      
         },
         preventNav(event) {
-                if (this.imageByClassList == null || this.createCollection) return;
+                if (this.imageByClassList.length == 0 || this.createCollection) return;
                 event.preventDefault();
                 event.returnValue = "";
         },

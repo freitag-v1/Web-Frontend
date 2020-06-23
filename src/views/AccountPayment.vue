@@ -35,6 +35,7 @@ export default {
         projectCost: '',
         projectName: '',
         projectId: '',
+        accountPayState : false,
       }
   },
   async beforeCreate() { //페이지 간 라우터로 데이터를 주고받을지 아님 다시 mypage에 접근해서 가져올지 고민
@@ -45,13 +46,37 @@ export default {
   created() {
     this.fetchData();
   },
+  beforeMount() {
+    window.addEventListener("beforeunload", this.preventNav);
+    this.$once("hook:beforeDestroy", () => {
+      window.removeEventListener("beforeunload", this.preventNav);
+    });
+  },
+  beforeRouteLeave(to, from, next) {
+    if (this.accountPayState == false) {
+      if (
+        !window.confirm(
+          "결제 페이지를 벗어나는 경우 프로젝트이 생성되지 않습니다. 그래도 이동하시겠습니까?"
+        )
+      ) {
+        return;
+      }
+    }
+    next();
+  },
   methods : {
+      preventNav () {
+        if (this.accountPayState == true) return;
+            event.preventDefault();
+            event.returnValue = "";
+      },
       async accountPayment() {
         const paymentRes = await axios.get('/api/project/account/payment', {
           params: {
             projectId : this.projectId,
           }
         });
+        this.accountPayState = true;
         if(paymentRes.headers.payment == "success"){
            alert("계좌이체 성공하였습니다.");
            this.$router.push("/");
