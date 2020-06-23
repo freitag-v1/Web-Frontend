@@ -486,14 +486,15 @@ export default {
               selectedList.push(i);
             }
           }
-          if (selectedList.length > 1) {
+          if (selectedList.length != 0) {
+            if (selectedList.length > 1) {
             for (let i = 0; i < selectedList.length - 1; i++) {
               selected =
                 selected +
                 this.problemList[this.currentPage - 1].boundingBoxList[
                   selectedList[i]
                 ].boxId +
-                "b";
+                " ";
             }
             if (
               this.selectedBoxAnswer[selectedList[selectedList.length - 1]] ==
@@ -505,20 +506,22 @@ export default {
                   selectedList[selectedList.length - 1]
                 ].boxId;
             }
-          } else {
+          } 
+          else {
             selected =
               selected +
               this.problemList[this.currentPage - 1].boundingBoxList[
                 selectedList[0]
               ].boxId +
-              "b";
+              " ";
           }
-
-          if (selectedList.length != 0) {
-            var problemId = this.problemList[this.currentPage - 1].problemDto
-              .problemId;
+            var problemId = this.problemList[this.currentPage - 1].problemDto.problemId;
             AnswerList.set(problemId.toString(), selected);
+            //console.log(AnswerList);
           }
+          // else { //여기서 바운딩 박스 좌표가 없으면 안보낸다 그냥 아무것도 보내지말라는
+          //   //AnswerList.set()
+          // }
         } else {
           alert("답을 선택하지 않은 문제가 존재합니다!");
         }
@@ -539,6 +542,7 @@ export default {
       } else {
         axios.defaults.headers.common["historyId"] = this.historyId;
         var Answer = Object.fromEntries(AnswerList);
+        console.log(Answer)
         await axios.post("/api/work/classification", Answer).then((res) => {
           if (res.headers.answer == "success") {
             alert("분류 작업이 완료되었습니다!");
@@ -548,6 +552,10 @@ export default {
             alert("분류 작업이 실패하였습니다!");
             AnswerList.clear();
           }
+        }).catch(function(error){
+          if (error.response) {
+              alert("분류 작업이 실패하였습니다. 다시 시도해주세요!");
+            }
         });
       }
     },

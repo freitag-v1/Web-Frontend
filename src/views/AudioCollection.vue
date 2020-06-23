@@ -86,10 +86,10 @@
       <br />
       <b-form-file
         multiple
-        v-model="audioContent"
-        :state="Boolean(audioContent)"
-        placeholder="Choose a file or drop it here..."
-        drop-placeholder="Drop file here..."
+        v-model="audioFileContent"
+        :state="Boolean(audioFileContent)"
+        placeholder="파일은 선택하거나 여기로 드래그하세요."
+        drop-placeholder="파일을 여기로 드래그하세요."
         hidden
         @change="onChangeAudios"
         accept="audio/*"
@@ -206,13 +206,14 @@ export default {
       project: "",
       classNameList: [],
       createCollection: false,
-      audioContent: "",
+      audioContent: [],
       audioRecordList: [],
       audioUrl: "",
       options: [],
       selected: "",
       audioPreUrl: "",
       audioContentList: [],
+      audioFileContent: [],
     };
   },
   async beforeCreate() {
@@ -225,8 +226,9 @@ export default {
   },
   watch: {
     selected: function(val) {
-      this.audioContent = "";
+      this.audioContent = [];
       this.audioPreUrl = "";
+      this.audioFileContent = [];
     },
   },
   beforeMount() {
@@ -283,6 +285,10 @@ export default {
             url: url,
           };
           //localStorage.exampleContent = JSON.stringify(content);
+        }).catch(function(error) {
+          if (error.response) {
+            alert("데이터 다운로드를 실패하였습니다.");
+          }
         });
     },
     ready() {
@@ -290,6 +296,7 @@ export default {
     },
     onChangeAudios(e) {
       const file = e.target.files[0];
+      this.audioContent = e.target.files;
       this.audioPreUrl = URL.createObjectURL(file);
     },
     preventNav(event) {
