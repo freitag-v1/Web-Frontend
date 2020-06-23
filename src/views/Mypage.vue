@@ -51,6 +51,7 @@
       확인이 완료되었습니다. 수정이 가능합니다.
     </b-form-valid-feedback>
     </b-form>
+    <b-button id="confirmPassword" v-if="!userPasswordValidation" v-on:click ="validatePassword">비밀번호 확인</b-button>
     <b-button id="modifyButton" v-if="userPasswordValidation" v-on:click ="modifyInfo">수정하러 가기</b-button>
   </b-modal>
   </div>
@@ -58,6 +59,7 @@
 <script>
 import axios from 'axios';
 import bcrypt from 'bcrypt-nodejs';
+import { sha256, sha224 } from 'js-sha256';
 
 export default {
   name: 'Mypage',
@@ -66,6 +68,7 @@ export default {
         user: '',
         userPassword: '',
         userPoint: '',
+        userPasswordValidation: false,
       }
   },
   async beforeCreate() {
@@ -73,15 +76,16 @@ export default {
     const userInfo = await axios.get("/api/mypage");
     this.user = userInfo.data;
     this.userPoint = userInfo.headers.point;
+    console.log(this.user.password);
   },
-  computed: {
-    userPasswordValidation() {
-         var checkPassword = bcrypt.compareSync(this.userPassword, this.user.password, function(err,res) {
-          return res;
-        });
-        return checkPassword;
-    }
-  },
+  // computed: {
+  //   userPasswordValidation() {
+  //        var checkPassword = bcrypt.compareSync(this.userPassword, this.user.password, function(err,res) {
+  //         return res;
+  //       });
+  //       return checkPassword;
+  //   }
+  // },
   methods : {
       modifyInfo() {
           this.$router.push({name: "MypageModify", 
@@ -96,6 +100,15 @@ export default {
             userName : this.user.userName,
             userPassword : this.user.password,
           }});
+      },
+      validatePassword() {
+        var hashPassword = sha256.hex(this.userPassword);
+        var checkPassword = bcrypt.compareSync(hashPassword, this.user.password, function(err,res) {
+            this.userPasswordValidation = res;
+            return;
+          });
+          this.userPasswordValidation = checkPassword;
+          
       }
 
   }
