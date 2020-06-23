@@ -89,7 +89,6 @@ export default {
       alert("의뢰한 프로젝트 목록을 가져오는데 실패하였습니다.");
     } else {
       this.requestProjectList = requestProjectRes.data;
-      console.log(this.requestProjectList);
     }
   },
   computed: {

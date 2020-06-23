@@ -84,18 +84,89 @@
         "진행 중인 데이터 갯수: " + project.progressData
       }}</b-card-text>
       <br />
-        <b-button id="validationComplete" v-b-toggle.collapse-1>
+       <b-form-file 
+              
+                placeholder="파일을 선택하거나 끌어서 놓아주세요."
+                drop-placeholder="Drop file here..."
+                hidden @change="onChangeFile"
+                accept="audio/*,image/*,text/*"
+                ></b-form-file>
+        <b-button id="validationComplete" v-b-toggle.collapse-1 v-on:click="getValidationCompleteProblems">
           <b-icon icon="info-circle"></b-icon> 검증 완료된 문제 상세보기
         </b-button>
         <br>
         <b-collapse id="collapse-1" class="mt-2">
-          <b-table id = "validationCompleteTable" striped hover :items="validationCompleteitems"></b-table>
+          <b-table id = "validationCompleteTable" striped hover 
+          :items="validationCompleteItems"
+          :per-page="validationPerPage"
+          :current-page="validationCurrentPage"
+          :fields = "validationFields"
+          small
+          >
+          <template v-slot:cell(show_details)="row">
+            <b-button
+              id="showProblemDetail"
+              v-if="project.dataType != 'boundingBox'"
+              class="mr-2"
+              v-on:click="showData(row.item)"
+            >
+            상세 정보 보기
+            </b-button>
+            <b-button
+              v-b-modal.modal-1
+              id="showProblemDetail"
+              v-if="project.dataType == 'boundingBox'"
+              class="mr-2"
+              v-on:click="showData(row.item)"
+            >
+            상세 정보 보기
+            </b-button>
+          </template>
+        </b-table>
+        <b-modal id ="" ref="boundingModal" title = "데이터 상세 보기">
+          <p>{{boundingProblemId}}</p>
+          <canvas id="boundingCanvas" width ="460" height = "400"/>
+        </b-modal>
+          <br>
+          <b-pagination
+            v-model="validationCurrentPage"
+            :total-rows="validationRows"
+            :per-page="validationPerPage"
+            aria-controls="validationCompleteTable"
+            align="center"
+            first-text="처음"
+            prev-text="이전"
+            next-text="다음"
+            last-text="마지막"
+      ></b-pagination>
         </b-collapse>
         <br>
-        <b-button id="progressProblem">
+        <b-button id="progressProblem" v-b-toggle.collapse-2 v-on:click="getProgressProblems()">
           <b-icon icon="info-circle"></b-icon> 진행중인 문제 상세보기
         </b-button>
         <br>
+        <b-collapse id="collapse-2" class="mt-2">
+          <b-table id = "progressTable" striped hover 
+          :items="progressItems"
+          :per-page="progressPerPage"
+          :current-page="progressCurrentPage"
+          :fields = "progressFields"
+          small
+          >
+        </b-table>
+          <br>
+          <b-pagination
+            v-model="progressCurrentPage"
+            :total-rows="progressRows"
+            :per-page="progressCurrentPage"
+            aria-controls="progressTable"
+            align="center"
+            first-text="처음"
+            prev-text="이전"
+            next-text="다음"
+            last-text="마지막"
+      ></b-pagination>
+        </b-collapse>
       <br />
       <br />
     </b-card>
@@ -104,6 +175,7 @@
 <script>
 import axios from "axios";
 import progressPieChart from "../components/ProgressStatus.vue";
+import VueAudio from "vue-audio";
 
 const endpoint = "kr.object.ncloudstorage.com";
 const region = "kr-standard";
@@ -161,16 +233,45 @@ s3Client.interceptors.request.use(function(config) {
 
   return config;
 });
+
+function getRandomColor() {
+  var letters = '0123456789ABCDEF';
+  var color = '#';
+  for (var i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
+var globalCtx;
+function workedBoxDraw(x, y, width, height, className){
+    globalCtx.beginPath();
+    globalCtx.rect(x, y, width, height);
+    //선택된 class에 맞는 색을 찾음.
+    //var currentColor = colorByLabel.find(color => color.className == className);
+    //색으로 그림을 그리고 어떤 class에 해당하는지 글로 보여주고
+    //ctx.strokeStyle = currentColor.strokeColor;
+    globalCtx.strokeStyle = getRandomColor();
+    globalCtx.lineWidth = 5;
+    globalCtx.stroke();
+    globalCtx.font = "18px Verdana";
+    //ctx.fillStyle = currentColor.strokeColor;
+    globalCtx.fillStyle = getRandomColor();
+    globalCtx.fillText(className, x + 5, y - 5);
+}
+
+
+
 export default {
   name: "ProjectDetail",
   components: {
     progressPieChart,
+    VueAudio,
   },
   data() {
     return {
       project: "",
-      audioUrl: "",
-      downloadUrl: "",
+      imageUrl: "",
       status: null,
       classNameList: [],
       chartOptions: {
@@ -185,11 +286,38 @@ export default {
           },
         ],
       },
-      validationCompleteitems : [{ age: 40, first_name: 'Dickerson', },
-          { age: 21, first_name: 'Larsen'},
-          { age: 89, first_name: 'Geneva', last_name: 'Wilson' },
-          { age: 38, first_name: 'Jami', last_name: 'Carney' }],
+      validationPerPage: 10,
+      validationCurrentPage : 1,
+      validationFields : [{key : "problemId", label : "문제 번호"},
+        {key : "show_details", label: "상세 정보"}],
+      validationCompleteItems : [{problemId : 0, objectID : "hello"},
+      {problemId : 0, objectID : "hello"},
+      {problemId : 0, objectID : "hello"},
+      {problemId : 0, objectID : "hello"},
+      {problemId : 0, objectID : "hello"},
+      {problemId : 0, objectID : "hello"},
+      {problemId : 0, objectID : "hello"}], //검증 완료된 문제 상세보기 버튼을 누르면 서버에 api 전송해서 데이터를 가져와야한다. 
+      progressPerPage : 10,
+      progressCurrentPage : 1,
+      progressFields : [{key : "problemId", label : "문제 번호"},{key : "nececssary_people", label: "필요한 사람 수"}],
+      progressItems : [],
+      problemContentList : new Map(),
+      boundingProblemId : '',
+
     };
+  },
+  computed: {
+    validationRows() {
+      return this.validationCompleteItems.length;
+    },
+    progressRows() {
+      return this.progressItems.length;
+    }
+  },
+  mounted() {
+      this.$root.$on('bv::modal::shown', (bvEvent, modalId) => {
+      this.drawBounding();
+    });
   },
   async beforeCreate() {
     var searchproject = await localStorage.getItem("searchProject"); //this.$route.params.project;
@@ -202,12 +330,149 @@ export default {
     if (this.chartData.datasets[0].data[2] <= 0) {
       this.chartData.datasets[0].data[2] = 0;
     }
-
-    console.log(this.chartData);
   },
   methods: {
-    download() {},
-    endProject() {},
+    async getProblemData(problem) {
+      if(this.project.dataType=="text"){
+        await s3Client.get("/"+this.project.bucketName+"/"+problem.objectName, {
+          responseType: 'text'
+        }).then(problemDataRes =>  {
+          const data = problemDataRes.data;
+          if(data.includes(this.project.projectName +"workTextWrite.txt")){
+              var textConversation = "질문 : " + data.question + "\n" + "답변 : " + data.answer;
+              this.problemContentList.set(problem.problemId, textConversation);
+          }
+          else {
+            this.problemContentList.set(problem.problemId, data);
+          }
+        
+        });
+      }
+      else {
+        await s3Client.get("/"+this.project.bucketName+"/"+problem.objectName, {
+          responseType: 'blob'
+        }).then(problemDataRes =>  {
+        const url = URL.createObjectURL(new Blob([problemDataRes.data], { type: problemDataRes.headers['content-type'] }));
+        this.problemContentList.set(problem.problemId, url);
+      });
+      }
+      
+    },
+    showData(problem){
+      if(this.problemContentList.get(problem.problemId) != undefined){
+        this.getProblemData(problem);
+      }
+
+       const h = this.$createElement;
+        // Using HTML string
+        const titleVNode = h('div', { domProps: { innerHTML: '검증 완료된 데이터' } });
+        // More complex structure
+        var messageVNode;
+        switch(this.project.dataType) {
+          case "text" :
+            var textData = this.problemContentList.get(problem.problemId);
+              messageVNode = h('div', { class: ['foobar'] }, [
+                h('p', { class: ['text-center'] }, [
+                  "문제 번호 " + problem.problemId
+                ]),
+                h('pre', [
+                  textData
+                ] )
+              ])
+              break;
+          case "image" : 
+              //var imageUrl = this.problemContentList.get(problem.problemId);
+              messageVNode = h('div', { class: ['foobar'] }, [
+                h('p', { class: ['text-center'] }, [
+                  "문제 번호 " + problem.problemId
+                ]),
+                h('b-img', {
+                  props: {
+                    src: this.imageUrl,
+                    center: true,
+                    fluid: true,
+                  }
+                })
+              ])
+              break;
+          case "audio" :
+            //var audioUrl = this.problemContentList.get(problem.problemId);
+            messageVNode = h('div', { class: ['foobar'] }, [
+                h('p', { class: ['text-center'] }, [
+                  "문제 번호 " + problem.problemId
+                ]),
+                h('VueAudio', {
+                  props: {
+                    file : this.imageUrl,
+                  }
+                })
+              ])
+              break;
+          case "classification" :
+              var classUrl = this.problemContentList.get(problem.problemId);
+              messageVNode = h('div', { class: ['foobar'] }, [
+                h('p', { class: ['text-center'] }, [
+                  "문제 번호 " + problem.problemId
+                ]),
+                h('b-img', {
+                  props: {
+                    src: classUrl,
+                    center: true,
+                    fluid: true,
+                  }
+                })
+              ])
+              break;
+          case "boundingBox" :   
+            this.boundingProblemId = problem.problemId;
+            //workedBoxDraw()
+            // 이거를 이용해서 className이랑 색깔 여기서 만들어줘야한다.
+            // 그리고 색을 class name에 맞춰서 넣으면 된다. 
+            break;
+        }
+        
+        // We must pass the generated VNodes as arrays
+        if(this.project.dataType != "boundingBox"){
+          this.$bvModal.msgBoxOk([messageVNode], {
+          title: [titleVNode],
+          centered: true,
+        });
+        }
+        
+        //
+        
+    },
+    onChangeFile(e) {
+      const file = e.target.files[0];
+      this.imageUrl = URL.createObjectURL(file);    
+        
+    },
+    drawBounding() {
+      var canvas = document.getElementById("boundingCanvas");
+      //console.log(document.getElementById("modal-1"));
+      var ctx = canvas.getContext('2d');
+      ctx.clearRect(0,0,canvas.width, canvas.height);
+            var boundingImage = new Image();
+            boundingImage.src = this.imageUrl;
+            boundingImage.onload = function() {
+                var scale = Math.min(canvas.width / boundingImage.width, canvas.height / boundingImage.height);
+                  var x = (canvas.width / 2) - (boundingImage.width / 2) * scale;
+                  var y = (canvas.height / 2) - (boundingImage.height / 2) * scale;
+                ctx.drawImage(boundingImage, x, y, boundingImage.width * scale, boundingImage.height * scale);
+                globalCtx = ctx;
+                //여기서 데이터로 넘어온 좌표에 460 400을 넣어줘야한다
+                workedBoxDraw(0, 0, 100, 100, "안녕");
+            }
+           
+    },
+    async getValidationCompleteProblems() {
+        //여기서 api보내서 데이터를 가져와야 한다.
+        // this.valid~Items = res.data;
+    },
+    async getProgressProblems(){
+      //여기서 api보내서 데이터를 가져와야한다.
+      // this.progre~~ = res.data;
+    },
   },
 };
 </script>
@@ -263,6 +528,14 @@ font-size: 20px;
 #validationCompleteTable {
   width : 800px;
   margin: auto;
+}
+#showProblemDetail {
+  background-color: #ffffff;
+  color : black;
+  border : none;
+}
+#showProblemDetail:hover {
+   color : black;
 }
 
 </style>

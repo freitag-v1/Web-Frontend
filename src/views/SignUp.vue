@@ -84,6 +84,8 @@
 <script>
   import VuePhoneNumberInput from 'vue-phone-number-input';
   import axios from 'axios';
+  import { sha256, sha224 } from 'js-sha256';
+
   var signUpSuccess = '';
   export default {
     name: 'SignUp',
@@ -171,15 +173,19 @@
             alert("정보를 모두 입력해주세요!");
           }
           else {
+            var hashPassword = sha256.hex(this.userPassword);
+            var parseNumber = this.userPhonenumber.split('-');
+            var parsePhoneNumber = parseNumber[0].concat(parseNumber[1]);
+            parsePhoneNumber = parsePhoneNumber.concat(parseNumber[2]);
             const userDataRes = await axios.post("/api/signup", "",
             { 
               params: {
                 userId : this.userId,
-                userPassword: this.userPassword,
+                userPassword: hashPassword,
                 userEmail : this.userEmail,
                 userName: this.userName,
                 userAffiliation : this.userAffiliation,
-                userPhone : this.userPhonenumber,
+                userPhone : parsePhoneNumber,
               }
             }).then(res => { //여기서 response header 가져와서 
                 signUpSuccess = res.headers.signup;
