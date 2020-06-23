@@ -71,37 +71,43 @@ export default {
             event.returnValue = "";
       },
       async accountPayment() {
-        const paymentRes = await axios.get('/api/project/account/payment', {
+        await axios.get('/api/project/account/payment', {
           params: {
             projectId : this.projectId,
           }
+        }).then(paymentRes => {
+          this.accountPayState = true;
+          if(paymentRes.headers.payment == "success"){
+            alert("계좌이체 성공하였습니다.");
+            this.$router.push("/");
+          }
+          else if(paymentRes.headers.payment == "fail" && paymentRes.headers.state == null){ //null이거나 undefined겠지
+            alert("계좌이체를 실패하였습니다. 프로젝트 결제 페이지로 이동합니다.");
+            this.$router.push({name: "ProjectPayment", 
+                params : {
+                  projectId : this.projectId,
+                  point: this.projectCost,
+                  projectName : this.projectName,
+                }});
+          }
+          else {
+            //계좌 인증할 때 로컬스토리지에서 가져와서 헤더로 받은 state저장
+            alert("계좌가 등록되지 않았습니다. 계좌 인증 페이지로 이동합니다.")
+            localStorage.bankState = paymentRes.headers.state;
+            this.$router.push({name : "Account", 
+                params : {
+                  status : "accountPay",
+                  projectId : this.projectId,
+                  point: this.projectCost,
+                  projectName : this.projectName,
+                }});
+          }
+        }).catch(function(error) {
+          if (error.response) {
+            alert("계좌이체를 실패하였습니다.");
+          }
         });
-        this.accountPayState = true;
-        if(paymentRes.headers.payment == "success"){
-           alert("계좌이체 성공하였습니다.");
-           this.$router.push("/");
-        }
-        else if(paymentRes.headers.payment == "fail" && paymentRes.headers.state == null){ //null이거나 undefined겠지
-          alert("계좌이체를 실패하였습니다. 프로젝트 결제 페이지로 이동합니다.");
-          this.$router.push({name: "ProjectPayment", 
-              params : {
-                projectId : this.projectId,
-                point: this.projectCost,
-                projectName : this.projectName,
-              }});
-        }
-        else {
-          //계좌 인증할 때 로컬스토리지에서 가져와서 헤더로 받은 state저장
-          alert("계좌가 등록되지 않았습니다. 계좌 인증 페이지로 이동합니다.")
-          localStorage.bankState = paymentRes.headers.state;
-          this.$router.push({name : "Account", 
-              params : {
-                status : "accountPay",
-                projectId : this.projectId,
-                point: this.projectCost,
-                projectName : this.projectName,
-              }});
-        }
+
 
       },
       async fetchData() {

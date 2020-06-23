@@ -11,6 +11,7 @@
                     v-model="name"
                     required
                     placeholder="작업 이름을 입력해주세요"
+                    type="text"
                     ></b-form-input>
                 </b-form-group>
                 </b-form>
@@ -63,23 +64,25 @@
                 v-model="exampleContent"
                 v-if="(selectedData == 'text' && selectedOption == 'textUpload') || selectedData != 'text'"
                 :state="Boolean(exampleContent)"
-                placeholder="파일을 선택하거나 끌어서 놓아주세요."
-                drop-placeholder="Drop file here..."
+                placeholder="파일을 선택하거나 여기로 드래그하세요."
+                drop-placeholder="파일을 여기로 드래그하세요."
                 hidden @change="onChangeFile"
                 accept="audio/*,image/*,text/*"
+                type="file"
                 ></b-form-file>
                 <div class="exampleClass" v-if="exampleContent != ''">선택된 파일: {{ exampleContent ? exampleContent.name : '' }}
                 </div>
                 <img style="max-width: 100%; height: auto;" v-if="imageUrl != '' && selectedData == 'image'" :src = "imageUrl"></img>
                 <VueAudio v-if="audioUrl != '' && selectedData == 'audio'" :file="audioUrl" />
+    
             <br>
             <br>
             <p>수집 작업 주제</p>
-            <b-form-input size="sm" class="inputSubject" placeholder="주제" v-model="subject" ></b-form-input>
+            <b-form-input size="sm" class="inputSubject" placeholder="주제" v-model="subject" type="text" ></b-form-input>
             <br>
             <br>
             <p>수집 데이터 갯수</p>
-            <b-form-input size="sm" class="inputSubject" placeholder="수집 데이터 갯수" v-model="totalData" ></b-form-input>
+            <b-form-input size="sm" class="inputSubject" placeholder="수집 데이터 갯수" v-model="totalData" type="number" ></b-form-input>
             <br>
             <br>
             <p>수집 데이터 라벨</p>
@@ -87,7 +90,7 @@
                     라벨 추가 <b-icon icon="plus" aria-hidden="true"></b-icon>
             </b-button>
                 <div v-for="data in dataClass">
-                    <b-form-input size="sm" id="inputClass" placeholder="수집 데이터" v-model="data.name" ></b-form-input>
+                    <b-form-input size="sm" id="inputClass" placeholder="수집 데이터" v-model="data.name" type="text" ></b-form-input>
                     <br>
                 </div>
             <br>
@@ -132,7 +135,7 @@ export default {
             wayContent: "",
             description: "",
             conditionContent: "",
-            exampleContent: "",
+            exampleContent: null,
             imageUrl: "",
             totalData: "",
             dataClass: [{name : '수집 데이터'}],
@@ -165,7 +168,7 @@ export default {
         },
         selectedData : function(data) {
             this.isEditing = true;
-            this.exampleContent = '';
+            this.exampleContent = null;
             
         },
         subject : function(data) {
@@ -221,7 +224,12 @@ export default {
                 alert("프로젝트 생성을 위해 내용을 빠짐없이 작성해주세요.");
             }
             else {
-                const projectRes = await axios.post("/api/project/create","", {
+                if(this.totalData < 5) {
+                    alert("의뢰할 때 데이터는 최소 5개 이상이어야 합니다!");
+                }
+                else {
+                var projectRes;
+                await axios.post("/api/project/create","", {
                     params : {
                         projectName : this.name,
                         dataType : this.selectedData,
@@ -232,6 +240,13 @@ export default {
                         userId : userId,
                         workType : 'collection',
                         totalData: this.totalData,
+                    }
+                }).then(res => {
+                    projectRes = res;
+                })
+                .catch(function(error){
+                    if (error.response) {
+                        alert("프로젝트 생성을 실패하였습니다");
                     }
                 });
                 //프로젝트 class 전송
@@ -253,26 +268,34 @@ export default {
                                     var exampleTextFile = new File([jsonTextExample], Date.now()+this.name+userId+"exampleTextWrite.txt",{type: "text/plain;charset=utf-8"});
                                     let exampleTextData = new FormData();
                                     exampleTextData.append('file',exampleTextFile);
-                                    const textRes = await axios.post("/api/project/upload/example", exampleTextData, config);
-                                    createSuccess = textRes.headers.example;
-                                    if(textRes.headers.example == "success") {
-                                            alert("수집 프로젝트 생성 완료!");
-                                            this.$router.push({name: "ProjectPayment", 
-                                                params : {
-                                                    projectId : textRes.headers.projectid,
-                                                    point: textRes.headers.cost,
-                                                    projectName : this.name,    
-                                            }});
+                                    const textRes = await axios.post("/api/project/upload/example", exampleTextData, config)
+                                    .then(textRes => {
+                                        createSuccess = textRes.headers.example;
+                                        if(textRes.headers.example == "success") {
+                                                alert("수집 프로젝트 생성 완료!");
+                                                this.$router.push({name: "ProjectPayment", 
+                                                    params : {
+                                                        projectId : textRes.headers.projectid,
+                                                        point: textRes.headers.cost,
+                                                        projectName : this.name,    
+                                                }});
+                                            }
+                                        else {
+                                            alert("수집 프로젝트 생성 실패");
                                         }
-                                    else {
-                                        alert("수집 프로젝트 생성 실패");
-                                    }
+                                    }).catch(function(error) {
+                                        if (error.response) {
+                                         alert("수집 프로젝트 생성을 실패하였습니다.");
+                                        }
+                                    });
+                                    
                                 }
                                 else {//그냥 텍스트 첨부파일을 올리는 경우 
                                     let exampleData = new FormData();
                                     exampleData.append('file',this.exampleContent);
-                                    const exampleDataRes = await axios.post("/api/project/upload/example", exampleData, config); 
-                                    createSuccess = exampleDataRes.headers.example;
+                                    const exampleDataRes = await axios.post("/api/project/upload/example", exampleData, config) 
+                                    .then(exampleDataRes => {
+                                        createSuccess = exampleDataRes.headers.example;
                                         if(exampleDataRes.headers.example == "success") {
                                             alert("수집 프로젝트 생성 완료!");
                                             this.$router.push({name: "ProjectPayment", 
@@ -284,27 +307,39 @@ export default {
                                             }
                                         else {
                                                 alert("수집 프로젝트 생성 실패");
-                                        }     
+                                        }  
+                                    }).catch(function(error) {
+                                        if (error.response) {
+                                         alert("수집 프로젝트 생성을 실패하였습니다.");
+                                        }
+                                    });
                                 }
                                 break;
                             }
                             default: {
                                 let exampleData = new FormData();
                                 exampleData.append('file',this.exampleContent);
-                                const exampleDataRes = await axios.post("/api/project/upload/example", exampleData, config); 
-                                createSuccess = exampleDataRes.headers.example;
-                                if(exampleDataRes.headers.example == "success") {
-                                    alert("수집 프로젝트 생성 완료!");
-                                    this.$router.push({name: "ProjectPayment", 
-                                    params : {
-                                        projectId : exampleDataRes.headers.projectid,
-                                        point: exampleDataRes.headers.cost,
-                                        projectName : this.name,
-                                    }});
-                                }
-                                else {
-                                    alert("수집 프로젝트 생성 실패");
-                                }
+                                const exampleDataRes = await axios.post("/api/project/upload/example", exampleData, config)
+                                .then(exampleDataRes => {
+                                    createSuccess = exampleDataRes.headers.example;
+                                    if(exampleDataRes.headers.example == "success") {
+                                        alert("수집 프로젝트 생성 완료!");
+                                        this.$router.push({name: "ProjectPayment", 
+                                        params : {
+                                            projectId : exampleDataRes.headers.projectid,
+                                            point: exampleDataRes.headers.cost,
+                                            projectName : this.name,
+                                        }});
+                                    }
+                                    else {
+                                        alert("수집 프로젝트 생성 실패");
+                                    }
+                                }).catch(function(error) {
+                                     if (error.response) {
+                                         alert("수집 프로젝트 생성을 실패하였습니다.");
+                                    }
+                                }) 
+                                
                                 break;
                             } 
                         }
@@ -317,6 +352,7 @@ export default {
                     alert("수집 프로젝트 생성 실패");
                 }
             }
+        }
             
         },
         onChangeFile(e) {

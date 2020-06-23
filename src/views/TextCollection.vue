@@ -80,8 +80,8 @@
         multiple
         v-model="textContent"
         :state="Boolean(textContent)"
-        placeholder="파일을 선택해주세요..."
-        drop-placeholder="파일을 여기다 가져다 놓으세요..."
+        placeholder="파일을 선택하거나 여기로 드래그하세요."
+        drop-placeholder="파일을 선택하거나 여기로 드래그하세요."
         accept="text/*"
       ></b-form-file>
       <br />
@@ -223,7 +223,7 @@ export default {
       project: "",
       classNameList: [],
       createCollection: false,
-      textContent: "",
+      textContent: null,
       options: [],
       selected: "",
       textExampleList: [],
@@ -242,7 +242,7 @@ export default {
   },
   watch: {
     selected: function(val) {
-      this.textContent = "";
+      this.textContent = null;
       this.textConversation = [{ question: "", answer: "" }];
     },
   },

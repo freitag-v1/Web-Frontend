@@ -33,7 +33,9 @@
     <br>
     <h5><데이터 라벨></h5>
     <div v-for="value, index in colorListByLabel">
-        <hr :color="value.strokeColor" style="width : 100px; margin : auto;"> {{value.className}} </hr>
+        <hr :color="value.strokeColor" style="width : 100px; margin : auto; margin-bottom : 4px;"> {{value.className}} </hr>
+        <br>
+        <br>
     </div>
     <br>
     <b-form-radio-group
@@ -163,9 +165,9 @@ function draw(){
         ctx.strokeStyle = currentColor.strokeColor;
         ctx.lineWidth = 5;
         ctx.stroke();
-        ctx.font = "18px Verdana";
+        ctx.font = "20px Verdana";
         ctx.fillStyle = currentColor.strokeColor;
-        ctx.fillText(selectedLabel,last_mouseX + 5,last_mouseY - 5);
+        ctx.fillText(selectedLabel,last_mouseX + 10,last_mouseY  + 30);
         //작업한 좌표를 나중에 그릴 수 있도록 
         var workedBoxCoord = last_mouseX+" "+last_mouseY+" "+width+" "+height;
         //실제 서버에 보낼 좌표 xmin xmax, ymin, ymax
@@ -230,9 +232,9 @@ function workedBoxDraw(x, y, width, height, className){
     ctx.strokeStyle = currentColor.strokeColor;
     ctx.lineWidth = 5;
     ctx.stroke();
-    ctx.font = "18px Verdana";
+    ctx.font = "20px Verdana";
     ctx.fillStyle = currentColor.strokeColor;
-    ctx.fillText(className, x + 5, y - 5);
+    ctx.fillText(className, x + 10, y + 30);
 }
 
 

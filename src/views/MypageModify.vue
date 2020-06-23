@@ -121,10 +121,11 @@ var modifySuccess = '';
             this.isEditing = true;
             
       },
-      userPhonenumber : function(data) {
-            this.isEditing = true;
+      // userPhonenumber : function(data) {
+      //       console.log("hellllo");
+      //       this.isEditing = true;
             
-      },
+      // },
     },
     methods: {
         preventNav(event) {

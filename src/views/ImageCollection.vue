@@ -39,7 +39,7 @@
         <br>
         <h5>*이미지 등록 버튼을 눌러야 작업이 완료가 됩니다! 꼭 버튼을 눌러주세요!</h5>
         <div>
-            <b-form-radio-group
+        <b-form-radio-group
             v-model="selected"
             :options="options"
             class="option"
@@ -57,18 +57,18 @@
             </div>
         <br>
     <b-form-file multiple 
-                v-model="imageContent"
-                :state="Boolean(imageContent)"
-                placeholder="파일을 선택하거나 끌어서 놓아주세요."
-                drop-placeholder="Drop file here..."
+                v-model="imageFile"
+                :state="Boolean(imageFile)"
+                placeholder="파일을 선택하거나 여기로 드래그하세요."
+                drop-placeholder="파일을 여기로 드래그하세요."
                 hidden @change="onChangeImages"
                 accept="image/*"
                 ></b-form-file>
                 <br>
-                <p v-if="imageUrl!=''">{{ "업로드 데이터 " + imageContent[0].name + "의 preview" }} </p>
+                <p v-if="imageUrl!='' && imageContent != undefined">{{ "업로드 데이터 " + imageContent[0].name + "의 preview" }} </p>
                 <img id ="previewImg" v-if="imageUrl!=''" :src = "imageUrl"></img>
                 <div class="mt-3"  v-for = "(name, index) in imageContent">
-                    Selected file: {{ index + 1 + "." + name ? name.name : '' }}
+                    선택된 파일: {{ name.name }}
                 </div>
                 <br>
 
@@ -127,12 +127,13 @@ s3Client.interceptors.request.use(function (config) {
             project: '',
             classNameList: [],
             createCollection: false,
-            imageContent: '',
+            imageContent: [],
             imageUrl : '',
             downloadUrl: '',
             options: [],
-            selected : '',
+            selected : null,
             imageByClassList: [],
+            imageFile : [],
         }
     },
     async beforeCreate() {
@@ -141,7 +142,8 @@ s3Client.interceptors.request.use(function (config) {
     watch: {
         '$route' : 'fetchData',
         selected : function(val){
-            this.imageContent = '';
+            this.imageContent = [];
+            this.imageFile = [];
             this.imageUrl = '';
         }
     },
@@ -191,6 +193,7 @@ s3Client.interceptors.request.use(function (config) {
         },
         onChangeImages(e) {
             const file = e.target.files[0];
+            this.imageContent = e.target.files;
             this.imageUrl = URL.createObjectURL(file);      
         },
         preventNav(event) {

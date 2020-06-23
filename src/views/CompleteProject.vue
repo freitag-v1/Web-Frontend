@@ -76,15 +76,21 @@ export default {
       "token"
     );
     this.userId = await localStorage.getItem("userId");
-    var completeProjectRes = await axios.get("/api/work/all");
-    if (
-      completeProjectRes.headers.worklist == "fail" ||
-      completeProjectRes.headers.login == "fail"
-    ) {
-      alert("의뢰한 프로젝트 목록을 가져오는데 실패하였습니다.");
-    } else {
-      this.completeProjectList = completeProjectRes.data;
-    }
+    await axios.get("/api/work/all").then(completeProjectRes => {
+        if (
+          completeProjectRes.headers.worklist == "fail" ||
+          completeProjectRes.headers.login == "fail"
+        ) {
+          alert("의뢰한 프로젝트 목록을 가져오는데 실패하였습니다.");
+        } else {
+          this.completeProjectList = completeProjectRes.data;
+        }
+    }).catch(function(error){
+      if (error.response) {
+        alert("의뢰한 프로젝트 목록을 가져오는데 실패하였습니다.");
+      }
+    });
+    
   },
   computed: {
     rows() {

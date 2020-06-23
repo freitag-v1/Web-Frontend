@@ -154,7 +154,7 @@ export default {
   name: "Project",
   data() {
     return {
-      projectList: "",
+      projectList: [],
       loginStatus: "",
       fields: [
         { key: "projectDto.projectName", label: "프로젝트 이름" },

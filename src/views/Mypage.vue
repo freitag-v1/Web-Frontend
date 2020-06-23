@@ -43,7 +43,7 @@
   <b-modal id="modal-1" class="check" title="비밀번호 확인" hide-footer>
     <b-form @submit.stop.prevent>
     <label for="text-password">비밀번호 입력: </label>
-    <b-input v-model= "userPassword" type="password" id="first-text-password"></b-input>
+    <b-input v-model= "userPassword" type="password" id="first-text-password" v-on:keyup.enter="validatePassword"></b-input>
     <b-form-invalid-feedback :state="userPasswordValidation">
         개인정보 수정을 위해서 비밀번호 확인이 필요합니다. 
     </b-form-invalid-feedback>
@@ -76,16 +76,7 @@ export default {
     const userInfo = await axios.get("/api/mypage");
     this.user = userInfo.data;
     this.userPoint = userInfo.headers.point;
-    console.log(this.user.password);
   },
-  // computed: {
-  //   userPasswordValidation() {
-  //        var checkPassword = bcrypt.compareSync(this.userPassword, this.user.password, function(err,res) {
-  //         return res;
-  //       });
-  //       return checkPassword;
-  //   }
-  // },
   methods : {
       modifyInfo() {
           this.$router.push({name: "MypageModify", 
@@ -102,13 +93,16 @@ export default {
           }});
       },
       validatePassword() {
+        this.userPasswordValidation = false;
         var hashPassword = sha256.hex(this.userPassword);
         var checkPassword = bcrypt.compareSync(hashPassword, this.user.password, function(err,res) {
             this.userPasswordValidation = res;
-            return;
           });
           this.userPasswordValidation = checkPassword;
-          
+        if(this.userPasswordValidation == false){
+          alert("비밀번호가 일치하지 않습니다.");
+          this.userPassword = "";
+        }
       }
 
   }

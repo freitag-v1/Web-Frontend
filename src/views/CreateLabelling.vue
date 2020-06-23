@@ -11,6 +11,7 @@
                     v-model="name"
                     required
                     placeholder="작업 이름을 입력해주세요"
+                    type="text"
                     ></b-form-input>
                 </b-form-group>
                 </b-form>
@@ -31,8 +32,8 @@
             <b-form-file
                 v-model="exampleContent"
                 :state="Boolean(exampleContent)"
-                placeholder="Choose a file or drop it here..."
-                drop-placeholder="Drop file here..."
+                placeholder="파일을 선택하거나 여기로 드래그하세요."
+                drop-placeholder="파일을 선택하거나 여기로 드래그하세요."
                 hidden @change="onChangeFile"
                 accept="audio/*,image/*,text/*"
                 ></b-form-file>
@@ -42,7 +43,7 @@
                 <br>
                 <br>
             <p>라벨링 작업 주제</p>
-            <b-form-input size="sm" class="inputSubject" placeholder="주제" v-model="subject" ></b-form-input>
+            <b-form-input size="sm" class="inputSubject" placeholder="주제" v-model="subject" type="text"></b-form-input>
             <br>
             <br>
             <p>라벨링 데이터 라벨</p>
@@ -50,21 +51,21 @@
                     라벨 추가 <b-icon icon="plus" aria-hidden="true"></b-icon>
             </b-button>
                 <div v-for="data in dataClass">
-                    <b-form-input size="sm" id="inputClass" placeholder="라벨링 클래스" v-model="data.name" ></b-form-input>
+                    <b-form-input size="sm" id="inputClass" placeholder="라벨링 클래스" v-model="data.name" type="text"></b-form-input>
                     <br>
                 </div>
             <br>
             <br>
             <p>라벨링 작업 설명</p>
-            <b-form-input  id="description" placeholder="라벨링 작업 설명을 입력해주세요." v-model="description" ></b-form-input>
+            <b-form-input  id="description" placeholder="라벨링 작업 설명을 입력해주세요." v-model="description" type="text"></b-form-input>
             <br>
             <br>
             <p>라벨링 방법 작성</p>
-            <b-form-input id="inputWay" placeholder="라벨링 방법을 작성해주세요." v-model="wayContent" ></b-form-input>
+            <b-form-input id="inputWay" placeholder="라벨링 방법을 작성해주세요." v-model="wayContent" type="text"></b-form-input>
             <br>
             <br>
             <p>라벨링 조건 작성</p>
-            <b-form-input id="inputCondition" placeholder="라벨링 조건을 작성해주세요." v-model="conditionContent" ></b-form-input>
+            <b-form-input id="inputCondition" placeholder="라벨링 조건을 작성해주세요." v-model="conditionContent" type="text"></b-form-input>
             <br>
             <br>
             
@@ -72,8 +73,8 @@
                 <b-form-file multiple
                     v-model="labellingContent"
                     :state="Boolean(labellingContent)"
-                    placeholder="Choose a file or drop it here..."
-                    drop-placeholder="Drop file here..."
+                    placeholder="파일을 선택하거나 여기로 드래그하세요."
+                    drop-placeholder="파일을 여기로 드래그하세요."
                     accept="audio/*,image/*,text/*"
                     ></b-form-file>
                     <div class="mt-3" v-for="file in labellingContent">선택된 파일: {{ file ? file.name : '' }}</div>
@@ -99,10 +100,10 @@ export default {
             wayContent: '',
             description: '',
             conditionContent: '',
-            exampleContent: '',
+            exampleContent: null,
             imageUrl: '',
             selectedWork: '',
-            labellingContent: '',
+            labellingContent: null,
             dataClass: [{name : '라벨링 데이터'}],
             audioUrl: '',
         }
@@ -189,7 +190,12 @@ export default {
                 alert("프로젝트 생성을 위해 내용을 빠짐없이 작성해주세요.");
             }
             else {
-                const projectRes =  await axios.post("/api/project/create", "",{
+                if(this.labellingContent.length < 5){
+                    alert("의뢰할 때 데이터는 최소 5개 이상이어야 합니다!");
+                }
+                else {
+                    var projectRes;
+                await axios.post("/api/project/create", "",{
                     params : {
                         projectName : this.name,
                         dataType : this.selectedWork,
@@ -200,6 +206,12 @@ export default {
                         userId : userId,
                         workType : 'labelling',
                         totalData: 0,
+                    }
+                }).then(res => {
+                    projectRes = res;
+                }).catch(function(error) {
+                    if (error.response) {
+                        alert("프로젝트 생성을 실패하였습니다");
                     }
                 });
                   if(projectRes.headers.create == "success"){
@@ -250,7 +262,7 @@ export default {
                   else {
                         alert("라벨링 프로젝트 생성 실패");
                     }
-
+                }
             }
             
         },

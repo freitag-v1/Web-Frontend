@@ -123,8 +123,8 @@
             </b-button>
           </template>
         </b-table>
-        <b-modal id ="" ref="boundingModal" title = "데이터 상세 보기">
-          <p>{{boundingProblemId}}</p>
+        <b-modal id ="modal-1" ref="boundingModal" title = "데이터 상세 보기">
+          <p style="text-align : center">{{ "문제 번호 : " + boundingProblemId}}</p>
           <canvas id="boundingCanvas" width ="460" height = "400"/>
         </b-modal>
           <br>
@@ -133,33 +133,6 @@
             :total-rows="validationRows"
             :per-page="validationPerPage"
             aria-controls="validationCompleteTable"
-            align="center"
-            first-text="처음"
-            prev-text="이전"
-            next-text="다음"
-            last-text="마지막"
-      ></b-pagination>
-        </b-collapse>
-        <br>
-        <b-button id="progressProblem" v-b-toggle.collapse-2 v-on:click="getProgressProblems()">
-          <b-icon icon="info-circle"></b-icon> 진행중인 문제 상세보기
-        </b-button>
-        <br>
-        <b-collapse id="collapse-2" class="mt-2">
-          <b-table id = "progressTable" striped hover 
-          :items="progressItems"
-          :per-page="progressPerPage"
-          :current-page="progressCurrentPage"
-          :fields = "progressFields"
-          small
-          >
-        </b-table>
-          <br>
-          <b-pagination
-            v-model="progressCurrentPage"
-            :total-rows="progressRows"
-            :per-page="progressCurrentPage"
-            aria-controls="progressTable"
             align="center"
             first-text="처음"
             prev-text="이전"
@@ -296,11 +269,7 @@ export default {
       {problemId : 0, objectID : "hello"},
       {problemId : 0, objectID : "hello"},
       {problemId : 0, objectID : "hello"},
-      {problemId : 0, objectID : "hello"}], //검증 완료된 문제 상세보기 버튼을 누르면 서버에 api 전송해서 데이터를 가져와야한다. 
-      progressPerPage : 10,
-      progressCurrentPage : 1,
-      progressFields : [{key : "problemId", label : "문제 번호"},{key : "nececssary_people", label: "필요한 사람 수"}],
-      progressItems : [],
+      {problemId : 0, objectID : "hello"}], //검증 완료된 문제 상세보기 버튼을 누르면 서버에 api 전송해서 데이터를 가져와야한다. ,
       problemContentList : new Map(),
       boundingProblemId : '',
 
@@ -309,15 +278,16 @@ export default {
   computed: {
     validationRows() {
       return this.validationCompleteItems.length;
-    },
-    progressRows() {
-      return this.progressItems.length;
     }
   },
   mounted() {
       this.$root.$on('bv::modal::shown', (bvEvent, modalId) => {
-      this.drawBounding();
+        if(this.project.dataType == "boundingBox"){
+          this.drawBounding();
+        }
+      
     });
+    
   },
   async beforeCreate() {
     var searchproject = await localStorage.getItem("searchProject"); //this.$route.params.project;
@@ -365,7 +335,7 @@ export default {
 
        const h = this.$createElement;
         // Using HTML string
-        const titleVNode = h('div', { domProps: { innerHTML: '검증 완료된 데이터' } });
+        const titleVNode = h('div',{ domProps: { innerHTML: '검증 완료된 데이터' } });
         // More complex structure
         var messageVNode;
         switch(this.project.dataType) {
@@ -469,10 +439,6 @@ export default {
         //여기서 api보내서 데이터를 가져와야 한다.
         // this.valid~Items = res.data;
     },
-    async getProgressProblems(){
-      //여기서 api보내서 데이터를 가져와야한다.
-      // this.progre~~ = res.data;
-    },
   },
 };
 </script>
@@ -537,5 +503,9 @@ font-size: 20px;
 #showProblemDetail:hover {
    color : black;
 }
+.foobar {
+  font-family: "Jeju Gothic", sans-serif;
+}
+
 
 </style>
