@@ -24,6 +24,7 @@ import CompleteProject  from '../views/CompleteProject.vue'
 import RequestProject  from '../views/RequestProject.vue'
 import StartLabelling  from '../views/StartLabellingProject.vue'
 import RequestProjectDetail  from '../views/RequestProjectDetail.vue'
+import FinalCostPayment  from '../views/FinalCostPayment.vue'
 
 Vue.use(VueRouter)
 
@@ -183,6 +184,12 @@ const requireAuth = async (to, from, next) => {
     path: '/project/request/:idx/information',
     name : 'RequestProjectDetail',
     component : RequestProjectDetail,
+    beforeEnter: requireAuth,
+  },
+  {
+    path: '/project/finalPayment',
+    name : 'FinalCostPayment',
+    component : FinalCostPayment,
     beforeEnter: requireAuth,
   },
 

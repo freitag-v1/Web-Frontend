@@ -159,6 +159,7 @@
 <script>
 import axios from "axios";
 
+
 const endpoint = "kr.object.ncloudstorage.com";
 const region = "kr-standard";
 const access_key = "4WhQkGZPLH1sVg6cWLtK";

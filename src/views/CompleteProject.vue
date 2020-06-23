@@ -81,13 +81,13 @@ export default {
           completeProjectRes.headers.worklist == "fail" ||
           completeProjectRes.headers.login == "fail"
         ) {
-          alert("의뢰한 프로젝트 목록을 가져오는데 실패하였습니다.");
+          alert("완료한 작업 목록을 가져오는데 실패하였습니다.");
         } else {
           this.completeProjectList = completeProjectRes.data;
         }
     }).catch(function(error){
       if (error.response) {
-        alert("의뢰한 프로젝트 목록을 가져오는데 실패하였습니다.");
+        alert("완료한 작업 목록을 가져오는데 실패하였습니다.");
       }
     });
     

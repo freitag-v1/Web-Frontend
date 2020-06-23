@@ -89,6 +89,8 @@
 <script>
 import axios from 'axios';
 
+//var FileSaver = require('file-saver');
+
 const endpoint = 'kr.object.ncloudstorage.com';
 const region = 'kr-standard';
 const access_key = '4WhQkGZPLH1sVg6cWLtK';
@@ -189,6 +191,8 @@ s3Client.interceptors.request.use(function (config) {
                 }).then((res) => {
                     const url = URL.createObjectURL(new Blob([res.data], { type: res.headers['content-type'] }));
                     this.downloadUrl = url;
+                    // const blob = new Blob([res.data], { type: res.headers['content-type'] });
+                    // FileSaver.saveAs(blob, "gg");
                 });
         },
         onChangeImages(e) {

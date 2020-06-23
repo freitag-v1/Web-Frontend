@@ -36,6 +36,7 @@ export default {
         projectName: '',
         projectId: '',
         accountPayState : false,
+        state : "",
       }
   },
   async beforeCreate() { //페이지 간 라우터로 데이터를 주고받을지 아님 다시 mypage에 접근해서 가져올지 고민
@@ -71,42 +72,82 @@ export default {
             event.returnValue = "";
       },
       async accountPayment() {
-        await axios.get('/api/project/account/payment', {
-          params: {
-            projectId : this.projectId,
-          }
-        }).then(paymentRes => {
-          this.accountPayState = true;
-          if(paymentRes.headers.payment == "success"){
-            alert("계좌이체 성공하였습니다.");
-            this.$router.push("/");
-          }
-          else if(paymentRes.headers.payment == "fail" && paymentRes.headers.state == null){ //null이거나 undefined겠지
-            alert("계좌이체를 실패하였습니다. 프로젝트 결제 페이지로 이동합니다.");
-            this.$router.push({name: "ProjectPayment", 
-                params : {
-                  projectId : this.projectId,
-                  point: this.projectCost,
-                  projectName : this.projectName,
-                }});
-          }
-          else {
-            //계좌 인증할 때 로컬스토리지에서 가져와서 헤더로 받은 state저장
-            alert("계좌가 등록되지 않았습니다. 계좌 인증 페이지로 이동합니다.")
-            localStorage.bankState = paymentRes.headers.state;
-            this.$router.push({name : "Account", 
-                params : {
-                  status : "accountPay",
-                  projectId : this.projectId,
-                  point: this.projectCost,
-                  projectName : this.projectName,
-                }});
-          }
-        }).catch(function(error) {
-          if (error.response) {
-            alert("계좌이체를 실패하였습니다.");
-          }
-        });
+        if(this.status == "terminateProject"){
+            await axios.get("/api/project/terminate/account",  {
+              params: {
+                projectId: this.projectId,
+              },
+            }).then(paymentRes => {
+            this.accountPayState = true;
+            if(paymentRes.headers.payment == "success"){
+              alert("계좌이체 성공하였습니다.");
+              this.$router.push("/");
+            }
+            else if(paymentRes.headers.payment == "fail" && paymentRes.headers.state == null){ //null이거나 undefined겠지
+              alert("계좌이체를 실패하였습니다. 프로젝트 결제 페이지로 이동합니다.");
+              this.$router.push({name: "ProjectPayment", 
+                  params : {
+                    projectId : this.projectId,
+                    point: this.projectCost,
+                    projectName : this.projectName,
+                  }});
+            }
+            else {
+              //계좌 인증할 때 로컬스토리지에서 가져와서 헤더로 받은 state저장
+              alert("계좌가 등록되지 않았습니다. 계좌 인증 페이지로 이동합니다.")
+              localStorage.bankState = paymentRes.headers.state;
+              this.$router.push({name : "Account", 
+                  params : {
+                    status : "accountPay",
+                    projectId : this.projectId,
+                    point: this.projectCost,
+                    projectName : this.projectName,
+                  }});
+            }
+          }).catch(function(error) {
+            if (error.response) {
+              alert("계좌이체를 실패하였습니다.");
+            }
+          });
+        }
+        else {
+          await axios.get('/api/project/account/payment', {
+            params: {
+              projectId : this.projectId,
+            }
+          }).then(paymentRes => {
+            this.accountPayState = true;
+            if(paymentRes.headers.payment == "success"){
+              alert("계좌이체 성공하였습니다.");
+              this.$router.push("/");
+            }
+            else if(paymentRes.headers.payment == "fail" && paymentRes.headers.state == null){ //null이거나 undefined겠지
+              alert("계좌이체를 실패하였습니다. 프로젝트 결제 페이지로 이동합니다.");
+              this.$router.push({name: "ProjectPayment", 
+                  params : {
+                    projectId : this.projectId,
+                    point: this.projectCost,
+                    projectName : this.projectName,
+                  }});
+            }
+            else {
+              //계좌 인증할 때 로컬스토리지에서 가져와서 헤더로 받은 state저장
+              alert("계좌가 등록되지 않았습니다. 계좌 인증 페이지로 이동합니다.")
+              localStorage.bankState = paymentRes.headers.state;
+              this.$router.push({name : "Account", 
+                  params : {
+                    status : "accountPay",
+                    projectId : this.projectId,
+                    point: this.projectCost,
+                    projectName : this.projectName,
+                  }});
+            }
+          }).catch(function(error) {
+            if (error.response) {
+              alert("계좌이체를 실패하였습니다.");
+            }
+          });
+        }
 
 
       },
@@ -114,6 +155,8 @@ export default {
           this.projectCost = this.$route.params.cost; //스토리지에서 가져오고 
           this.projectId = this.$route.params.projectId;
           this.projectName = this.$route.params.name;
+          this.state = this.$route.params.state;
+          //console.log(this.projectCost, this.$route.params.cost);
 
       }
     

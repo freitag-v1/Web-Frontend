@@ -84,13 +84,6 @@
         "진행 중인 데이터 갯수: " + project.progressData
       }}</b-card-text>
       <br />
-       <b-form-file 
-              
-                placeholder="파일을 선택하거나 끌어서 놓아주세요."
-                drop-placeholder="Drop file here..."
-                hidden @change="onChangeFile"
-                accept="audio/*,image/*,text/*"
-                ></b-form-file>
         <b-button id="validationComplete" v-b-toggle.collapse-1 v-on:click="getValidationCompleteProblems">
           <b-icon icon="info-circle"></b-icon> 검증 완료된 문제 상세보기
         </b-button>
@@ -142,6 +135,23 @@
         </b-collapse>
       <br />
       <br />
+      <b-button
+              id="projectTerminate"
+              v-if="project.status != '수령전'"
+              v-on:click="projectTerminate"
+            >
+            프로젝트 종료
+      </b-button>
+      <b-button
+              id="projectDownload"
+              v-if="project.status == '수령전'"
+              v-on:click="downloadResult"
+            >
+            <b-icon icon="download"></b-icon>
+            결과물 다운로드
+      </b-button>
+      <br>
+      <br>
     </b-card>
   </div>
 </template>
@@ -150,6 +160,8 @@ import axios from "axios";
 import progressPieChart from "../components/ProgressStatus.vue";
 import VueAudio from "vue-audio";
 
+
+var FileSaver = require('file-saver');
 const endpoint = "kr.object.ncloudstorage.com";
 const region = "kr-standard";
 const access_key = "4WhQkGZPLH1sVg6cWLtK";
@@ -291,6 +303,9 @@ export default {
   },
   async beforeCreate() {
     var searchproject = await localStorage.getItem("searchProject"); //this.$route.params.project;
+    axios.defaults.headers.common["authorization"] = await localStorage.getItem(
+      "token"
+    );
     this.project = JSON.parse(searchproject).projectDto;
     this.classNameList = JSON.parse(searchproject).classNameList; //this.$route.params.classList;
     this.chartData.datasets[0].data[0] = this.project.progressData;
@@ -435,6 +450,48 @@ export default {
             }
            
     },
+    async projectTerminate() {
+      await axios.get("/api/project/terminate", {
+        params : {
+          projectId : this.project.projectId,
+        }
+      }).then(terminateRes => {
+        if(terminateRes.headers.project == "success") {
+          var finalCost = Number(terminateRes.headers.finalcost);
+          this.$router.push({name : "FinalCostPayment", params : {
+            finalCost : 1000,
+            projectName : this.project.projectName,
+            projectId : this.project.projectId,
+          }});
+        }
+        else {
+          alert("프로젝트 종료를 실패하였습니다.");
+        }
+      }).catch(function(error){
+        if (error.response) {
+              alert("프로젝트 종료를 실패하였습니다. 다시 시도해주세요!");
+          }
+      });
+    },
+    async downloadResult() {
+      await axios.get("/api/project/download", {
+          params: {
+            projectId : this.project.projectId
+          }
+        }, {
+          responseType: "blob",
+        }).then(downloadRes => {
+          console.log(downloadRes.headers["content-type"]);
+          //const blob = new Blob([downloadRes.data], { type: downloadRes.headers["content-type"] });
+          FileSaver.saveAs(downloadRes.data, this.project.projectName+".zip");
+          this.$router.push("/");
+      }).catch(function(error){
+        if (error.response) {
+            alert("결과물 다운로드를 실패하였습니다!");
+          }
+      });
+
+    },
     async getValidationCompleteProblems() {
         //여기서 api보내서 데이터를 가져와야 한다.
         // this.valid~Items = res.data;
@@ -476,15 +533,15 @@ font-size: 20px;
   transform: translateY(-7px);
   border-radius: 8px;
 }
-#progressProblem {
+#projectTerminate {
   width: 300px;
-  margin:auto;
+  margin: auto;
   background-color: #fa8072;
   border: none;
   font-size: 19px;
   color: black;
 }
-#progressProblem:hover {
+#projectTerminate:hover {
   background-color: #fa8072;
   box-shadow: 0px 15px 20px rgba(40, 173, 252, 0.4);
   color: #fff;
@@ -505,6 +562,21 @@ font-size: 20px;
 }
 .foobar {
   font-family: "Jeju Gothic", sans-serif;
+}
+#projectDownload {
+  width: 300px;
+  margin: auto;
+  background-color: #F4A460;
+  border: none;
+  font-size: 19px;
+  color: black;
+}
+#projectDownload:hover {
+  background-color: #F4A460;
+  box-shadow: 0px 15px 20px rgba(40, 173, 252, 0.4);
+  color: #fff;
+  transform: translateY(-7px);
+  border-radius: 8px;
 }
 
 
