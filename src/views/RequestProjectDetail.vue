@@ -474,17 +474,17 @@ export default {
       });
     },
     async downloadResult() {
-      await axios.get("/api/project/download", {
-          params: {
-            projectId : this.project.projectId
-          }
-        }, {
-          responseType: "blob",
-        }).then(downloadRes => {
-          console.log(downloadRes.headers["content-type"]);
-          //const blob = new Blob([downloadRes.data], { type: downloadRes.headers["content-type"] });
-          FileSaver.saveAs(downloadRes.data, this.project.projectName+".zip");
-          this.$router.push("/");
+      await axios({
+          url: "/api/project/download",
+          params: { projectId : this.project.projectId },
+          responseType: "blob"
+      }).then(response => {
+          const url = window.URL.createObjectURL(new Blob([response.data]));
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', this.project.projectName+".zip");
+          document.body.appendChild(link);
+          link.click();
       }).catch(function(error){
         if (error.response) {
             alert("결과물 다운로드를 실패하였습니다!");
