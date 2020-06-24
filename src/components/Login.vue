@@ -38,7 +38,8 @@ export default {
         //비밀번호를 그대로 전송하기 때문에 노출될 가능성이 높아서 여기서도 암호화를 하는 것이 어떨까
         else {
           var userId = this.userId;
-          var password = sha256.hex(this.password);
+          //var password = sha256.hex(this.password);
+          var password = this.password;
           this.$store.dispatch('LOGIN',{userId,password});
         }
     },

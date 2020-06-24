@@ -82,8 +82,8 @@ import axios from 'axios';
 
 const endpoint = 'kr.object.ncloudstorage.com';
 const region = 'kr-standard';
-const access_key = '4WhQkGZPLH1sVg6cWLtK';
-const secret_key = 'xmKmQXfbYyyPuXyEw1KeDXE7CveACDQdWUPACtzP';
+const access_key = 'sQG5BeaHcnvvqK4FI01A';
+const secret_key = 'mvNVjSac240XvnrK4qF39HpoMvvtMQMzUnnNHaRV';
 const v4 = require('aws-signature-v4');
 var s3Client = axios.create();
 s3Client.interceptors.request.use(function (config) {

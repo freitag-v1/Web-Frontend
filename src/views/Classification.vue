@@ -137,8 +137,8 @@ import AudioUpload from "../components/AudioUpload.vue";
 /************************************Naver Object Storage 접근****************************/
 const endpoint = "kr.object.ncloudstorage.com";
 const region = "kr-standard";
-const access_key = "4WhQkGZPLH1sVg6cWLtK";
-const secret_key = "xmKmQXfbYyyPuXyEw1KeDXE7CveACDQdWUPACtzP";
+const access_key = "sQG5BeaHcnvvqK4FI01A";
+const secret_key = "mvNVjSac240XvnrK4qF39HpoMvvtMQMzUnnNHaRV";
 
 const v4 = require("aws-signature-v4");
 var AnswerList = new Map();
@@ -390,6 +390,7 @@ export default {
             window.location.href = "/project/startLabelling";
           }
         });
+        console.log(this.problemList)
       for (let i = 0; i < this.problemList.length; i++) {
         //텍스트 수집에 대한 교차검증문제인 경우
         if (this.problemList[i].problemDto.objectName.includes(".txt")) {

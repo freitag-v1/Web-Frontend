@@ -5,7 +5,7 @@
       {{ projectName + " 작업의 추가 비용은 " + finalCost + "원 입니다." }}
     </h1>
     <h1 id="projectCost" v-if="finalCost < 0" >
-      {{ projectName + " 작업에서 돌려받을 비용은 " + finalCost + "원 입니다." }}
+      {{ projectName + " 작업에서 돌려받을 비용은 " + (-finalCost) + "원 입니다." }}
     </h1>
     <p id="progressMSG" v-if="pointPay">결제 진행 중입니다.</p>
     <b-progress
@@ -103,7 +103,7 @@ export default {
           .then((res) => {
             pointPaySuccess = res.headers.payment;
             if (res.headers.payment == "success") {
-              alert("결제가 완료되었습니다!");
+              alert("결제가 완료되었습니다! 결과물 압축이 완료되면 문자로 알려드리겠습니다!");
               this.$router.push("/");
             } else {
               this.pointPaySuccess = false;

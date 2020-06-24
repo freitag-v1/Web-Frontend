@@ -117,7 +117,10 @@
           </template>
         </b-table>
         <b-modal id ="modal-1" ref="boundingModal" title = "데이터 상세 보기">
-          <p style="text-align : center">{{ "문제 번호 : " + boundingProblemId}}</p>
+          <p style="text-align : center">{{ "문제 번호 : " + boundingProblem.problemId}}</p>
+          <div v-for="name in classNameList">
+            <p style="text-align : center">{{ "라벨 : " + name.className}}</p>
+          </div> 
           <canvas id="boundingCanvas" width ="460" height = "400"/>
         </b-modal>
           <br>
@@ -164,8 +167,8 @@ import VueAudio from "vue-audio";
 var FileSaver = require('file-saver');
 const endpoint = "kr.object.ncloudstorage.com";
 const region = "kr-standard";
-const access_key = "4WhQkGZPLH1sVg6cWLtK";
-const secret_key = "xmKmQXfbYyyPuXyEw1KeDXE7CveACDQdWUPACtzP";
+const access_key = "sQG5BeaHcnvvqK4FI01A";
+const secret_key = "mvNVjSac240XvnrK4qF39HpoMvvtMQMzUnnNHaRV";
 
 const v4 = require("aws-signature-v4");
 
@@ -229,19 +232,20 @@ function getRandomColor() {
 }
 
 var globalCtx;
+var colorByLabel = [];
 function workedBoxDraw(x, y, width, height, className){
     globalCtx.beginPath();
     globalCtx.rect(x, y, width, height);
     //선택된 class에 맞는 색을 찾음.
-    //var currentColor = colorByLabel.find(color => color.className == className);
+    var currentColor = colorByLabel.find(color => color.className == className);
     //색으로 그림을 그리고 어떤 class에 해당하는지 글로 보여주고
-    //ctx.strokeStyle = currentColor.strokeColor;
-    globalCtx.strokeStyle = getRandomColor();
+    globalCtx.strokeStyle = currentColor.strokeColor;
+    //globalCtx.strokeStyle = getRandomColor();
     globalCtx.lineWidth = 5;
     globalCtx.stroke();
-    globalCtx.font = "18px Verdana";
-    //ctx.fillStyle = currentColor.strokeColor;
-    globalCtx.fillStyle = getRandomColor();
+    globalCtx.font = "bolder 18px Verdana";
+    globalCtx.fillStyle = currentColor.strokeColor;
+    //globalCtx.fillStyle = getRandomColor();
     globalCtx.fillText(className, x + 5, y - 5);
 }
 
@@ -275,15 +279,9 @@ export default {
       validationCurrentPage : 1,
       validationFields : [{key : "problemId", label : "문제 번호"},
         {key : "show_details", label: "상세 정보"}],
-      validationCompleteItems : [{problemId : 0, objectID : "hello"},
-      {problemId : 0, objectID : "hello"},
-      {problemId : 0, objectID : "hello"},
-      {problemId : 0, objectID : "hello"},
-      {problemId : 0, objectID : "hello"},
-      {problemId : 0, objectID : "hello"},
-      {problemId : 0, objectID : "hello"}], //검증 완료된 문제 상세보기 버튼을 누르면 서버에 api 전송해서 데이터를 가져와야한다. ,
+      validationCompleteItems : [], //검증 완료된 문제 상세보기 버튼을 누르면 서버에 api 전송해서 데이터를 가져와야한다. ,
       problemContentList : new Map(),
-      boundingProblemId : '',
+      boundingProblem : '',
 
     };
   },
@@ -294,19 +292,26 @@ export default {
   },
   mounted() {
       this.$root.$on('bv::modal::shown', (bvEvent, modalId) => {
-        if(this.project.dataType == "boundingBox"){
-          this.drawBounding();
+        //console.log(modalId)
+        if(modalId == "modal-1"){
+          //console.log(this.boundingProblem)
+          this.drawBounding(this.boundingProblem);
         }
       
     });
     
   },
   async beforeCreate() {
-    var searchproject = await localStorage.getItem("searchProject"); //this.$route.params.project;
+     //this.$route.params.project;
     axios.defaults.headers.common["authorization"] = await localStorage.getItem(
       "token"
     );
+    
+  },
+  async created() {
+    var searchproject = await localStorage.getItem("searchProject");
     this.project = JSON.parse(searchproject).projectDto;
+    //console.log(this.project.dataType)
     this.classNameList = JSON.parse(searchproject).classNameList; //this.$route.params.classList;
     this.chartData.datasets[0].data[0] = this.project.progressData;
     this.chartData.datasets[0].data[1] = this.project.validatedData;
@@ -318,13 +323,18 @@ export default {
   },
   methods: {
     async getProblemData(problem) {
+      //console.log(problem.details.objectName);
       if(this.project.dataType=="text"){
-        await s3Client.get("/"+this.project.bucketName+"/"+problem.objectName, {
+        await s3Client.get("/"+this.project.bucketName+"/"+problem.details.objectName, {
           responseType: 'text'
         }).then(problemDataRes =>  {
           const data = problemDataRes.data;
-          if(data.includes(this.project.projectName +"workTextWrite.txt")){
-              var textConversation = "질문 : " + data.question + "\n" + "답변 : " + data.answer;
+          //console.log(data);
+          c//onsole.log(problem.details.objectName.includes(this.project.projectName +"workTextWrite.txt"));
+          if(problem.details.objectName.includes(this.project.projectName +"workTextWrite.txt")){
+              var textConversation = "질문 : " + data.question + "\n" +"답변 : " + data.answer + "\n";
+          
+              //console.log(textConversation);
               this.problemContentList.set(problem.problemId, textConversation);
           }
           else {
@@ -334,18 +344,20 @@ export default {
         });
       }
       else {
-        await s3Client.get("/"+this.project.bucketName+"/"+problem.objectName, {
+        await s3Client.get("/"+this.project.bucketName+"/"+problem.details.objectName, {
           responseType: 'blob'
         }).then(problemDataRes =>  {
         const url = URL.createObjectURL(new Blob([problemDataRes.data], { type: problemDataRes.headers['content-type'] }));
         this.problemContentList.set(problem.problemId, url);
+        //console.log(this.problemContentList)
       });
       }
       
     },
-    showData(problem){
-      if(this.problemContentList.get(problem.problemId) != undefined){
-        this.getProblemData(problem);
+    async showData(problem){
+      //console.log(problem);
+      if(this.problemContentList.get(problem.problemId) == undefined){
+        await this.getProblemData(problem);
       }
 
        const h = this.$createElement;
@@ -360,20 +372,27 @@ export default {
                 h('p', { class: ['text-center'] }, [
                   "문제 번호 " + problem.problemId
                 ]),
-                h('pre', [
+                h('p', { class: ['final-answer'] }, [
+                  "최종 답 : " + problem.details.className
+                ]),
+                h('pre', { class: ['textAnswer'] }, [
                   textData
                 ] )
               ])
               break;
           case "image" : 
-              //var imageUrl = this.problemContentList.get(problem.problemId);
+              var imageUrl = this.problemContentList.get(problem.problemId);
+              //console.log(imageUrl);
               messageVNode = h('div', { class: ['foobar'] }, [
                 h('p', { class: ['text-center'] }, [
                   "문제 번호 " + problem.problemId
                 ]),
+                h('p', { class: ['final-answer'] }, [
+                  "최종 답 : " + problem.details.className
+                ]),
                 h('b-img', {
                   props: {
-                    src: this.imageUrl,
+                    src: imageUrl,
                     center: true,
                     fluid: true,
                   }
@@ -381,14 +400,17 @@ export default {
               ])
               break;
           case "audio" :
-            //var audioUrl = this.problemContentList.get(problem.problemId);
+            var audioUrl = this.problemContentList.get(problem.problemId);
             messageVNode = h('div', { class: ['foobar'] }, [
                 h('p', { class: ['text-center'] }, [
                   "문제 번호 " + problem.problemId
                 ]),
+                h('p', { class: ['final-answer'] }, [
+                  "최종 답 : " + problem.details.className
+                ]),
                 h('VueAudio', {
                   props: {
-                    file : this.imageUrl,
+                    file : audioUrl,
                   }
                 })
               ])
@@ -398,6 +420,9 @@ export default {
               messageVNode = h('div', { class: ['foobar'] }, [
                 h('p', { class: ['text-center'] }, [
                   "문제 번호 " + problem.problemId
+                ]),
+                h('p', { class: ['final-answer'] }, [
+                  "최종 답 : " + problem.details.className
                 ]),
                 h('b-img', {
                   props: {
@@ -409,7 +434,7 @@ export default {
               ])
               break;
           case "boundingBox" :   
-            this.boundingProblemId = problem.problemId;
+            this.boundingProblem = problem;
             //workedBoxDraw()
             // 이거를 이용해서 className이랑 색깔 여기서 만들어줘야한다.
             // 그리고 색을 class name에 맞춰서 넣으면 된다. 
@@ -432,21 +457,43 @@ export default {
       this.imageUrl = URL.createObjectURL(file);    
         
     },
-    drawBounding() {
+    drawBounding(problem) {
       var canvas = document.getElementById("boundingCanvas");
       //console.log(document.getElementById("modal-1"));
       var ctx = canvas.getContext('2d');
+      for(let i = 0; i < this.classNameList.length; i++){
+                    var color = getRandomColor();
+                    colorByLabel[i] = {
+                        strokeColor : color,
+                        className : this.classNameList[i].className,
+                    };
+      }
       ctx.clearRect(0,0,canvas.width, canvas.height);
             var boundingImage = new Image();
-            boundingImage.src = this.imageUrl;
+            boundingImage.src = this.problemContentList.get(problem.problemId);;
             boundingImage.onload = function() {
                 var scale = Math.min(canvas.width / boundingImage.width, canvas.height / boundingImage.height);
                   var x = (canvas.width / 2) - (boundingImage.width / 2) * scale;
                   var y = (canvas.height / 2) - (boundingImage.height / 2) * scale;
                 ctx.drawImage(boundingImage, x, y, boundingImage.width * scale, boundingImage.height * scale);
                 globalCtx = ctx;
-                //여기서 데이터로 넘어온 좌표에 460 400을 넣어줘야한다
-                workedBoxDraw(0, 0, 100, 100, "안녕");
+                for (let i = 0; i < problem.details.boundingBoxList.length; i++) {
+                  var coordinate = problem.details.boundingBoxList[i].coordinates.split(" ");
+                  //coordinate[0] -> xmin coordinate[1] -> ymin coordinate[2] -> xmax coordinate[3] -> ymax
+                  var last_x = coordinate[0] * globalCtx.canvas.clientWidth;
+                  var last_y = coordinate[1] * globalCtx.canvas.clientHeight;
+                  var width = coordinate[2] * globalCtx.canvas.clientWidth - last_x;
+                  var height = coordinate[3] * globalCtx.canvas.clientHeight - last_y;
+                  workedBoxDraw(
+                    Number(last_x),
+                    Number(last_y),
+                    Number(width),
+                    Number(height),
+                    problem.details.boundingBoxList[i].className
+                );
+            }
+            
+            
             }
            
     },
@@ -459,7 +506,7 @@ export default {
         if(terminateRes.headers.project == "success") {
           var finalCost = Number(terminateRes.headers.finalcost);
           this.$router.push({name : "FinalCostPayment", params : {
-            finalCost : 1000,
+            finalCost : finalCost,
             projectName : this.project.projectName,
             projectId : this.project.projectId,
           }});
@@ -479,17 +526,21 @@ export default {
           params: { projectId : this.project.projectId },
           responseType: "blob"
       }).then(response => {
-          const url = window.URL.createObjectURL(new Blob([response.data]));
+          const url = window.URL.createObjectURL(new Blob([response.data]), {type:'application/zip'});
           const link = document.createElement('a');
           link.href = url;
           link.setAttribute('download', this.project.projectName+".zip");
           document.body.appendChild(link);
           link.click();
+          //console.log(response.headers["content-type"]);
+          this.$router.push("/");
       }).catch(function(error){
         if (error.response) {
             alert("결과물 다운로드를 실패하였습니다!");
           }
       });
+
+    
 
     },
     async getValidationCompleteProblems() {
@@ -498,13 +549,16 @@ export default {
             projectId : this.project.projectId,
           }
         }).then(validationCompleteRes => {
-          console.log(validationCompleteRes.data.problems[0]);
+          this.validationCompleteItems = validationCompleteRes.data.problems;
+          //console.log(validationCompleteRes.data.problems);
         })
     },
   },
 };
 </script>
 <style>
+
+@import url(//fonts.googleapis.com/earlyaccess/jejugothic.css);
 font-size: 20px;
 
 .detailCard {
@@ -583,6 +637,15 @@ font-size: 20px;
   transform: translateY(-7px);
   border-radius: 8px;
 }
-
+.final-answer {
+  color : tomato;
+  text-align : center;
+  font-size: 20px;
+}
+.textAnswer {
+  font-family: "Jeju Gothic", sans-serif;
+  font-size : 18px;
+  text-align : center;
+}
 
 </style>
