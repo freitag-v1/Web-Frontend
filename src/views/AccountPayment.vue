@@ -80,7 +80,7 @@ export default {
             }).then(paymentRes => {
             this.accountPayState = true;
             if(paymentRes.headers.payment == "success"){
-              alert("계좌이체 성공하였습니다.");
+              alert("계좌이체 성공하였습니다. 결과물 압축이 완료되면 문자로 알려드리겠습니다!!");
               this.$router.push("/");
             }
             else if(paymentRes.headers.payment == "fail" && paymentRes.headers.state == null){ //null이거나 undefined겠지

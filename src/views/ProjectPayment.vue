@@ -39,6 +39,7 @@ export default {
       pointPay: false,
       pointPaySuccess: true,
       projectId: "",
+      wrongAccess : true,
     };
   },
   async beforeCreate() {
@@ -48,6 +49,11 @@ export default {
     this.cost = this.$route.params.point;
     this.projectName = this.$route.params.projectName;
     this.projectId = this.$route.params.projectId;
+    if(this.cost == undefined || this.projectName == undefined || this.projectId == undefined){
+        alert("잘못된 접근입니다.")
+        this.wrongAccess = true;
+        this.$router.push("/")
+    }
   },
   beforeMount() {
     window.addEventListener("beforeunload", this.preventNav);
@@ -56,7 +62,7 @@ export default {
     });
   },
   beforeRouteLeave(to, from, next) {
-    if (pointPaySuccess != "success" && accountSuccess != true) {
+    if (pointPaySuccess != "success" && accountSuccess != true && this.wrongAccess == false) {
       if (
         !window.confirm(
           "결제 페이지를 벗어나는 경우 프로젝트이 생성되지 않습니다. 그래도 이동하시겠습니까?"
@@ -125,7 +131,7 @@ h1 {
   width: 400px;
   height: 310px;
   float: left;
-  margin-left: 500px;
+  margin-left: 200px;
   margin-top: 100px;
 }
 #account {

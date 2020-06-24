@@ -1,6 +1,6 @@
 <template>
     <div class = "pointExchange">
-    <img id="exchangeLogo" style="width: 400px; height: 100px;" src = "../assets/pointExchange.png"/>
+    <img id="exchangeLogo" style="width: 400px; height: 120px;" src = "../assets/pointExchange.png"/>
     <br>
         <b-card
     no-body
@@ -46,6 +46,7 @@
               </b-form-valid-feedback>
                 </b-form>
                 <br>
+                <b-button id="confirmPassword" v-if="!userPasswordValidation" v-on:click ="validatePassword" v-on:keyup.enter="validatePassword">비밀번호 확인</b-button>
                 <b-button id="realExchangeButton" v-if="userPasswordValidation" v-on:click ="exchangePoint">환전</b-button>
                 <br>
                 <br>
@@ -60,8 +61,9 @@
 <script>
 import axios from 'axios';
 import bcrypt from 'bcrypt-nodejs';
+import { sha256, sha224 } from 'js-sha256';
 
-var userBcryptPwd = '';
+
 export default {
   name: 'PointExchange',
   data() {
@@ -70,21 +72,21 @@ export default {
         userPoint: '',
         userName: '',
         wantPoint: 0,
+        userPasswordValidation: false,
+        userBcryptPwd : '',
       }
   },
   async beforeCreate() { 
     axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
       this.userPoint = this.$route.params.point;
       this.userName = this.$route.params.userName;
-      userBcryptPwd = this.$route.params.userPassword;
+      this.userBcryptPwd = this.$route.params.userPassword;
+      // if(this.userPoint == undefined || this.userName == undefined || this.userBcryptPwd == undefined){
+      //   alert("잘못된 접근입니다.");
+      //   this.$router.push("/");
+      // }
   },
   computed: {
-    userPasswordValidation() {
-         var checkPassword = bcrypt.compareSync(this.userPassword, userBcryptPwd, function(err,res) {
-          return res;
-        });
-        return checkPassword;
-    },
     pointValidation() {
         if(Number(this.wantPoint) > Number(this.userPoint)) {
             return false;
@@ -105,7 +107,19 @@ export default {
             });
           }
 
-      }
+      },
+      validatePassword() {
+        this.userPasswordValidation = false;
+        var hashPassword = sha256.hex(this.userPassword);
+        var checkPassword = bcrypt.compareSync(hashPassword, this.userBcryptPwd, function(err,res) {
+            this.userPasswordValidation = res;
+          });
+          this.userPasswordValidation = checkPassword;
+        if(this.userPasswordValidation == false){
+          alert("비밀번호가 일치하지 않습니다.");
+          this.userPassword = "";
+        }
+      },
   }
        
 }
@@ -161,5 +175,18 @@ export default {
   box-shadow: 0px 15px 20px rgba(40, 173, 252, 0.4);
   color: #fff;
   transform: translateY(-7px);
+}
+#confirmPassword {
+  width: 200px;
+  background-color: tomato;
+  border: none;
+  font-size: 19px;
+  color: black;
+}
+#confirmPassword:hover {
+    background-color: tomato;
+    box-shadow: 0px 15px 20px rgba(40, 173,252, 0.4);
+    color: #fff;
+    transform: translateY(-7px);
 }
 </style>

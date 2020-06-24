@@ -114,14 +114,14 @@ b-navber-nav {
 }
 .carousel-fade {
   width: 800px;
-  margin-left: 145px;
+  margin-left: 90px;
   float: left;
 }
 .ranking {
   width: 100%;
   vertical-align: middle;
   margin-top: 10px;
-  margin-left: 120px;
+  margin-left: 100px;
   float: left;
 }
 #description_card {
