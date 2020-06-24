@@ -14,8 +14,8 @@
     <b-card-body id="userInfoBody">
     <b-card-title id="userName">{{user.userName + "님의 마이페이지"}}</b-card-title>
       <b-list-group flush>
-        <b-list-group-item >작업자 레벨:
-        <p id="userLevel">Starter</p>
+        <b-list-group-item >작업자 정확도:
+        <p id="userLevel">{{user.userAccuracy}}</p>
         </b-list-group-item>
         <b-list-group-item id="userPoint">
         <img id = "pointLogo" src ="../assets/point.jpg">
@@ -51,7 +51,7 @@
       확인이 완료되었습니다. 수정이 가능합니다.
     </b-form-valid-feedback>
     </b-form>
-    <b-button id="confirmPassword" v-if="!userPasswordValidation" v-on:click ="validatePassword">비밀번호 확인</b-button>
+    <b-button id="confirmPassword" v-if="!userPasswordValidation" v-on:click ="validatePassword" v-on:keyup.enter="validatePassword">비밀번호 확인</b-button>
     <b-button id="modifyButton" v-if="userPasswordValidation" v-on:click ="modifyInfo">수정하러 가기</b-button>
   </b-modal>
   </div>
@@ -75,6 +75,7 @@ export default {
     axios.defaults.headers.common['authorization'] = await localStorage.getItem('token');
     const userInfo = await axios.get("/api/mypage");
     this.user = userInfo.data;
+    console.log(this.user);
     this.userPoint = userInfo.headers.point;
   },
   methods : {

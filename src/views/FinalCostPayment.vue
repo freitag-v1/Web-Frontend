@@ -7,6 +7,10 @@
     <h1 id="projectCost" v-if="finalCost < 0" >
       {{ projectName + " 작업에서 돌려받을 비용은 " + (-finalCost) + "원 입니다." }}
     </h1>
+    <h1 id="projectCost" v-if="finalCost == 0" >
+      {{ projectName + " 작업의 최종 비용은 " + (-finalCost) + "원 입니다."
+       }}
+    </h1>
     <p id="progressMSG" v-if="pointPay">결제 진행 중입니다.</p>
     <b-progress
       id="paymentProgress"
@@ -19,6 +23,8 @@
     <p id="paymentMSG" v-if="!pointPaySuccess">
       포인트가 부족하여 결제를 실패하였습니다. 계좌이체로 결제를 진행해주세요!
     </p>
+    <br>
+    <button id = "zeroPaymentButton" v-if="finalCost == 0" v-on:click="zeroPayment"> 확인 </button>
     <img
       id="point"
       v-if="finalCost > 0"
@@ -125,6 +131,24 @@ export default {
         },
       });
     },
+    zeroPayment(){
+      const pointPayRes = axios
+          .get("/api/project/terminate/point", {
+            params: {
+              projectId: this.projectId,
+            },
+          })
+          .then((res) => {
+            pointPaySuccess = res.headers.payment;
+            if (res.headers.payment == "success") {
+              alert("결과물 압축이 완료되면 문자로 알려드리겠습니다!");
+              this.$router.push("/");
+            } else {
+              this.pointPaySuccess = false;
+            }
+          }).catch(function(error){
+          });
+    }
   },
 };
 </script>
@@ -160,6 +184,21 @@ h1 {
   font-family: "Hanna", sans-serif;
   font-size: 25px;
   color: tomato;
+}
+#zeroPaymentButton {
+  width: 400px;
+  height : 150px;
+  background-color: #FFA500;
+  border: none;
+  font-size: 30px;
+  color: black;
+}
+#zeroPaymentButton:hover {
+    background-color: #FFA500;
+    box-shadow: 0px 15px 20px rgba(40, 173,252, 0.4);
+    color: #fff;
+    border: none;
+    transform: translateY(-7px);
 }
 #finalPoint {
     margin : auto;

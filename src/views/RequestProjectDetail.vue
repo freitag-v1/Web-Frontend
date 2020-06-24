@@ -506,7 +506,7 @@ export default {
         if(terminateRes.headers.project == "success") {
           var finalCost = Number(terminateRes.headers.finalcost);
           this.$router.push({name : "FinalCostPayment", params : {
-            finalCost : finalCost,
+            finalCost : 0,
             projectName : this.project.projectName,
             projectId : this.project.projectId,
           }});
