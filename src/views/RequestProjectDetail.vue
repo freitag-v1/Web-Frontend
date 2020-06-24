@@ -493,8 +493,13 @@ export default {
 
     },
     async getValidationCompleteProblems() {
-        //여기서 api보내서 데이터를 가져와야 한다.
-        // this.valid~Items = res.data;
+        await axios.get("/api/project/crossvalidation", {
+          params : {
+            projectId : this.project.projectId,
+          }
+        }).then(validationCompleteRes => {
+          console.log(validationCompleteRes.data.problems[0]);
+        })
     },
   },
 };
