@@ -20,7 +20,7 @@
     </b-list-group>
     <b-card-footer style="font-weight: bolder">라벨 진행 방법</b-card-footer>
     <b-card-text class ="content">{{project.wayContent}}</b-card-text>
-    <b-card-footer style="font-weight: bolder">라벨 조건</b-card-footer>
+    <b-card-footer style="font-weight: bolder">작업 조건</b-card-footer>
     <b-card-text class ="content">{{project.conditionContent}}</b-card-text>
     <b-card-footer style="font-weight: bolder">작업 예시 데이터</b-card-footer>
     <b-card-text class ="content">
@@ -322,11 +322,15 @@ function workedBoxDraw(x, y, width, height, className){
             window.removeEventListener("beforeunload", this.preventNav);
         });
     },
-    beforeRouteLeave(to, from, next) { //작업하고나서 나가려고 하면 이루어지는거
+    async beforeRouteLeave(to, from, next) { //작업하고나서 나가려고 하면 이루어지는거
         if (boxAnswerList.length != 0 && !this.successLabelling) {
             if (!window.confirm("페이지를 벗어나면 작업이 저장되지 않습니다. 그래도 이동하시겠습니까?")) {
                 return;
             }
+            axios.defaults.headers.common["workHistory"] = this.historyId;
+            await axios.get("/api/work/cancel").then(res => {
+                console.log(res);
+            });
         }
         next();
     },
@@ -401,8 +405,12 @@ function workedBoxDraw(x, y, width, height, className){
             this.colorListByLabel = colorByLabel;
             this.selected = this.options[0].item;  
         },
-        preventNav(event) {
+        async preventNav(event) {
             if (boxAnswerList.length == 0 || this.successLabelling) return;
+            axios.defaults.headers.common["workHistory"] = this.historyId;
+                await axios.get("/api/work/cancel").then(res => {
+                    console.log(res);
+                });
                 event.preventDefault();
                 event.returnValue = "";
         },

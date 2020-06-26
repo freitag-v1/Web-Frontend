@@ -36,7 +36,7 @@ export default {
         projectName: '',
         projectId: '',
         accountPayState : false,
-        state : "",
+        state : '',
       }
   },
   async beforeCreate() { //페이지 간 라우터로 데이터를 주고받을지 아님 다시 mypage에 접근해서 가져올지 고민
@@ -95,10 +95,11 @@ export default {
             else {
               //계좌 인증할 때 로컬스토리지에서 가져와서 헤더로 받은 state저장
               alert("계좌가 등록되지 않았습니다. 계좌 인증 페이지로 이동합니다.")
-              localStorage.bankState = paymentRes.headers.state;
+              //localStorage.bankState = paymentRes.headers.state;
               this.$router.push({name : "Account", 
                   params : {
                     status : "accountPay",
+                    state : paymentRes.headers.state,
                     projectId : this.projectId,
                     point: this.projectCost,
                     projectName : this.projectName,
@@ -133,13 +134,14 @@ export default {
             else {
               //계좌 인증할 때 로컬스토리지에서 가져와서 헤더로 받은 state저장
               alert("계좌가 등록되지 않았습니다. 계좌 인증 페이지로 이동합니다.")
-              localStorage.bankState = paymentRes.headers.state;
+              //localStorage.bankState = paymentRes.headers.state;
               this.$router.push({name : "Account", 
                   params : {
                     status : "accountPay",
                     projectId : this.projectId,
                     point: this.projectCost,
                     projectName : this.projectName,
+                    state : paymentRes.headers.state,
                   }});
             }
           }).catch(function(error) {
@@ -155,7 +157,7 @@ export default {
           this.projectCost = this.$route.params.cost; //스토리지에서 가져오고 
           this.projectId = this.$route.params.projectId;
           this.projectName = this.$route.params.name;
-          this.state = this.$route.params.state;
+          //this.state = this.$route.params.state;
           //console.log(this.projectCost, this.$route.params.cost);
 
       }

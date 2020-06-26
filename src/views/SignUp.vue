@@ -17,7 +17,7 @@
         <label for="feedback-user">아이디</label>
         <b-input v-model="userId" :state="userIdValidation" id="feedback-user"></b-input>
         <b-form-invalid-feedback :state="userIdValidation" style="font-size: 15px;">
-          아이디는 반드시 5자 이상 12자 이하로 해주세요.
+          아이디는 반드시 5자 이상 15자 이하로 해주세요.
         </b-form-invalid-feedback>
         <b-form-valid-feedback :state="userIdValidation">
         </b-form-valid-feedback>
@@ -146,7 +146,7 @@
     },
     computed: {
       userIdValidation() { //user id validation
-        return this.userId.length > 4 && this.userId.length < 13
+        return this.userId.length > 4 && this.userId.length < 16
       },
       userEmailValidation() { // email에는 @이 필수 요소니까 @ 여부로 validation
         return this.userEmail.includes('@') && this.userEmail.includes('.com') || this.userEmail.includes('.kr');

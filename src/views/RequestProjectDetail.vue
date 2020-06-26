@@ -121,7 +121,7 @@
           <div v-for="name in classNameList">
             <p style="text-align : center">{{ "라벨 : " + name.className}}</p>
           </div> 
-          <canvas id="boundingCanvas" width ="460" height = "400"/>
+          <canvas id="boundingCanvas" width ="400" height = "300"/>
         </b-modal>
           <br>
           <b-pagination
@@ -506,7 +506,7 @@ export default {
         if(terminateRes.headers.project == "success") {
           var finalCost = Number(terminateRes.headers.finalcost);
           this.$router.push({name : "FinalCostPayment", params : {
-            finalCost : 0,
+            finalCost : finalCost,
             projectName : this.project.projectName,
             projectId : this.project.projectId,
           }});

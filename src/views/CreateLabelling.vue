@@ -57,15 +57,15 @@
             <br>
             <br>
             <p>라벨링 작업 설명</p>
-            <b-form-input  id="description" placeholder="라벨링 작업 설명을 입력해주세요." v-model="description" type="text"></b-form-input>
+            <b-form-textarea  id="description" style="" placeholder="라벨링 작업 설명을 입력해주세요." v-model="description" ></b-form-textarea>
             <br>
             <br>
             <p>라벨링 방법 작성</p>
-            <b-form-input id="inputWay" placeholder="라벨링 방법을 작성해주세요." v-model="wayContent" type="text"></b-form-input>
+            <b-form-textarea id="inputWay" placeholder="라벨링 방법을 작성해주세요." v-model="wayContent" ></b-form-textarea>
             <br>
             <br>
             <p>라벨링 조건 작성</p>
-            <b-form-input id="inputCondition" placeholder="라벨링 조건을 작성해주세요." v-model="conditionContent" type="text"></b-form-input>
+            <b-form-textarea id="inputCondition" placeholder="라벨링 조건을 작성해주세요." v-model="conditionContent" ></b-form-textarea>
             <br>
             <br>
             
@@ -125,6 +125,7 @@ export default {
             if (!window.confirm("페이지를 벗어나는 경우 프로젝트이 생성되지 않습니다. 그래도 이동하시겠습니까?")) {
                 return;
             }
+            
         }
         next();
     },
@@ -186,7 +187,7 @@ export default {
                     headers: { 'Content-type': 'multipart/form-data'}
                 };
             if(this.name == ''  || this.subject == '' || this.wayContent == '' 
-            || this.description == '' || this.conditionContent == '' || this.selectedWork  == '' || this.labellingContent == ''){
+            || this.description == '' || this.conditionContent == '' || this.selectedWork  == '' || this.labellingContent == null){
                 alert("프로젝트 생성을 위해 내용을 빠짐없이 작성해주세요.");
             }
             else {
@@ -229,15 +230,11 @@ export default {
                             //예시 데이터 업로드
                             const exampleDataRes = await axios.post("/api/project/upload/example", exampleData, config); 
                             if(exampleDataRes.headers.example == "success") {
-                                if(this.labellingContent.length < 2){
-                                    alert("라벨링 데이터는 최소 20개 이상이어야합니다!")
-                                }
-                                else {
                                     var labellingData = new FormData();
                                     for(let labellingDataNumber = 0; labellingDataNumber < this.labellingContent.length; labellingDataNumber++){
+                                        //console.log(labellingDataNumber);
                                         labellingData.append('files',this.labellingContent[labellingDataNumber]);
                                     }
-                                }
                                 //라벨링 데이터 업로드
                                 const labellingDataRes = await axios.post("/api/project/upload/labelling",labellingData, {
                                     params :{
@@ -348,7 +345,7 @@ p {
 }
 .addClassButton {
     float: right;
-    margin-right: 370px;
+    margin-right: 350px;
     height: 30px;
 }
 #inputClass {
