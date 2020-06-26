@@ -50,7 +50,7 @@ export default {
     });
     await axios.get("/api/ranking/accuracy").then(accuracyRankingRes => {
       if(accuracyRankingRes.headers.ranking == 'fail') {
-        alert("누적 포인트 별 랭킹 조회가 실패하였습니다.");
+        alert("정확도 별 랭킹 조회가 실패하였습니다.");
       }
       else {
         this.accuracyItems = accuracyRankingRes.data;
@@ -58,7 +58,7 @@ export default {
       }
     }).catch(function(error){
       if (error.response) {
-        alert("누적 포인트 랭킹 목록을 가져오는데 실패하였습니다.");
+        alert("정확도 별 랭킹 목록을 가져오는데 실패하였습니다.");
       }
     });
     
@@ -85,19 +85,23 @@ export default {
             }
         }
       }
+      
     },
     accuracySort() {
+      console.log(this.accuracyItems);
       for(let i = 0; i < this.accuracyItems.length; i++){
         for(let j = i + 1; j < this.accuracyItems.length; j++){
-          if(this.accuracyItems[i].accuracy == this.accuracyItems[j].accuracy && 
+          if(this.accuracyItems[i].userAccuracy == this.accuracyItems[j].userAccuracy && 
             this.accuracyItems[i].numOfProblems < this.accuracyItems[j].numOfProblems){
-              //console.log(this.accuracyItems[i],this.accuracyItems[j]);
+              console.log(this.accuracyItems[i],this.accuracyItems[j]);
               var tempItems = this.accuracyItems[i];
               this.accuracyItems[i] = this.accuracyItems[j];
               this.accuracyItems[j] = tempItems;
             }
         }
       }
+      this.accuracyItems = this.accuracyItems.filter(rank => rank.userAccuracy = rank.userAccuracy * 100+"%");
+      //console.log(this.accuracyItems);
     },
 
   }

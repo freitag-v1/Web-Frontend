@@ -81,10 +81,10 @@ export default {
       this.userPoint = this.$route.params.point;
       this.userName = this.$route.params.userName;
       this.userBcryptPwd = this.$route.params.userPassword;
-      // if(this.userPoint == undefined || this.userName == undefined || this.userBcryptPwd == undefined){
-      //   alert("잘못된 접근입니다.");
-      //   this.$router.push("/");
-      // }
+      if(this.userPoint == undefined || this.userName == undefined || this.userBcryptPwd == undefined){
+        alert("잘못된 접근입니다.");
+        this.$router.push("/");
+      }
   },
   computed: {
     pointValidation() {
@@ -95,15 +95,38 @@ export default {
     }
   },
   methods : {
-      exchangePoint() {
+      async exchangePoint() {
           if(this.wantPoint == 0){
               alert("환전하고 싶은 포인트를 입력해주세요!!");
           }
           else {
-            const exchangeResult = axios.put("/api/mypage/exchange","", {
-                params : {
-                    point : this.wantPoint,
+            axios.defaults.headers.common['amount'] = this.wantPoint;
+            await axios.put("/api/mypage/exchange").then(exchangeRes => {
+                if(exchangeRes.headers.exchange == "success"){
+                    alert("포인트 환전을 성공하였습니다.");
+                    this.$router.push("/");
                 }
+                //계좌인증이 되지 않아서 포인트 환전을 실패한 경우
+                else if(exchangeRes.headers.exchange == "fail" && exchangeRes.headers.state != undefined){
+                    alert("계좌가 등록되지 않았습니다. 계좌 인증 페이지로 이동합니다.");
+                   this.$router.push({
+                      name: "Account",
+                      params: {
+                        point: this.userPoint,
+                        status : "exchangePoint",
+                        state : exchangeRes.headers.state,
+                        name : this.userName,
+                        pwd : this.userBcryptPwd
+                      },
+                    });
+                }
+                else {
+                  alert("포인트 환전을 실패하였습니다.");
+                }
+            }).catch(function(error){
+              if (error.response) {
+                  alert("포인트 환전을 실패하였습니다.");
+              }
             });
           }
 

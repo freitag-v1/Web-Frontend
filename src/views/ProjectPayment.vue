@@ -2,7 +2,7 @@
   <div id="projectPayment">
     <br />
     <h1 id="projectCost">
-      {{ projectName + " 작업의 기본 비용은 " + cost + "원 입니다." }}
+      {{ projectName + "의 기본 비용은 " + cost + "원 입니다." }}
     </h1>
     <p id="progressMSG" v-if="pointPay">결제 진행 중입니다.</p>
     <b-progress
@@ -82,6 +82,7 @@ export default {
     },
     pointPayment() {
       this.pointPay = true;
+      this.value=0;
       var startProgess = setInterval(() => {
         if (this.value >= 100) {
           this.pointPay = false;

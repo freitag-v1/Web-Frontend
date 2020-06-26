@@ -352,7 +352,7 @@ export default {
       window.removeEventListener("beforeunload", this.preventNav);
     });
   },
-  beforeRouteLeave(to, from, next) {
+  async beforeRouteLeave(to, from, next) {
     //작업하고나서 나가려고 하면 이루어지는거
     if (AnswerList.size != 0 && !this.doneClassification) {
       if (
@@ -362,6 +362,10 @@ export default {
       ) {
         return;
       }
+      axios.defaults.headers.common["workHistory"] = this.historyId;
+      await axios.get("/api/work/cancel").then(res => {
+        console.log(res);
+      });
     }
     next();
   },
@@ -465,6 +469,7 @@ export default {
         };
         this.options.push(option);
       }
+      console.log(this.options);
       var option = { value: "x", text: "없음" };
       this.options.push(option);
       this.conditionContent = this.problemList[0].conditionContent;
@@ -520,6 +525,10 @@ export default {
             AnswerList.set(problemId.toString(), selected);
             //console.log(AnswerList);
           }
+          if(selectedList.length == 0){
+            var problemId = this.problemList[this.currentPage - 1].problemDto.problemId;
+            AnswerList.set(problemId.toString(), "");
+          }
           // else { //여기서 바운딩 박스 좌표가 없으면 안보낸다 그냥 아무것도 보내지말라는
           //   //AnswerList.set()
           // }
@@ -528,19 +537,18 @@ export default {
         }
       }
     },
-    preventNav(event) {
+    async preventNav(event) {
+      axios.defaults.headers.common["workHistory"] = this.historyId;
       if (AnswerList.size == 0 || this.doneClassification) return;
+      await axios.get("/api/work/cancel").then(res => {
+        console.log(res);
+      });
       event.preventDefault();
       event.returnvalue = "";
     },
     async upload() {
       this.doneClassification = true;
-
-      if (AnswerList.size < this.problemList.length) {
-        alert(
-          "결과가 등록되지 않은 문제가 있습니다! 한 문제라도 빠짐없이 결과를 작성해야 합니다!"
-        );
-      } else {
+      console.log(AnswerList);
         axios.defaults.headers.common["historyId"] = this.historyId;
         var Answer = Object.fromEntries(AnswerList);
         console.log(Answer)
@@ -558,7 +566,7 @@ export default {
               alert("분류 작업이 실패하였습니다. 다시 시도해주세요!");
             }
         });
-      }
+      
     },
   },
 };

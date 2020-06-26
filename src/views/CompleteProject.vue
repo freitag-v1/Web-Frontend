@@ -67,7 +67,7 @@ export default {
         { key: "projectRequester", label: "작업 의뢰자" },
         { key: "projectWorkType", label: "작업 종류" },
         { key: "projectDataType", label: "데이터 종류" },
-        { key: "projectStatus", label: "진행 상태" },
+        { key: "problemStatus", label: "진행 상태" },
       ],
     };
   },
@@ -83,7 +83,8 @@ export default {
         ) {
           alert("완료한 작업 목록을 가져오는데 실패하였습니다.");
         } else {
-          this.completeProjectList = completeProjectRes.data;
+          //console.log(completeProjectRes.data);
+          this.completeProjectList = completeProjectRes.data.filter(work => work != null);
         }
     }).catch(function(error){
       if (error.response) {

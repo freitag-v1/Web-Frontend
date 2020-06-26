@@ -15,11 +15,11 @@
     <b-card-title id="userName">{{user.userName + "님의 마이페이지"}}</b-card-title>
       <b-list-group flush>
         <b-list-group-item >작업자 정확도:
-        <p id="userLevel">{{user.userAccuracy}}</p>
+        <p id="userLevel">{{userAccuracy * 100 + "%"}}</p>
         </b-list-group-item>
         <b-list-group-item id="userPoint">
         <img id = "pointLogo" src ="../assets/point.jpg">
-        {{"포인트 :"+ userPoint}}</b-list-group-item>
+        {{"포인트 :"+ user.userPoint}}</b-list-group-item>
       </b-list-group>
       <div class = "userDetail">
       <br>
@@ -67,7 +67,7 @@ export default {
       return {
         user: '',
         userPassword: '',
-        userPoint: '',
+        userAccuracy: '',
         userPasswordValidation: false,
       }
   },
@@ -76,7 +76,7 @@ export default {
     const userInfo = await axios.get("/api/mypage");
     this.user = userInfo.data;
     console.log(this.user);
-    this.userPoint = userInfo.headers.point;
+    this.userAccuracy = this.user.userAccuracy.toFixed(3);
   },
   methods : {
       modifyInfo() {
@@ -88,7 +88,7 @@ export default {
       moveExchangePage() {
         this.$router.push({name: "PointExchange", 
           params : {
-            point : this.userPoint,
+            point : this.user.userPoint,
             userName : this.user.userName,
             userPassword : this.user.password,
           }});

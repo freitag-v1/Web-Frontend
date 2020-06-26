@@ -31,7 +31,7 @@
     <b-card-text class ="content">
         <br>
         <div class = "exampleClass" >
-            <img id="exampleImage" :src = "downloadUrl" v-if="downloadUrl != ''" style="width: 400px; height: 300px;"/>
+            <img id="exampleImage" :src = "downloadUrl" v-if="downloadUrl != ''"/>
         </div>
         </b-card-text>
 
